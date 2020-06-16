@@ -1,0 +1,3 @@
+#Testing dataset in *.npy 
+#features and labels should be same length
+X_test -> y_test

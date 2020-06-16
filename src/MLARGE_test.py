@@ -16,15 +16,21 @@ import glob
 from eew_data_engine_synthetic import data_engine_pgd
 
 
+#parameters for analyzing result
+home='/Users/timlin/Documents/Project/MLARGE'         #Home directory
+model_name='Test73_weights.37255-0.000129.hdf5'
+run_name='Test73'
+
+
 #Model path
-model_loaded=tf.keras.models.load_model('Test73_weights.37255-0.000129.hdf5',compile=False) #
-
-
-savname='Test73'
+model_loaded=tf.keras.models.load_model(home+'/'+'models/'+model_name,compile=False) #
 X1=np.load('Xtest73_2.npy') #IMPORTANT! Make sure use the same scale that's used for the ML training
 y1=np.load('ytest73_2.npy') #
 real_EQID=np.load('sav_pickedID_73_2.npy')
 ALLEQ=np.genfromtxt('../Chile_full_27200_source.txt')
+
+#plot ML structure
+plot_architecture=True
 
 #Define what kind of misfit you want to use
 Misfit_current=False #True: use the (pred-real current label)<0.3,  False: use the (pred-final label)<0.3
@@ -100,20 +106,14 @@ def get_accuracy(pred_Mw,real_Mw,tolorance=0.3,NoiseMw=False,tolorance_noise=Fal
 
 
 #Plot model archetrcture
-tf.keras.utils.plot_model(model_loaded,to_file='model_'+savname+'.png',show_shapes=True,expand_nested=True,dpi=200)
-
-
-#Load testing data
-#X1=np.load('Xvalid_test8192_2.npy') #IMPORTANT! Make sure use the same scale that's used for the ML training
-#y1=np.load('yvalid_test8192_2.npy') #
-
-y1=back_scale_y(y1) #y1 back to the real sense
+if plot_architecture:
+    tf.keras.utils.plot_model(model_loaded,to_file='model_'+run_name+'.png',show_shapes=True,expand_nested=True,dpi=200)
 
 ###Make predictions#####
 predictions=model_loaded.predict(X1)
+#scale the labels back to the real sense
 predictions=back_scale_y(predictions)
-
-
+y1=back_scale_y(y1)
 
 
 ###Accuracy funtion(Time only)
@@ -128,7 +128,7 @@ plt.ylabel('Accuracy(%)',fontsize=14)
 plt.show()
 ###------------END------------###
 
-###Example scatter plot###
+###Example scatter plot snapshot###
 #plt.plot(y1[:,2],predictions[:,2],'b.',markersize=5)
 #plt.plot([6.5,8.5],[6.5,8.5],'r--',linewidth=2)
 #plt.plot([6.5,8.5],[6.5-0.3,8.5-0.3],'r--',linewidth=2)
@@ -406,7 +406,7 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir=None,savegif=Fal
             images.append(imageio.imread(filename))
         imageio.mimsave(save_dir+'/movie.gif', images)
 
-make_epoch_fitting(y1,predictions,0.3,Zoomed=True,save_dir='%s_2_figs'%(savname),savegif=True)
+make_epoch_fitting(y1,predictions,0.3,Zoomed=True,save_dir='%s_2_figs'%(run_name),savegif=True)
 
 
 import sys
@@ -1308,7 +1308,7 @@ for neq in range(len(predictions_real)):
     plt.ylabel('Pred. Mw',fontsize=15)
     plt.title(EQs_lb[neq],fontsize=15)
     if savefig:
-        plt.savefig('RealEQ_'+savname+'_EQ%d.png'%(neq+1),dpi=200)
+        plt.savefig('RealEQ_'+run_name+'_EQ%d.png'%(neq+1),dpi=200)
         plt.close()
     else:
         plt.show()
