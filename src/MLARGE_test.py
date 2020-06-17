@@ -1,9 +1,11 @@
 #Script that test the RNN model
 
 import numpy as np
+from scipy.integrate import cumtrapz
 import tensorflow as tf
 import tensorflow.keras as keras
 import matplotlib.pyplot as plt
+import matplotlib
 from tensorflow.keras import models
 from tensorflow.keras import layers
 import seaborn as sns
@@ -122,6 +124,7 @@ for i_epoch in range(102):
     acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.3)
     sav_accEQ.append(acc_EQ)
 
+plt.figure()
 plt.plot(np.arange(102)*5+5,sav_accEQ,'bo-')
 plt.xlabel('Time (sec)',fontsize=14)
 plt.ylabel('Accuracy(%)',fontsize=14)
@@ -159,6 +162,7 @@ for i_epoch in range(102):
 
 sav_Time_Mw_TF=np.array(sav_Time_Mw_TF)
 #plot those T/F points
+plt.figure()
 idx_T=np.where(sav_Time_Mw_TF[:,2]==1)[0]
 idx_F=np.where(sav_Time_Mw_TF[:,2]==0)[0]
 plt.plot(sav_Time_Mw_TF[:,0][idx_T],sav_Time_Mw_TF[:,1][idx_T],'r.',alpha=0.6,markersize=5)
@@ -243,6 +247,7 @@ def get_XYZ(x,y,z,stype,thres):
                 stype=1
             else:
                 stype=2
+            print('determined stype=%d?'%(stype))
     if stype==1:
         Z=z.reshape(len(X),len(Y))
         Z=Z.transpose()
@@ -328,10 +333,9 @@ def groupMw(y_real,y_pred,G,minMw=7.2):
     return sav_avgMw,sav_std
 
 
-def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir=None,savegif=False):
+def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=False):
     import seaborn as sns
     import matplotlib
-#    matplotlib.use('agg')
     sns.set()
     if not(os.path.exists(save_dir)):
         os.makedirs(save_dir)
@@ -406,41 +410,26 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir=None,savegif=Fal
             images.append(imageio.imread(filename))
         imageio.mimsave(save_dir+'/movie.gif', images)
 
-make_epoch_fitting(y1,predictions,0.3,Zoomed=True,save_dir='%s_2_figs'%(run_name),savegif=True)
+#save all the predictions snapshot
+make_epoch_fitting(y1,predictions,0.3,Zoomed=True,save_dir='%s_figs'%(run_name),savegif=True)
 
 
-import sys
-sys.exit(2)
 
-
-#####Analysis the misfit to see if there're overfitting########
+#------------Analysis the misfit to see if there're overfitting/underfitting------------#
 #misft=y1[:,:,0]-predictions[:,:,0]
 #misft=predictions[:,:,0]-y1[:,:,0] #current misfit
-misft=predictions[:,:,0]-y1[:,-1] #final misfit
+if Misfit_current:
+    misft=predictions[:,:,0]-y1[:,:]  # label Mw misfit
+else:
+    misft=predictions[:,:,0]-y1[:,-1]  # final Mw misfit
+
+#Earthquake's ID that used in different category
 ID_train=np.load('../EQID_train_73.npy')
 ID_valid=np.load('../EQID_valid_73.npy')
 ID_test=np.load('../EQID_test_73.npy')
 #ALLEQ
 
-#plot all of the misfit timeseries
-#s_id=np.argsort(y1[:,-1,0])
-##c_map=plt.cm.jet(y1[s_id,-1,0])
-#minD=np.min(y1[s_id,-1,0])
-#maxD=np.max(y1[s_id,-1,0])
-#c_map=plt.cm.jet(plt.Normalize(minD,maxD)(y1[s_id,-1,0]))
-#fig, ax = plt.subplots()
-#idx_large=np.where(misft[s_id,30]<-0.7)[0] #find the large overestimation and plot it by different line
-#idx_small=np.where(misft[s_id,24]>0.5)[0] #find the large underestimation and plot it by different line
-#import seaborn as sns
-#sns.set()
-#for ii,i_line in enumerate(misft[s_id,:]):
-#    plt.plot(np.arange(102)*5+5,i_line,color=c_map[ii],linewidth=0.1,alpha=0.5)
-##    if (ii in idx_large) | (ii in idx_small) :
-#    if (ii in idx_large) | (ii in idx_small) :
-#        plt.plot(np.arange(102)*5+5,i_line,color=c_map[ii],linewidth=2)
-#        print('ii=',ii)
-
-
+#plot all of the misfit timeseries, color coded by Mw
 #c_map=plt.cm.jet(y1[s_id,-1,0])
 #minD=np.min(y1[:,-1,0])
 #maxD=np.max(y1[:,-1,0])
@@ -448,14 +437,12 @@ minD=7.5
 maxD=9.5
 c_map=plt.cm.jet(plt.Normalize(minD,maxD)(y1[:,-1,0]))
 fig, ax = plt.subplots()
-idx_large=np.where(misft[:,30]<-0.8)[0] #find the large overestimation and plot it by different line
+idx_large=np.where(misft[:,30]<-0.8)[0] #find the large overestimation (manually!) and plot it with a different linewidth
 print('Real ID for idx_large is',real_EQID[idx_large])
 #idx_small=np.where(misft[:,24]>0.5)[0] #find the large underestimation and plot it by different line
-import seaborn as sns
 sns.set()
 for ii,i_line in enumerate(misft[:,:]):
     plt.plot(np.arange(102)*5+5,i_line,color=c_map[ii],linewidth=0.1,alpha=0.8)
-    #    if (ii in idx_large) | (ii in idx_small) :
     if (ii in idx_large):
         plt.plot(np.arange(102)*5+5,i_line,color=c_map[ii],linewidth=2)
         print('ii=',ii)
@@ -465,7 +452,6 @@ plt.ylabel('Predicted-Final (M$_w$)',fontsize=16)
 plt.xlim([0,515])
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
-import matplotlib
 norm = matplotlib.colors.Normalize(vmin=minD, vmax=maxD)
 cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='jet')
 cmap.set_array([])
@@ -478,19 +464,11 @@ ax1.tick_params(pad=0)
 plt.xticks(fontsize=12)
 plt.savefig('Misfit_testing_finalMw.pdf')
 plt.show()
+#------------Analysis the misfit to see if there're overfitting/underfitting  END------------#
 
-
-#find large/small misfit
-idx_large=np.where(misft[:,30]<-0.7)[0] #find the large overestimation
-print('Real ID for idx_large is',real_EQID[idx_large])
-#ALLEQ[int(real_EQID[idx_large])] #source parameter for this misfit
-#ALLEQ[int(real_EQID[idx_small])] #source parameter for this misfit
-
-#-----------plot STF and grouped STF for all the 27200 scenarios----------------------#
-from scipy.integrate import cumtrapz
-import matplotlib
+#----------------plot STF and grouped STF for all the 27200 scenarios----------------------#
 STF=np.load('../STF_Chile_27200.npy') #unit are dyne-cm
-STF_T=np.arange(0,512,0.1)
+STF_T=np.arange(0,512,0.1) #define in the function that generate STFs
 
 def M02Mw(M0):
     Mw=(2.0/3)*np.log10(M0*1e7)-10.7 #Mudpy input is N-M, convert to dyne-cm by 1e7,
@@ -638,8 +616,11 @@ plt.xlabel('Time',fontsize=16)
 plt.ylabel('Source time function',fontsize=16)
 plt.savefig('Example_td_tr_tc_.png',dpi=300)
 plt.show()
+#----------Example plot for STF's duration, half duration and time-to-corrected Mw  END--------------
 
-###--Single example plot for STF's duration, half duration and time-to-corrected Mw
+
+
+#----------Single example plot for STF's duration, half duration and time-to-corrected Mw-------------
 n_msft=3
 #n_msft=10 #tau_c earlier
 #n_msft=2598 #tau_c later
@@ -691,11 +672,15 @@ plt.show()
 plt.savefig('Example_td_tr_tc_single_delay2.png')
 plt.show()
 
+#quck_plot_data(b_X1[1734],real_EQID[1734],ALLEQ,staloc_sort)
+#quck_plot_data(b_X1[6617],real_EQID[6617],ALLEQ,staloc_sort)
+#----------Single example plot for STF's duration, half duration and time-to-corrected Mw  END-------------
 
-quck_plot_data(b_X1[1734],real_EQID[1734],ALLEQ,staloc_sort)
-quck_plot_data(b_X1[6617],real_EQID[6617],ALLEQ,staloc_sort)
 
-###--Merge 4 plots into one plot, example plot for STF's duration, half duration and time-to-corrected Mw
+
+
+
+#---------Merge 4 plots into one plot, example plot for STF's duration, half duration and time-to-corrected Mw-----------
 n_msft=3
 #n_msft=10 #tau_c earlier
 #n_msft=2598 #tau_c later
@@ -757,10 +742,8 @@ plt.subplots_adjust(left=0.08,top=0.97,right=0.95,bottom=0.08,wspace=0.34,hspace
 
 plt.savefig('Example_td_tr_tc_merge_100percent.png',dpi=300)
 plt.show()
+#---------Merge 4 plots into one plot, example plot for STF's duration, half duration and time-to-corrected Mw END-----------
 
-
-
-#----------Example plot for STF END--------------
 
 
 #------------Calculate tau_c, tau_d, tau_r WRS to Mw, scatter plot and boxplot-----------------------
@@ -834,7 +817,7 @@ def group_tau(tau_c,tau_d,tau_p,Mws,G):
 #import matplotlib
 #matplotlib.rc_file_defaults()
 plt.subplot(1,2,2)
-plt.figure()
+#plt.figure()
 out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[0.,0.0,0.0],mew=0.1, marker='d',markersize=2)
 Gp_mw=np.arange(7.5,9.7,0.3)
 G_tau_c,G_tau_d,G_tau_p=group_tau(sav_tau_c,sav_tau_d,sav_tau_p,sav_mw,G=Gp_mw)
@@ -957,17 +940,6 @@ plt.ylabel('Ratio',fontsize=18,labelpad=0.5)
 plt.subplots_adjust(left=0.095,top=0.97,right=0.96,bottom=0.092,wspace=0.19,hspace=0.25)
 
 plt.savefig('tau_ratio_misfit0.3_100percent.png',dpi=300)
-
-#for wisker in bp['whiskers']:
-#    wisker.set_color([1,1,0])
-#    wisker.set_linewidth(1.0)
-#    wisker.set_markeredgecolor([1,0,0])
-#
-#for cap in bp['caps']:
-#    cap.set_color([1,1,0])
-#
-#for medn in bp['medians']:
-#    medn.set_color('None')
 
 #-----------------Calculate tau_c, tau_d, tau_r WRS to Mw END---------------------------------
 
