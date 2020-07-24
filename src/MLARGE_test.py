@@ -18,24 +18,29 @@ import glob
 from eew_data_engine_synthetic import data_engine_pgd
 
 
+
 #parameters for analyzing result
 home='/Users/timlin/Documents/Project/MLARGE'         #Home directory
-model_name='Test73_weights.37255-0.000129.hdf5'
-run_name='Test73'
+#model_name='Test80_weights.49160-0.000127.hdf5'
+model_name='Test81_weights.49475-0.000131.hdf5'
+#model_name='Test73_weights.37255-0.000129.hdf5'
+run_name='Test81'
 
 
 #Model path
 model_loaded=tf.keras.models.load_model(home+'/'+'models/'+model_name,compile=False) #
-X1=np.load('Xtest73_2.npy') #IMPORTANT! Make sure use the same scale that's used for the ML training
-y1=np.load('ytest73_2.npy') #
-real_EQID=np.load('sav_pickedID_73_2.npy')
-ALLEQ=np.genfromtxt('../Chile_full_27200_source.txt')
+X1=np.load(home+'/data/'+'Xtest81.npy') #IMPORTANT! Make sure use the same scale that's used for the ML training
+y1=np.load(home+'/data/'+'ytest81.npy') #
+real_EQID=np.load(home+'/data/'+'Run81_test_EQID.npy') #real EQID for testing dataset
+#ALLEQ=np.genfromtxt('../Chile_full_27200_source.txt')
+ALLEQ=np.genfromtxt(home+'/data/'+'Chile_full_new_source_slip.txt')
 
 #plot ML structure
 plot_architecture=True
 
 #Define what kind of misfit you want to use
 Misfit_current=False #True: use the (pred-real current label)<0.3,  False: use the (pred-final label)<0.3
+#Misfit_current=True #True: for the real EQ, so that makes more sense
 
 
 def back_scale_X(X,half=True):
@@ -72,7 +77,7 @@ def back_scale_y(y):
     return y*10.0
 
 
-def valid_loss(y1,predictions):
+def valid_loss_timeMw(y1,predictions):
     #weighted Mw, Time, MSE
     idx=np.arange(1,y1.shape[1]+1)
     idx =  1 - (np.exp(-1*idx/2))
@@ -119,15 +124,25 @@ y1=back_scale_y(y1)
 
 
 ###Accuracy funtion(Time only)
-sav_accEQ=[]
+sav_accEQ_3=[] #accuracy function for threshold=0.3
+sav_accEQ_2=[]
+sav_accEQ_1=[]
 for i_epoch in range(102):
     acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.3)
-    sav_accEQ.append(acc_EQ)
+    sav_accEQ_3.append(acc_EQ)
+    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.2)
+    sav_accEQ_2.append(acc_EQ)
+    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.1)
+    sav_accEQ_1.append(acc_EQ)
+
 
 plt.figure()
-plt.plot(np.arange(102)*5+5,sav_accEQ,'bo-')
+plt.plot(np.arange(102)*5+5,sav_accEQ_3,'bo-')
+plt.plot(np.arange(102)*5+5,sav_accEQ_2,'yo-')
+plt.plot(np.arange(102)*5+5,sav_accEQ_1,'ro-')
 plt.xlabel('Time (sec)',fontsize=14)
 plt.ylabel('Accuracy(%)',fontsize=14)
+plt.grid(True)
 plt.show()
 ###------------END------------###
 
@@ -203,7 +218,9 @@ for i_time in Time:
     print('Finished:%f'%(i_time))
 
 MovingAcc_Time_Mw=np.array(MovingAcc_Time_Mw)
-
+#sav_misfit_distribute=np.array(sav_misfit_distribute)
+#np.save('MovingAcc_Time_current.npy',MovingAcc_Time_Mw) #save the misfit function defined by current(not final) label
+#np.save('sav_misfit_distribute_current.npy',sav_misfit_distribute)
 
 #plt.scatter(MovingAcc_Time_Mw[:,0],MovingAcc_Time_Mw[:,1],c=MovingAcc_Time_Mw[:,2],cmap='jet') #This is scatter plot sense
 def get_XYZ(x,y,z,stype,thres):
@@ -269,13 +286,14 @@ def Tr(Mw):
     return(1.2*10**-8*M0**(1/3))
 
 ###Accuracy function(Time,Mw)
+sns.set()
 X,Y,Z=get_XYZ(MovingAcc_Time_Mw[:,0],MovingAcc_Time_Mw[:,1],MovingAcc_Time_Mw[:,2]*100.0,stype=1,thres=0.005  )
 #plt.pcolor(X,Y,Z,vmin=0.0,vmax=1,cmap='jet')
 fig=plt.figure(figsize=(10,8))
 plt.subplot(1,2,1)
 plt.pcolor(X,Y,Z,vmin=0,vmax=100,cmap='magma')
 plt.plot(Tr(np.arange(7.0,9.6,0.1))*2.0,np.arange(7.0,9.6,0.1),'k--')
-plt.text(200,9.0,r'duration=2$\tau_r$',fontsize=16)
+plt.text(200,9.0,r'duration=2$\tau_{half}$',fontsize=16)
 #clb.set_label('Accuracy(%)',fontsize=14)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
@@ -305,15 +323,17 @@ plt.xticks(fontsize=14)
 plt.yticks([])
 #plt.ylabel('Predicted Mw',fontsize=14)
 cbaxes = fig.add_axes([0.6, 0.16, 0.2, 0.022])
-clb=plt.colorbar(cax=cbaxes,orientation='horizontal')
+clb=plt.colorbar(cax=cbaxes,orientation='horizontal',ticks=[0, 0.15, 0.3])
+#clb.ax.set_yticks([0,0.15,0.3])
 plt.xticks(fontsize=13)
 ax1=plt.gca()
 ax1.tick_params(pad=1.5)
+#plt.xtikcs([0,0.15,0.3])
 clb.set_label('Avg. misfit', rotation=0,labelpad=-1,fontsize=14)
 #clb=plt.colorbar(cmap,cax=cbaxes, orientation='horizontal')
 #clb=plt.colorbar(cax=cbaxes,orientation='horizontal')
 plt.subplots_adjust(left=0.08,top=0.88,right=0.97,bottom=0.1,wspace=0.07)
-#plt.savefig('distribution_Testing.png')
+plt.savefig('distribution_Testing.png')
 plt.show()
 
 
@@ -346,8 +366,8 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=Fa
     props = dict(boxstyle='round', facecolor='white', alpha=0.7)
     #err_range=0.3
     for epoch in range(len(y1[0][:,0])):
-        fig=plt.figure(1,figsize=(10.0,10.0))
-        ax1=fig.add_axes((0.15,0.15,0.80,0.80))
+        fig=plt.figure(1,figsize=(5.8,4.75))
+        ax1=fig.add_axes((0.16,0.18,0.80,0.80))
         plt.grid(True)
         #if current mw is the final mw, plot as different color
 #        idx_finalM=np.where( np.abs(y1[:,epoch,0] - y1[:,-1,0])<0.05 )[0]
@@ -356,8 +376,8 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=Fa
 #            plt.plot(y1[idx_finalM,epoch,0],predictions[idx_finalM,epoch,0],'r.')
 #        if len(idx_NfinalM)>0:
 #            plt.plot(y1[idx_NfinalM,epoch,0],predictions[idx_NfinalM,epoch,0],'bo',markerfacecolor='None',mew=0.5,ms=3)
-        plt.plot(y1[:,epoch,0],predictions[:,epoch,0],'o',markerfacecolor=[0.6,0.6,0.6],markeredgecolor='k',mew=0.25,ms=3.5) #X is target Mw
-#        plt.plot(y1[:,-1,0],predictions[:,epoch,0],'o',markerfacecolor='r',markeredgecolor='k',mew=0.25,ms=3.5) # X is final Mw
+#        plt.plot(y1[:,epoch,0],predictions[:,epoch,0],'o',markerfacecolor=[0.6,0.6,0.6],markeredgecolor='k',mew=0.25,ms=3.5) #X is target Mw
+        plt.plot(y1[:,-1,0],predictions[:,epoch,0],'o',markerfacecolor=[0.65,0.65,0.65],markeredgecolor='k',mew=0.25,ms=3.5) # X is final Mw
         #plt.scatter(filt_y1[:,-1,0],filt_misfit[:,int(nsub*t_step),0],c=sav_lon,s=10,cmap=plt.cm.bwr)
         plt.plot([y1.min(),y1.max()],[y1.min(),y1.max()],'k--',linewidth=2)
         plt.plot([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],'k--',linewidth=0.5)
@@ -372,7 +392,8 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=Fa
         EQMw=[8.3,8.1,8.8,7.6,7.7]
         EQs=['Illapel2015','Iquique2014','Maule2010','Melinka2016','Iquique_aftershock2014']
         smbs=['^','s','*','p','D']
-        smbs_size=[20,17,23,20,17]
+#        smbs_size=[20,17,23,20,17]
+        smbs_size=[16,13,19,16,13]
         colrs=[[0,0,1],[0,1,0],[1,0,0],[1,1,0],[1,0,1]]
         hans=[]
         for neq in range(len(predictions_real)):
@@ -386,18 +407,19 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=Fa
         Ylim=plt.ylim()
         Xpos=(Xlim[1]-Xlim[0])*0.06+Xlim[0]
         Ypos=(Ylim[1]-Ylim[0])*0.9+Ylim[0]
-        plt.text(Xpos,Ypos,'%03d sec'%(epoch*5+5),bbox=props,fontsize=30)
-        plt.ylabel('Predicted Mw',fontsize=34)
-        plt.xlabel('Target Mw',fontsize=34)
-#        plt.xlabel('Final Mw',fontsize=16)
-        plt.xticks(fontsize=30, rotation=30)
+        plt.text(Xpos,Ypos,'%03d sec'%(epoch*5+5),bbox=props,fontsize=17)
+        plt.ylabel('Predicted Mw',fontsize=19)
+#        plt.xlabel('Target Mw',fontsize=19)
+        plt.xlabel('Final Mw',fontsize=19)
+        plt.xticks(fontsize=17, rotation=30)
         #ax1.set_aspect('equal')
-        ax1.tick_params(pad=0)
-        plt.yticks(fontsize=30, rotation=0)
+        ax1.tick_params(pad=0.3)
+        plt.yticks(fontsize=17, rotation=0)
 #        plt.legend((hans[0][0],hans[1][0],hans[2][0],hans[3][0],hans[4][0]),('Illapel','Iquique','Maule','Melinka','Iquique aft.'),loc=0,fontsize=25)
         if epoch==11:
             #60 sec
-            plt.legend((hans[3][0],hans[4][0],hans[1][0],hans[0][0],hans[2][0]),('Melinka','Iquique aft.','Iquique','Illapel','Maule'),loc=4,fontsize=26)
+            plt.legend((hans[3][0],hans[4][0],hans[1][0],hans[0][0],hans[2][0]),('Melinka','Iquique aft.','Iquique','Illapel','Maule'),loc=4,fontsize=14,frameon=True)
+#            break
         if save_dir:
             plt.savefig(save_dir+'/%03d.png'%(epoch*5+5),dpi=300)
         #plt.close()
@@ -411,7 +433,7 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=Fa
         imageio.mimsave(save_dir+'/movie.gif', images)
 
 #save all the predictions snapshot
-make_epoch_fitting(y1,predictions,0.3,Zoomed=True,save_dir='%s_figs'%(run_name),savegif=True)
+make_epoch_fitting(y1,predictions,0.3,Zoomed=True,save_dir='%s_figs'%(run_name),savegif=False)
 
 
 
@@ -424,9 +446,9 @@ else:
     misft=predictions[:,:,0]-y1[:,-1]  # final Mw misfit
 
 #Earthquake's ID that used in different category
-ID_train=np.load('../EQID_train_73.npy')
-ID_valid=np.load('../EQID_valid_73.npy')
-ID_test=np.load('../EQID_test_73.npy')
+#ID_train=np.load('../EQID_train_73.npy')
+#ID_valid=np.load('../EQID_valid_73.npy')
+#ID_test=np.load('../EQID_test_73.npy')
 #ALLEQ
 
 #plot all of the misfit timeseries, color coded by Mw
@@ -437,9 +459,9 @@ minD=7.5
 maxD=9.5
 c_map=plt.cm.jet(plt.Normalize(minD,maxD)(y1[:,-1,0]))
 fig, ax = plt.subplots()
-idx_large=np.where(misft[:,30]<-0.8)[0] #find the large overestimation (manually!) and plot it with a different linewidth
+idx_large=np.where(misft[:,30]<-0.8)[0] #find the large underestimation (manually!) and plot it with a different linewidth
 print('Real ID for idx_large is',real_EQID[idx_large])
-#idx_small=np.where(misft[:,24]>0.5)[0] #find the large underestimation and plot it by different line
+#idx_small=np.where(misft[:,24]>0.5)[0] #find the large overestimation and plot it by different line
 sns.set()
 for ii,i_line in enumerate(misft[:,:]):
     plt.plot(np.arange(102)*5+5,i_line,color=c_map[ii],linewidth=0.1,alpha=0.8)
@@ -464,12 +486,20 @@ ax1.tick_params(pad=0)
 plt.xticks(fontsize=12)
 plt.savefig('Misfit_testing_finalMw.pdf')
 plt.show()
+
+
+#locating the large misfit and find any example
+
+
 #------------Analysis the misfit to see if there're overfitting/underfitting  END------------#
 
 #----------------plot STF and grouped STF for all the 27200 scenarios----------------------#
-STF=np.load('../STF_Chile_27200.npy') #unit are dyne-cm
-STF_T=np.arange(0,512,0.1) #define in the function that generate STFs
+#STF=np.load('../data/STF/STF_Chile_27200_new.npy') #unit are dyne-cm
+#STF_T=np.arange(0,512,0.1) #define in the function that generate STFs
 
+STF=np.load('../data/STF/STF_Chile_27200_new_long.npy') #unit are dyne-cm
+STF_T=np.arange(0,2048,0.5) #define in the function that generate STFs
+sns.set()
 def M02Mw(M0):
     Mw=(2.0/3)*np.log10(M0*1e7)-10.7 #Mudpy input is N-M, convert to dyne-cm by 1e7,
     return(Mw)
@@ -550,12 +580,14 @@ def find_tau(STF_T,stf,realMw):
     sumM0=cumtrapz(stf,STF_T)
 #    idx=np.where(np.abs(sumM0-Mw2M0(realMw))<=0.05*Mw2M0(realMw))[0][0] #the first one
 #    idx=np.where(np.abs(sumM0-sumM0[-1])<=0.05*sumM0[-1])[0][0] #the first one
-    idx=np.where(np.abs(sumM0-sumM0[-1])<=0.000000001*sumM0[-1])[0][0] #the first one
+    idx=np.where(np.abs(sumM0-sumM0[-1])<=1e-9)[0][0] #duration (the first one)
+    idx2=np.where(np.abs(sumM0-0.5*sumM0[-1]) == np.min(np.abs(sumM0-0.5*sumM0[-1])) )[0][0]
     tau_d=STF_T[idx]
+    tau_cent=STF_T[idx2]
     tau_r=Tr(realMw)
     idx_p=np.where(stf==stf.max())[0][0]
     tau_p=STF_T[idx_p]
-    return tau_r,tau_d,tau_p
+    return tau_r,tau_d,tau_p,tau_cent
 
 def time2correct(misft,threshold=0.3):
     #find time to correct Mw by the given Mw misfit timeseries and threshold
@@ -571,28 +603,31 @@ def time2correct(misft,threshold=0.3):
 
 
 #get the final Mw from STF at 515 sec
-STF_test=[STF[int(id)] for id in real_EQID]
+STF_test=[STF[int(id)] for id in real_EQID] #only testing dataset
+#STF_test=[STF[int(id)] for id in range(27200)] #all 27200 dataset
+
 STF_test=np.array(STF_test) #STF for testing dataset
 Mw_testing_final=M02Mw(cumtrapz(STF_test[:],STF_T))[:,-1]
 
-n_c=15
-n_r=15
+n_c=6
+n_r=6
 props = dict(boxstyle='round', facecolor='white', alpha=1) #box for plt.text
-plt.figure(figsize=(12,10))
+plt.figure()
+#plt.figure(figsize=(12,10))
 plt.subplot(n_c,n_r,1)
 #sns.set_style("dark")
+#For testing dataset
 for n_msft,msft in enumerate(misft):
     plt.subplot(n_c,n_r,n_msft+1)
     ax=plt.gca()
     ax.set_facecolor([0.93,0.93,0.93])
     expid=int(real_EQID[n_msft]) #example id (real id)
-    tau_r,tau_d,tau_p=find_tau(STF_T,STF[expid],ALLEQ[expid,1])
-#    tau_r,tau_d=find_tau(STF_T,STF[expid],y1[n_msft,-1,0])
+    tau_r,tau_d,tau_p,tau_cent=find_tau(STF_T,STF[expid],ALLEQ[expid,1])
     plt.plot(STF_T,STF[expid],color='k',linewidth=0.1)
     plt.fill_between(STF_T,STF[expid],np.zeros(len(STF_T)),facecolor=[0.6,0.6,0.6])
     plt.plot([tau_d,tau_d],[0,STF[expid].max()],'r--',linewidth=1)
-#    plt.plot([tau_r,tau_r],[0,STF[expid].max()],'k--',linewidth=1)
     plt.plot([tau_p,tau_p],[0,STF[expid].max()],'g--',linewidth=1)
+    plt.plot([tau_cent,tau_cent],[0,STF[expid].max()],'k--',linewidth=1)
     idx=time2correct(msft,threshold=0.3) #
     if idx:
         tau_det=(np.arange(102)*5+5)[idx]   #time to corrected Mw
@@ -606,6 +641,34 @@ for n_msft,msft in enumerate(misft):
     plt.text(np.min([515,tau_d*1.2])*0.7,STF[expid].max()*0.75,'%3.1f'%(y1[n_msft,-1,0]),fontsize=8.5,bbox=props)
     if n_msft==int(n_c*n_r-1):
         break
+
+
+#For all 27200 where misft haven't calculated (preliminary test here)
+'''
+Rand_eqid=np.arange(27200)
+np.random.shuffle(Rand_eqid)
+for n_id,expid in enumerate(Rand_eqid):
+    plt.subplot(n_c,n_r,n_id+1)
+    ax=plt.gca()
+    ax.set_facecolor([0.93,0.93,0.93])
+    tau_r,tau_d,tau_p,tau_cent=find_tau(STF_T,STF[expid],ALLEQ[expid,1])
+    plt.plot(STF_T,STF[expid],color='k',linewidth=0.1)
+    plt.fill_between(STF_T,STF[expid],np.zeros(len(STF_T)),facecolor=[0.6,0.6,0.6])
+    plt.plot([tau_d,tau_d],[0,STF[expid].max()],'r--',linewidth=1)
+    plt.plot([tau_p,tau_p],[0,STF[expid].max()],'g--',linewidth=1)
+    plt.plot([tau_cent,tau_cent],[0,STF[expid].max()],'b--',linewidth=1)
+    plt.ylim([0,STF[expid].max()])
+    plt.xlim([0,np.min([515,tau_d*1.2])])
+    #plt.xlabel('Time (s)',fontsize=16)
+    #plt.ylabel('$\dot \mathrm{M}$ (N-M)',fontsize=16,labelpad=0) #moment rate
+    plt.xticks([],[])
+    plt.yticks([],[])
+    tmp_Mw=M02Mw( cumtrapz(STF[expid],STF_T)[-1] )
+    plt.text(np.min([515,tau_d*1.2])*0.75,STF[expid].max()*0.75,'%3.1f'%(tmp_Mw),fontsize=12,bbox=props)
+    if n_id==int(n_c*n_r-1):
+        break
+'''
+
 
 plt.subplots_adjust(left=0.08,top=0.97,right=0.97,bottom=0.08,wspace=0.08,hspace=0.06)
 ax1=plt.gcf()
@@ -628,17 +691,19 @@ n_msft=3
 n_msft=29 #close to symmetric
 n_msft=1734 #cannot converge #467,  914,  976,  978, 1010, 1090, 1471, 1734, 1739, 1766, 1801 np.where(np.abs(misft[:,-1])>0.3)
 n_msft=6617 #np.where(real_EQID==real_EQID[1734])
+n_msft=6 #np.where(real_EQID==real_EQID[1734])
+n_msft=3533 #[1203, 2880, 3533, 4388] large misfit for 3533
 msft=misft[n_msft]
 plt.figure()
 ax=plt.gca()
 ax.set_facecolor([0.93,0.93,0.93])
 expid=int(real_EQID[n_msft]) #example id (real id)
-tau_r,tau_d,tau_p=find_tau(STF_T,STF[expid],ALLEQ[expid,1])
+tau_r,tau_d,tau_p,tau_cent=find_tau(STF_T,STF[expid],ALLEQ[expid,1])
 plt.plot(STF_T,STF[expid],color='k',linewidth=0.1)
 plt.fill_between(STF_T,STF[expid],np.zeros(len(STF_T)),facecolor=[0.6,0.6,0.6])
 plt.plot([tau_d,tau_d],[0,STF[expid].max()],'r--',linewidth=2)
-plt.plot([tau_r,tau_r],[0,STF[expid].max()],'k--',linewidth=2)
-plt.plot([tau_p,tau_p],[0,STF[expid].max()],'y--',linewidth=2)
+plt.plot([tau_cent,tau_cent],[0,STF[expid].max()],'k--',linewidth=2)
+#plt.plot([tau_p,tau_p],[0,STF[expid].max()],'y--',linewidth=2)
 idx=time2correct(msft,threshold=0.3) #
 if idx:
     tau_det=(np.arange(102)*5+5)[idx]   #time to corrected Mw
@@ -672,8 +737,35 @@ plt.show()
 plt.savefig('Example_td_tr_tc_single_delay2.png')
 plt.show()
 
-#quck_plot_data(b_X1[1734],real_EQID[1734],ALLEQ,staloc_sort)
+#quck_plot_data(b_X1[1203],real_EQID[1734],ALLEQ,staloc_sort)
 #quck_plot_data(b_X1[6617],real_EQID[6617],ALLEQ,staloc_sort)
+
+#output .txt data for GMT plot
+b_X1=back_scale_X(X1,half=True)
+#Load station order file
+station_order_file='../Data/ALL_staname_order.txt' #this is the order in training(PGD_Chile_3400.npy)
+STA=np.genfromtxt(station_order_file,'S6')
+STA=np.array([sta.decode() for sta in STA])
+STA_info=np.genfromtxt('../data/Chile_GNSS.gflist',usecols=[0],skip_header=1,dtype='S6')
+STA_idx={sta.decode():nsta for nsta,sta in enumerate(STA_info)}
+staloc=np.genfromtxt('../data/Chile_GNSS.gflist') #station file (not include name)
+#Final result! this is the same order in training
+staloc_sort=staloc[np.array([STA_idx[i_STA] for i_STA in STA])][:,1:3]
+
+expid1=3533
+expid2=2880
+use_idx1=np.where(b_X1[expid1,-1,121:]!=0)[0]
+use_idx2=np.where(b_X1[expid2,-1,121:]!=0)[0]
+np.savetxt('/Users/timlin/Documents/Project/GMTplot/Chile/Example_rupt_PGD/example_station1.txt',staloc_sort[use_idx1],fmt='%f',delimiter=' ')
+np.savetxt('/Users/timlin/Documents/Project/GMTplot/Chile/Example_rupt_PGD/example_station2.txt',staloc_sort[use_idx2],fmt='%f',delimiter=' ')
+np.savetxt('/Users/timlin/Documents/Project/GMTplot/Chile/Example_rupt_PGD/example_STF.txt',np.hstack([STF_T.reshape(-1,1),STF[int(real_EQID[expid1])].reshape(-1,1)]),fmt='%f',delimiter=' ')
+exp_pred=np.hstack([(np.arange(102)*5+5).reshape(-1,1),predictions[expid1].reshape(-1,1),\
+                    predictions[expid2].reshape(-1,1),y1[expid1].reshape(-1,1) \
+                    ] ) #example prediction
+np.savetxt('/Users/timlin/Documents/Project/GMTplot/Chile/Example_rupt_PGD/example_prediction.txt',exp_pred,fmt='%f',delimiter=' ')
+np.savetxt('/Users/timlin/Documents/Project/GMTplot/Chile/Example_rupt_PGD/example_PGD1.txt',b_X1[expid1],fmt='%f',delimiter=' ')
+np.savetxt('/Users/timlin/Documents/Project/GMTplot/Chile/Example_rupt_PGD/example_PGD2.txt',b_X1[expid2],fmt='%f',delimiter=' ')
+
 #----------Single example plot for STF's duration, half duration and time-to-corrected Mw  END-------------
 
 
@@ -689,20 +781,22 @@ n_msft=29 #close to symmetric
 n_msft=1090 #cannot converge #467,  914,  976,  978, 1010, 1090, 1471, 1734, 1739, 1766, 1801 np.where(np.abs(misft[:,-1])>0.3)
 #n_msft=1190 #np.where(real_EQID==real_EQID[1090])
 sns.set()
-plt.figure(figsize=(8,6))
-n_msfts=[10,2598,29,1734] #6617 the same source as #1734 but converge
-n_msfts=[10,2598,29,6081] #6617 the same source as #1734 but converge
+#plt.figure(figsize=(8,6))
+plt.figure(figsize=(9,7))
+#n_msfts=[10,2598,29,1734] #6617 the same source as #1734 but converge  29,53,56
+#n_msfts=[10,29,53,56] #6617 the same source as #1734 but converge
+n_msfts=[202,221,108,8172] #6617 the same source as #1734 but converge   202late,93,100,221,225early?,65,69,94,138,174two asperities,78,108symmetric
 for i,n_msft in enumerate(n_msfts):
     msft=misft[n_msft]
     plt.subplot(2,2,i+1)
     plt.grid(False)
     expid=int(real_EQID[n_msft]) #example id (real id)
-    tau_r,tau_d,tau_p=find_tau(STF_T,STF[expid],ALLEQ[expid,1])
+    tau_r,tau_d,tau_p,tau_cent=find_tau(STF_T,STF[expid],ALLEQ[expid,1])
     plt.plot(STF_T,STF[expid],color='k',linewidth=0.1)
     plt.fill_between(STF_T,STF[expid],np.zeros(len(STF_T)),facecolor=[0.6,0.6,0.6])
     plt.plot([tau_d,tau_d],[0,STF[expid].max()],'r--',linewidth=2)
-    plt.plot([tau_r,tau_r],[0,STF[expid].max()],'k--',linewidth=2)
-    plt.plot([tau_p,tau_p],[0,STF[expid].max()],'y--',linewidth=2)
+    plt.plot([tau_cent,tau_cent],[0,STF[expid].max()],'y--',linewidth=2)
+#    plt.plot([tau_p,tau_p],[0,STF[expid].max()],'y--',linewidth=2)
     idx=time2correct(msft,threshold=0.3) #
     if idx:
         tau_det=(np.arange(102)*5+5)[idx]   #time to corrected Mw
@@ -716,11 +810,11 @@ for i,n_msft in enumerate(n_msfts):
     ax1.tick_params(pad=2)
     ax1.tick_params(axis='x',pad=5)
     if i==0:
-        plt.text(tau_d,STF[expid].max()*0.05,r'$\tau_d$',fontsize=18)
-        plt.text(tau_r,STF[expid].max()*0.05,r'$\tau_r$',fontsize=18)
-        plt.text(tau_p-20,STF[expid].max()*0.05,r'$\tau_p$',fontsize=18)
+        plt.text(tau_d,STF[expid].max()*0.05,r'$\tau_{dur}$',fontsize=18)
+        plt.text(tau_cent,STF[expid].max()*0.05,r'$\tau_{cent}$',fontsize=18)
+#        plt.text(tau_p-20,STF[expid].max()*0.05,r'$\tau_p$',fontsize=18)
         if idx:
-            plt.text(tau_det+0,STF[expid].max()*0.05,r'$\tau_c$',fontsize=18)
+            plt.text(tau_det-4,STF[expid].max()*0.05,r'$\tau_c$',fontsize=18)
     if i in [2,3]:
         plt.xlabel('Time (s)',fontsize=16,labelpad=1)
     plt.ylabel('$\dot \mathrm{M}$ (N-M/s)',fontsize=16,labelpad=1)
@@ -738,9 +832,10 @@ for i,n_msft in enumerate(n_msfts):
     textprops = dict(boxstyle='square', facecolor='white', alpha=0.9,pad=0.1)
     plt.text(np.min([515,tau_d*1.1])*0.85,y1[n_msft,-1,0],'M$_w$%3.1f'%(y1[n_msft,-1,0]),fontsize=14,bbox=textprops)
 
-plt.subplots_adjust(left=0.08,top=0.97,right=0.95,bottom=0.08,wspace=0.34,hspace=0.25)
+plt.subplots_adjust(left=0.09,top=0.97,right=0.94,bottom=0.08,wspace=0.32,hspace=0.22)
+#plt.show()
 
-plt.savefig('Example_td_tr_tc_merge_100percent.png',dpi=300)
+plt.savefig('Example_4figs_td_tr_tc_100percent.png',dpi=300)
 plt.show()
 #---------Merge 4 plots into one plot, example plot for STF's duration, half duration and time-to-corrected Mw END-----------
 
@@ -752,12 +847,16 @@ sav_tau_r=[]
 sav_tau_d=[]
 sav_tau_p=[]
 sav_tau_c=[]
+sav_tau_cent=[]
+sav_tau_M3real=[] #time when real Mw reaches the lower boundary (Mw-0.3)
 sav_ID=[]
 Threshold=0.3
 #Threshold=0.2
+
+#For testing dataset
 for n_msft,msft in enumerate(misft):
     expid=int(real_EQID[n_msft]) #example id (real id)
-    tau_r,tau_d,tau_p=find_tau(STF_T,STF[expid],ALLEQ[expid,1])
+    tau_r,tau_d,tau_p,tau_cent=find_tau(STF_T,STF[expid],ALLEQ[expid,1])
     idx=time2correct(msft,threshold=Threshold) #
     if idx:
         tau_det=(np.arange(102)*5+5)[idx]   #time to corrected Mw
@@ -766,15 +865,93 @@ for n_msft,msft in enumerate(misft):
         sav_tau_d.append(tau_d)
         sav_tau_p.append(tau_p)
         sav_tau_c.append(tau_det)
+        sav_tau_cent.append(tau_cent)
+        #find the time when Mw reaches to the lowest boundary of real Mw
+        tmpidx=np.where(y1[n_msft,:,0] >= (y1[n_msft,-1,0]-Threshold) )[0][0]
+        sav_tau_M3real.append((np.arange(102)*5+5)[tmpidx])
         sav_ID.append(n_msft)
 
+
+
+#For all 27200 dataset
+'''
+Rand_eqid=np.arange(27200)
+np.random.shuffle(Rand_eqid)
+for n_id,r_eqid in enumerate(Rand_eqid):
+    tmp_Mw=M02Mw( cumtrapz(STF[r_eqid],STF_T)[-1] )
+    tau_r,tau_d,tau_p,tau_cent=find_tau(STF_T,STF[r_eqid],tmp_Mw)
+    idx=True #
+    if idx:
+        tau_det=(np.arange(102)*5+5)[idx]   #time to corrected Mw
+        sav_mw.append(tmp_Mw)
+        sav_tau_r.append(tau_r)
+        sav_tau_d.append(tau_d)
+        sav_tau_p.append(tau_p)
+        sav_tau_cent.append(tau_cent)
+        #        sav_tau_c.append(tau_det)
+        sav_ID.append(r_eqid)
+'''
+
+
+
+'''
+plt.scatter(sav_tau_cent,sav_tau_c,c=sav_mw,s=20,cmap=plt.cm.jet)
+plt.plot([0,510],[0,510],'k--')
+plt.xlabel('Centroid (s)',fontsize=16)
+plt.ylabel('Corrected (s)',fontsize=16)
+clb=plt.colorbar()
+clb.set_label('Mw')
+plt.show()
+
+plt.scatter(sav_tau_p,sav_tau_c,c=sav_mw,s=20,cmap=plt.cm.jet)
+plt.plot([0,510],[0,510],'k--')
+plt.xlabel('Peak (s)',fontsize=16)
+plt.ylabel('Corrected (s)',fontsize=16)
+clb=plt.colorbar()
+clb.set_label('Mw')
+plt.show()
+'''
+
+#-------plot CC matrix -----------
+'''
+#put all the taus in pd format
+import pandas as pd
+taus=np.array([sav_tau_c,sav_tau_p,sav_tau_cent,sav_tau_d])
+df=pd.DataFrame(data=taus.T,columns=["corrected","peak","centroid","duration"])
+corr = df.corr()
+# Generate a mask for the upper triangle
+mask = np.triu(np.ones_like(corr, dtype=np.bool))
+
+f, ax = plt.subplots(figsize=(8., 6))
+heatmap = sns.heatmap(corr,
+                      square = True,
+#                      mask=mask,
+                      linewidths = .5,
+                      cmap = 'coolwarm',
+                      cbar_kws = {'shrink': .4,
+#                      'ticks' : [-1, -.5, 0, 0.5, 1]},
+                      'ticks' : [0.5, 0.6, 0.7, 0.8, 0.9,1]},
+                      vmin = 0.5,
+                      vmax = 1,
+                      annot = True,
+                      annot_kws = {'size': 14}
+                      )
+#add the column names as labels
+ax.set_yticklabels(corr.columns, rotation = 0,fontsize=16)
+ax.set_xticklabels(corr.columns,fontsize=16)
+sns.set_style({'xtick.bottom': True}, {'ytick.left': True})
+'''
+#-------plot CC matrix END-----------
+
+sns.set()
 plt.figure(figsize=(8.3,4.7))
 plt.subplot(1,2,1)
 plt.plot(sav_mw,sav_tau_d,'rx',mew=0.3,markersize=6)
-plt.plot(sav_mw,sav_tau_p,'y*',markersize=8)
-plt.plot(sav_mw,sav_tau_c,'b.',markersize=5)
-plt.plot(np.arange(np.min(sav_mw),np.max(sav_mw),0.1),Tr(np.arange(np.min(sav_mw),np.max(sav_mw),0.1)),'k-')
-lg=plt.legend([r'$\tau_d$',r'$\tau_p$',r'$\tau_c$',r'$\tau_r$'],fontsize=15)
+plt.plot(sav_mw,sav_tau_p,'g.',markersize=4)
+#plt.plot(sav_mw,sav_tau_c,'b.',markersize=5)
+#plt.plot(np.arange(np.min(sav_mw),np.max(sav_mw),0.1),Tr(np.arange(np.min(sav_mw),np.max(sav_mw),0.1)),'k-')
+#lg=plt.legend([r'$\tau_d$',r'$\tau_p$',r'$\tau_c$',r'$\tau_r$'],fontsize=15)
+lg=plt.legend([r'$\tau_d$',r'$\tau_p$'],fontsize=15)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.xlim([7.4,9.6])
@@ -789,11 +966,12 @@ plt.grid(True)
 #plt.show()
 
 #Plot boxes
-#group tau_d, tau_c by Mw
-def group_tau(tau_c,tau_d,tau_p,Mws,G):
+#group tau_d, tau_c by Mw For testing dataset
+def group_tau(tau_c,tau_d,tau_p,tau_M3real,Mws,G):
     #tau_c:time to corrected Mw, [1-d array]
     #tau_d:duration, [1-d array]
     #tau_p:time to peak M rate, [1-d array]
+    #tau_M3real:time to real Mw-0.3
     #Mws:magnitude corresponded to tau_c,tau_d [1-d array]
     #All these above should be the same shape
     #G: grouped Mw, [1-d array]
@@ -801,6 +979,7 @@ def group_tau(tau_c,tau_d,tau_p,Mws,G):
     G_tau_c={}
     G_tau_d={}
     G_tau_p={}
+    G_tau_M3real={}
     for i,Mw in enumerate(Mws):
         #assign the right Mw group for tau_c (and tau_d, the same)
         idx=np.where( np.abs(Mw-G)==np.min(np.abs(Mw-G)))[0][0] #the group
@@ -808,25 +987,53 @@ def group_tau(tau_c,tau_d,tau_p,Mws,G):
             G_tau_c[idx].append(tau_c[i])
             G_tau_d[idx].append(tau_d[i])
             G_tau_p[idx].append(tau_p[i])
+            G_tau_M3real[idx].append(tau_M3real[i])
         except:
             G_tau_c[idx]=[tau_c[i]]
             G_tau_d[idx]=[tau_d[i]]
             G_tau_p[idx]=[tau_p[i]]
-    return G_tau_c,G_tau_d,G_tau_p
+            G_tau_M3real[idx]=[tau_M3real[i]]
+    return G_tau_c,G_tau_d,G_tau_p,G_tau_M3real
+
+
+#group tau_d, tau_c by Mw
+'''
+def group_tau(tau_d,tau_p,Mws,G):
+    #tau_c:time to corrected Mw, [1-d array]
+    #tau_d:duration, [1-d array]
+    #tau_p:time to peak M rate, [1-d array]
+    #Mws:magnitude corresponded to tau_c,tau_d [1-d array]
+    #All these above should be the same shape
+    #G: grouped Mw, [1-d array]
+    tau_d=np.array(tau_d);tau_p=np.array(tau_p);Mws=np.array(Mws);G=np.array(G)
+    G_tau_d={}
+    G_tau_p={}
+    for i,Mw in enumerate(Mws):
+        #assign the right Mw group for tau_c (and tau_d, the same)
+        idx=np.where( np.abs(Mw-G)==np.min(np.abs(Mw-G)))[0][0] #the group
+        try:
+            G_tau_d[idx].append(tau_d[i])
+            G_tau_p[idx].append(tau_p[i])
+        except:
+            G_tau_d[idx]=[tau_d[i]]
+            G_tau_p[idx]=[tau_p[i]]
+    return G_tau_d,G_tau_p
+'''
 
 #import matplotlib
 #matplotlib.rc_file_defaults()
-plt.subplot(1,2,2)
+
 #plt.figure()
-out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[0.,0.0,0.0],mew=0.1, marker='d',markersize=2)
 Gp_mw=np.arange(7.5,9.7,0.3)
-G_tau_c,G_tau_d,G_tau_p=group_tau(sav_tau_c,sav_tau_d,sav_tau_p,sav_mw,G=Gp_mw)
+G_tau_c,G_tau_d,G_tau_p,G_tau_M3real=group_tau(sav_tau_c,sav_tau_d,sav_tau_p,sav_tau_M3real,sav_mw,G=Gp_mw)
+#G_tau_d,G_tau_p=group_tau(sav_tau_d,sav_tau_p,sav_mw,G=Gp_mw)
 box_tau_c=[]
 box_tau_d=[]
 box_tau_p=[]
 box_tau_c_d=[] #tau_c/tau_d
 box_tau_c_p=[] #tau_c/tau_p
-box_tau_p_d=[] #tau_c/tau_p
+box_tau_p_d=[] #tau_p/tau_d
+box_tau_c_M3real=[]
 for ig in range(len(Gp_mw)):
     box_tau_c.append(G_tau_c[ig])
     box_tau_d.append(G_tau_d[ig])
@@ -834,12 +1041,24 @@ for ig in range(len(Gp_mw)):
     box_tau_c_d.append(np.array(G_tau_c[ig])/np.array(G_tau_d[ig]))
     box_tau_c_p.append(np.array(G_tau_c[ig])/np.array(G_tau_p[ig]))
     box_tau_p_d.append(np.array(G_tau_p[ig])/np.array(G_tau_d[ig])) #the original
-#    box_tau_p_d.append(np.array(G_tau_d[ig])/np.array(G_tau_p[ig]))
+    box_tau_c_M3real.append(np.array(G_tau_c[ig])/np.array(G_tau_M3real[ig]) )
 
-sns.set()
+
+
+#plt.subplot(1,2,2)
+plt.figure()
 wd=0.07
+#wd=0.1
+max_whiskers1=[]
+max_whiskers2=[]
+max_whiskers3=[]
+out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[1.,1.0,1.0],mew=0.1, marker='d',markersize=2)
 #wd=0.15
-bp=plt.boxplot(box_tau_c_d,positions=Gp_mw-wd,widths=wd,patch_artist=True,flierprops=out_dots)
+bp=plt.boxplot(box_tau_c_d,positions=Gp_mw-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+whiskerloc=[item.get_ydata() for item in bp['whiskers']] #get the upper value of whiskers for plotting text
+for nw in range(int(len(whiskerloc)/2)):
+    max_whiskers1.append( np.max(whiskerloc[nw*2+1]) )
+
 for patch in bp['boxes']:
     patch.set_facecolor([1,0,0.])
     patch.set_edgecolor([0,0.,0])
@@ -849,9 +1068,15 @@ for patch in bp['boxes']:
 for medn in bp['medians']:
     medn.set_color([0,0,0])
 
-bp=plt.boxplot(box_tau_c_p,positions=Gp_mw+wd*0,widths=wd,patch_artist=True,flierprops=out_dots)
+#bp=plt.boxplot(box_tau_c_p,positions=Gp_mw+wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+bp=plt.boxplot(box_tau_c_M3real,positions=Gp_mw+wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+whiskerloc=[item.get_ydata() for item in bp['whiskers']] #get the upper value of whiskers for plotting text
+for nw in range(int(len(whiskerloc)/2)):
+    max_whiskers2.append( np.max(whiskerloc[nw*2+1]) )
+
 for patch in bp['boxes']:
     patch.set_facecolor([0.2,0.50588,0.867])
+#    patch.set_facecolor([0.,0.7,0.])
 #    patch.set_facecolor([1,0,0.])
     patch.set_edgecolor([0,0.,0])
     patch.set_linewidth(0.5)
@@ -860,8 +1085,12 @@ for patch in bp['boxes']:
 for medn in bp['medians']:
     medn.set_color([0,0,0])
 
-
+'''
 bp=plt.boxplot(box_tau_p_d,positions=Gp_mw+wd,widths=wd,patch_artist=True,flierprops=out_dots)
+whiskerloc=[item.get_ydata() for item in bp['whiskers']] #get the upper value of whiskers for plotting text
+for nw in range(int(len(whiskerloc)/2)):
+    max_whiskers3.append( np.max(whiskerloc[nw*2+1]) )
+
 for patch in bp['boxes']:
     patch.set_facecolor([0.,0.7,0.])
     #    patch.set_facecolor([1,0,0.])
@@ -871,6 +1100,10 @@ for patch in bp['boxes']:
 
 for medn in bp['medians']:
     medn.set_color([0,0,0])
+'''
+
+max_whiskers=np.vstack([max_whiskers1,max_whiskers2])
+max_whiskers=np.max(max_whiskers,axis=0)
 
 #wd=0.07
 #bp=plt.boxplot(box_tau_c,positions=Gp_mw-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
@@ -890,7 +1123,7 @@ for medn in bp['medians']:
 #----make legned manually------
 out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[0.,0.0,0.0],mew=0.1, marker='d',markersize=0)
 tmpy=np.random.randn(1000)*0.1
-bp=plt.boxplot([tmpy+4.5],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
+bp=plt.boxplot([tmpy+3.8],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
 for patch in bp['boxes']:
     patch.set_facecolor([1,0,0])
     patch.set_edgecolor([0,0.,0])
@@ -899,7 +1132,7 @@ for patch in bp['boxes']:
 for medn in bp['medians']:
     medn.set_color([0,0,0])
 
-bp=plt.boxplot([tmpy+3.8],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
+bp=plt.boxplot([tmpy+3.1],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
 for patch in bp['boxes']:
     patch.set_facecolor([0.2,0.50588,0.867])
     patch.set_edgecolor([0,0.,0])
@@ -908,38 +1141,50 @@ for patch in bp['boxes']:
 for medn in bp['medians']:
     medn.set_color([0,0,0])
 
-bp=plt.boxplot([tmpy+3.1],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
-for patch in bp['boxes']:
-    patch.set_facecolor([0.,0.7,0.])
-    patch.set_edgecolor([0,0.,0])
-    patch.set_linewidth(0.5)
-
-for medn in bp['medians']:
-    medn.set_color([0,0,0])
+#bp=plt.boxplot([tmpy+3.4],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
+#for patch in bp['boxes']:
+#    patch.set_facecolor([0.,0.7,0.])
+#    patch.set_edgecolor([0,0.,0])
+#    patch.set_linewidth(0.5)
+#
+#for medn in bp['medians']:
+#    medn.set_color([0,0,0])
 
 #plt.text(7.5,4.4,r'$\tau_c$/$\tau_d$',fontsize=18)
 #plt.text(7.5,3.7,r'$\tau_c$/$\tau_p$',fontsize=18)
 #plt.text(7.5,3.0,r'$\tau_p$/$\tau_d$',fontsize=18)
-plt.text(7.5,4.4,r'$\tau_{correct}$/$\tau_{duration}$',fontsize=16)
-plt.text(7.5,3.7,r'$\tau_{correct}$/$\tau_{peak}$',fontsize=16)
-plt.text(7.5,3.0,r'$\tau_{peak}$/$\tau_{duration}$',fontsize=16)
+plt.text(7.5,3.7,r'$\tau_{correct}$/$\tau_{duration}$',fontsize=16)
+plt.text(7.5,3.0,r'$\tau_{correct}$/$\tau_{(real-0.3)}$',fontsize=16)
+#plt.text(7.5,3.3,r'$\tau_{peak}$/$\tau_{duration}$',fontsize=16)
 #plt.text(7.5,3.0,r'$\tau_{duration}$/$\tau_{peak}$',fontsize=16)
 #----make legned manually END------
+
+#Add text for # in each groups
+props = dict(boxstyle='round', facecolor='white', alpha=0.5,pad=0.2)
+for i in range(len(Gp_mw)):
+    if i==0:
+        plt.text(Gp_mw[i],max_whiskers[i]+0.1,'n=%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props)
+    else:
+        plt.text(Gp_mw[i],max_whiskers[i]+0.1,'%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props )
+
+
 plt.xticks(Gp_mw,['%3.1f'%(i) for i in Gp_mw ],fontsize=14)
 plt.yticks(fontsize=14)
 ax1=plt.gca()
 ax1.tick_params(pad=0.8)
 plt.xlim([7.3,9.8])
 #plt.ylim([-0.05,2.47])
-plt.ylim([-0.05,5.05])
+#plt.ylim([-0.05,5.3])
+plt.ylim([-0.05,4.2])
 #plt.text(7.45,plt.ylim()[1]*0.87,'misfit=%3.1f'%(Threshold),fontsize=16)
 plt.xlabel('M$_w$',fontsize=18,labelpad=0.5)
 plt.ylabel('Ratio',fontsize=18,labelpad=0.5)
 #plt.ylabel(r'$\tau_c$/$\tau_d$',fontsize=18,labelpad=0.5)
 
-plt.subplots_adjust(left=0.095,top=0.97,right=0.96,bottom=0.092,wspace=0.19,hspace=0.25)
-
-plt.savefig('tau_ratio_misfit0.3_100percent.png',dpi=300)
+#plt.subplots_adjust(left=0.095,top=0.97,right=0.96,bottom=0.092,wspace=0.19,hspace=0.25)
+plt.show()
+#plt.savefig('tau_ratio_misfit0.3_100percent.png',dpi=300)
+#plt.savefig('tau_100percent.png',dpi=300)
 
 #-----------------Calculate tau_c, tau_d, tau_r WRS to Mw END---------------------------------
 
@@ -1006,9 +1251,9 @@ b_X1=back_scale_X(X1,half=True)
 station_order_file='../Data/ALL_staname_order.txt' #this is the order in training(PGD_Chile_3400.npy)
 STA=np.genfromtxt(station_order_file,'S6')
 STA=np.array([sta.decode() for sta in STA])
-STA_info=np.genfromtxt('../Chile_GNSS.gflist',usecols=[0],skip_header=1,dtype='S6')
+STA_info=np.genfromtxt('../data/Chile_GNSS.gflist',usecols=[0],skip_header=1,dtype='S6')
 STA_idx={sta.decode():nsta for nsta,sta in enumerate(STA_info)}
-staloc=np.genfromtxt('../Chile_GNSS.gflist') #station file (not include name)
+staloc=np.genfromtxt('../data/Chile_GNSS.gflist') #station file (not include name)
 #Final result! this is the same order in training
 staloc_sort=staloc[np.array([STA_idx[i_STA] for i_STA in STA])][:,1:3]
 
@@ -1114,7 +1359,7 @@ def D2PGD(data):
     return(PGD)
 
 
-data_path='../chile_GNSS'
+data_path='/Users/timlin/Documents/Project/NASA/LSTM_training/Chile/chile_GNSS'
 EQs=['Illapel2015','Iquique2014','Maule2010','Melinka2016','Iquique_aftershock2014']
 EQs_lb=['Illapel 2015 (M$_w$8.3)','Iquique 2014 (M$_w$8.1)','Maule 2010 (M$_w$8.8)','Melinka 2016 (M$_w$7.6)','Iquique_aft 2014 (M$_w$7.7)'] #label for plotting
 STFs=['Illapel.mr.txt','Iquique.mr.txt','Maule.mr.txt','Melinka.mr.txt','Iquique_aft.mr.txt']
@@ -1130,14 +1375,14 @@ EQloc=[(-71.654,-31.57,29),
        ]
 sampl=5 #5 seconds of sampling rate
 
-station_order_file='../Data/ALL_staname_order.txt' #this is the order in training (PGD_Chile_3400.npy)
+station_order_file=home+'/data/'+'ALL_staname_order.txt' #this is the order in training (PGD_Chile_3400.npy)
 STA=np.genfromtxt(station_order_file,'S6')
 STA=np.array([sta.decode() for sta in STA]) #PGD should sorted in this order
 
 #Load GF_list to get staloc
-STA_info=np.genfromtxt('../Chile_GNSS.gflist',usecols=[0],skip_header=1,dtype='S6')
+STA_info=np.genfromtxt(home+'/data/'+'Chile_GNSS.gflist',usecols=[0],skip_header=1,dtype='S6')
 STA_idx={sta.decode():nsta for nsta,sta in enumerate(STA_info)}
-staloc=np.genfromtxt('../Chile_GNSS.gflist') #station file (not include name)
+staloc=np.genfromtxt(home+'/data/'+'Chile_GNSS.gflist') #station file (not include name)
 tmp_order=np.array([STA_idx[tmpsta] for tmpsta in STA])
 staloc_sorted=staloc[tmp_order,1:3]
 
@@ -1232,7 +1477,8 @@ for ieq,eq in enumerate(EQs):
             #PGD_resampled=np.interp(T,t,sav_PGD[idx[0]])
             PGD_resampled=np.interp(T,sav_t[idx[0]],sav_PGD[idx[0]])
             X_data[:,n]=PGD_resampled.copy()
-            X_data[:,n+len(STA)]=np.ones(len(T)) * 0.5 #Station existence code is 0.5 instead of 1
+            X_data[:,n+len(STA)]=np.ones(len(T)) * 0.5 #Station existence code is 0.5 instead of 1!!!!!!!!!!!!!!!
+#            X_data[:,n+len(STA)]=np.ones(len(T))  #Station existence code is 1 for Test80 instead of 0.5!!!!!!!!!!!!!!!
         #X_data.append(PGD_resampled)
         #plt.plot(T,PGD_resampled,'--',color=[0.5,0.5,0.5])
         #plt.show()
@@ -1311,7 +1557,7 @@ for neq in range(len(predictions_real)):
     bp=plt.boxplot(sav_Y_box,positions=sav_X_box,widths=1,patch_artist=True,flierprops=out_dots) #flierprops=red_square
     plt.plot(sav_X_box,np.array([np.median(md) for md in sav_Y_box]),'r-',markersize=8,markeredgecolor=[1,0,0],markerfacecolor='None',mew=0.1)
     #plot the prediction only
-    plt.plot(np.arange(102)*5.0+5,predictions_real[neq,:,0],'b')
+#    plt.plot(np.arange(102)*5.0+5,predictions_real[neq,:,0],'b')
     ax1.plot([T_all.min(),T_all.max()],[EQMw[neq],EQMw[neq]],'k--')
     #ax1.plot([T_all.min(),T_all.max()],[EQMw[neq]-0.3,EQMw[neq]-0.3],'b--',linewidth=0.5)
     #ax1.plot([T_all.min(),T_all.max()],[EQMw[neq]+0.3,EQMw[neq]+0.3],'b--',linewidth=0.5)
@@ -1392,7 +1638,7 @@ for neq in range(len(predictions_real)):
     ax2.tick_params(direction='out', length=2.5, width=1.2, colors='k',pad=1)
     ax2.grid(False)
     if neq==2:
-        ax2.set_xlabel('Seconds since p-wave arrival',fontsize=14)
+        ax2.set_xlabel('Seconds since p-wave arrival',fontsize=15)
     else:#small subplots
         ax2.set_xlabel('Seconds since p-wave arrival',fontsize=20)
         plt.xticks(fontsize=16)
@@ -1405,7 +1651,7 @@ for neq in range(len(predictions_real)):
         if sav_X_data_orig[neq][-1,nsta]!=0:
             plt.plot(T,sav_X_data_orig[neq][:,nsta]*1,'--',color=[0.5,0.5,0.5],linewidth=0.8) #pad zero for the 0 sec
     if neq==2:
-        plt.text(400,maxPGD+maxPGD*0.04,'PGD$_m$$_a$$_x$=%3.2f m'%(maxPGD),fontsize=10)
+        plt.text(370,maxPGD+maxPGD*0.04,'PGD$_m$$_a$$_x$=%3.2f m'%(maxPGD),fontsize=12)
     else: #small subplots
         plt.text(350,maxPGD+maxPGD*0.04,'PGD$_m$$_a$$_x$=%3.2f m'%(maxPGD),fontsize=15)
     plt.ylim([0,maxPGD*mul_PGD_scale[neq]])
@@ -1420,13 +1666,13 @@ for neq in range(len(predictions_real)):
     plt.grid(False)
     ###END PGD###
     #Also plot STF
-    stf=np.genfromtxt('../Chile_USGS_STF/'+STFs[neq])
+    stf=np.genfromtxt(home+'/data/STF_realEQs/'+STFs[neq])
     t_interp=np.arange(0,T_all.max(),1)
     stf_interp=np.interp(t_interp,stf[:,0],stf[:,1])
     idx_plot=np.where(stf_interp>0)[0]
     scal_stf=maxPGD*mul_PGD_scale[neq]*0.2/stf_interp.max()
     plt.plot(t_interp[idx_plot],stf_interp[idx_plot]*scal_stf,color=[1,0,1])
-#    plt.savefig('EQ_range_%s.png'%(neq+1),dpi=600)
+    plt.savefig('EQ_range_%s.png'%(neq+1),dpi=600)
     plt.show()
     plt.clf()
 
