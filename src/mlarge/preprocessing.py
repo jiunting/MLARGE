@@ -67,6 +67,7 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
     import numpy as np
     from mudpy import viewFQ
     from scipy.integrate import cumtrapz
+    import os,glob
     
     def M02Mw(M0):
         Mw=(2.0/3)*np.log10(M0*1e7)-10.7 #M0 input is dyne-cm, convert to N-M by 1e7
@@ -87,7 +88,8 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
     ruptures.sort()
     for rupt in ruptures:
         T,sumMw=get_accM0(ruptfile=rupt,T=tcs_samples)
-        np.save(outdir+'/'+project_name+'.'+ID+'.npy',sumMw)
+        eqid=rupt.split('/')[-1].split('.')[1]
+        np.save(outdir+'/'+project_name+'.'+eqid+'.npy',sumMw)
         
     
 
