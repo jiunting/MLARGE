@@ -445,6 +445,7 @@ def train(files,train_params):
     X_test_Z=X_valid_test_Z[test_idx]
     y_test=y_valid_test[test_idx]
     print('Total training data, labels=',len(X_train_E),len(y_train))
+    print(X_train_E,y_train)
     print('Total validation data, labels=',len(X_valid_E),len(y_valid))
     print('Total test data, labels=',len(X_test_E),len(y_test))
     
