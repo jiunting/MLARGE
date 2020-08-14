@@ -14,6 +14,7 @@ import numpy as np
 #============data preparation===============
 save_data_from_FQ=True
 gen_list=True #generate abspath list file for MLARGE
+EQinfo=True  #generate EQinfo file 
 #these paths are same as FQs path in Mudpy
 home='/projects/tlalollin/jiunting/Fakequakes/'
 project_name='Chile_full_new'
@@ -21,7 +22,8 @@ run_name='subduction'
 tcs_samples=np.arange(5,515,5)
 outdir_X='Chile_full_ENZ'
 outdir_y='Chile_full_y'
-outdir_list='Chile_full_Xylist'
+out_list='Chile_full_Xylist'
+out_EQinfo='Chile_full_SRC'
 GFlist='Chile_GNSS.gflist'
 Sta_ordering='ALL_staname_order.txt'
 
@@ -35,7 +37,11 @@ if save_data_from_FQ:
     
 
 if gen_list:
-    preprocessing.gen_Xydata_list(outdir_X,outdir_y,outdir=outdir_list)
+    preprocessing.gen_Xydata_list(outdir_X,outdir_y,outname=out_list)
+
+if EQinfo:
+    preprocessing.get_EQinfo(home,project_name,run_name,outname=out_EQinfo)
+
 
 
 '''

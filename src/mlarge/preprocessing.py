@@ -93,7 +93,7 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
     
 
 
-def gen_Xydata_list(X_dirs,y_dirs,outdir='Datalist'):
+def gen_Xydata_list(X_dirs,y_dirs,outname='Datalist'):
     #make data list for MLARGE training
     #dirs can be multipath
     import glob
@@ -132,6 +132,71 @@ def gen_Xydata_list(X_dirs,y_dirs,outdir='Datalist'):
     OUTN.close()
     OUTZ.close()
     OUTy.close()
+    
+    
+def get_EQinfo(home,project_name,run_name,outname='EQinfo'):
+    import glob
+    import numpy as np
+    
+    def get_source_Info(logfile):
+        #Input log file path from the rupture directory
+        #output hypo lon,lat
+        IN1=open(logfile,'r')
+        for line in IN1.readlines():
+            #if 'Target magnitude' in line:
+            #    Tmw.append(float(line.split()[3]))
+            #    continue
+            if 'Actual magnitude' in line:
+                Mw=float(line.split()[3])
+                #mw.append(float(line.split()[3]))
+                continue
+            if 'Hypocenter (lon,lat,z[km])' in line:
+                Hypo_xyz=line.split(':')[-1].replace('(','').replace(')','').strip().split(',')
+                #print Hypo_xyz
+                #Hypo.append([ float(Hypo_xyz[0]),float(Hypo_xyz[1]),float(Hypo_xyz[2]) ])
+                continue
+                #break
+            if 'Centroid (lon,lat,z[km])' in line:
+                Cent_xyz=line.split(':')[-1].replace('(','').replace(')','').strip().split(',')
+                #Cent.append([ float(Cent_xyz[0]),float(Cent_xyz[1]),float(Cent_xyz[2]) ])
+                break
+        IN1.close()
+        return Mw,float(Hypo_xyz[0]),float(Hypo_xyz[1]),float(Hypo_xyz[2]),float(Cent_xyz[0]),float(Cent_xyz[1]),float(Cent_xyz[2])
+    
+    def get_hyposlip(rupt_file,eqlon,eqlat):
+        A=np.genfromtxt(rupt_file)
+        lon=A[:,1]
+        lat=A[:,2]
+        SS=A[:,8]
+        DS=A[:,9]
+        Slip=(SS**2.0+DS**2.0)**0.5
+        hypo_misft=np.abs(lon-eqlon)**2.0+np.abs(lat-eqlat)**2.0
+        hypoidx=np.where(hypo_misft==np.min(hypo_misft))[0][0]
+        hyposlip=Slip[hypoidx]
+        return hyposlip, Slip.max()
+    
+    OUT1=open(outname+'.EQinfo')
+    logs=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*log')
+    logs.sort()
+    rupts=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*rupt')
+    rupts.sort()
+    for n,logfile in enumerate(logs):
+        if n==0:
+            OUT1.write('#Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip\n')
+        ID='%06d'%(n)
+        Mw,eqlon,eqlat,eqdep,cenlon,cenlat,cendep=get_source_Info(logfile)
+        hypo_slip,max_slip=get_hyposlip(rupts[n],eqlon,eqlat)
+        OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
+                                                                        cenlat,cendep,hypo_slip,max_slip))
+    OUT1.close()
+        
+    
+    
+    
+    
+    
+    
+    
     
     
     
