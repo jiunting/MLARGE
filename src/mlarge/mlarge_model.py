@@ -428,6 +428,7 @@ def train(files,train_params):
     X_train_N=N[train_idx]
     X_train_Z=Z[train_idx]
     y_train=y[train_idx]
+    EQinfo_train=EQinfo[train_idx]
 
     X_valid_test_E=E[valid_and_test_idx]
     X_valid_test_N=N[valid_and_test_idx]
@@ -440,11 +441,13 @@ def train(files,train_params):
     X_valid_N=X_valid_test_N[valid_idx]
     X_valid_Z=X_valid_test_Z[valid_idx]
     y_valid=y_valid_test[valid_idx]
+    EQinfo_valid=EQinfo[valid_idx]
 
     X_test_E=X_valid_test_E[test_idx]
     X_test_N=X_valid_test_N[test_idx]
     X_test_Z=X_valid_test_Z[test_idx]
     y_test=y_valid_test[test_idx]
+    EQinfo_test=EQinfo[test_idx]
     print('Total training data, labels=',len(X_train_E),len(y_train))
     print(X_train_E,y_train)
     print('Total validation data, labels=',len(X_valid_E),len(y_valid))
