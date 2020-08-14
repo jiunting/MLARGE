@@ -492,8 +492,8 @@ def train(files,train_params):
     #build generator
     Dpath='Path_defined_in_file'
     gtrain=feature_gen(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=7.0,save_ID=False,shuffle=True) #Use the "flat y"
-    gvalid=feature_gen(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=7.0,save_ID='Run%d_valid_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
-    gtest=feature_gen(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=7.0,save_ID='Run%d_test_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
+    gvalid=feature_gen(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=7.0,save_ID='Run%s_valid_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
+    gtest=feature_gen(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=7.0,save_ID='Run%s_test_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
 
     #check file/dir exist,otherwise mkdir
     if not(os.path.exists('./Test'+Testnum)):
