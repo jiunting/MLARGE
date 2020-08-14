@@ -277,7 +277,7 @@ class feature_gen(keras.utils.Sequence):
                 eqlon=eqinfo[2]
                 eqlat=eqinfo[3]
                 #eqlon,eqlat=get_hypo(logfile)
-                print('ID=%s, ID_from_EQinfo=%s eqlon,eqlat=%f %f'%(E[int(rndEQidx[0])],eqinfo[0],eqlon,eqlat))
+                print('rndEQIDX=%s,ID=%s, ID_from_EQinfo=%s eqlon,eqlat=%f %f'%(int(rndEQidx[0]),E[int(rndEQidx[0])],eqinfo[0],eqlon,eqlat))
                 #########################################################
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=8)==False:
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=5)==False: #This is for Test#48, and Test#49
