@@ -228,6 +228,7 @@ class feature_gen(keras.utils.Sequence):
                         break
                     #checkMw=get_mw(logfile)
                     checkMw=y[int(rndEQidx[0])]
+                    print('checkMw,Mwfiter',checkMw,Mwfilter)
                     if checkMw>=Mwfilter:
                         break
                 if Dpath==None:
@@ -448,7 +449,6 @@ def train(files,train_params):
     print('Total test data=',len(X_test_E))
     
     
-
     #Build structure
     HP=train_params['Neurons']
     Drops=train_params['Drops']
@@ -485,7 +485,7 @@ def train(files,train_params):
     network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[6])))
     network.add(layers.LeakyReLU(alpha=0.1))
     network.add(layers.Dropout(Drops[1]))
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(1,activation='relu'))) 
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(1,activation='relu')))
     network.summary()
     network.compile(loss=Loss_func,optimizer='adam')
 
