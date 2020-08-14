@@ -175,7 +175,7 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo'):
         hyposlip=Slip[hypoidx]
         return hyposlip, Slip.max()
     
-    OUT1=open(outname+'.EQinfo')
+    OUT1=open(outname+'.EQinfo','w')
     logs=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*log')
     logs.sort()
     rupts=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*rupt')

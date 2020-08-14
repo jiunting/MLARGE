@@ -8,13 +8,14 @@ Created on Thu Aug 13 12:55:51 2020
 
 #control file for MLARGE
 from mlarge import preprocessing
+from mlarge import mlarge_model
 import numpy as np
 
 
 #============data preparation===============
-save_data_from_FQ=True
-gen_list=True #generate abspath list file for MLARGE
-EQinfo=True  #generate EQinfo file 
+save_data_from_FQ=False
+gen_list=False #generate abspath list file for MLARGE
+gen_EQinfo=False  #generate EQinfo file 
 #these paths are same as FQs path in Mudpy
 home='/projects/tlalollin/jiunting/Fakequakes/'
 project_name='Chile_full_new'
@@ -39,15 +40,18 @@ if save_data_from_FQ:
 if gen_list:
     preprocessing.gen_Xydata_list(outdir_X,outdir_y,outname=out_list)
 
-if EQinfo:
+if gen_EQinfo:
     preprocessing.get_EQinfo(home,project_name,run_name,outname=out_EQinfo)
 
 
 
-'''
-info_files={
+
+
+
+files={
         'GFlist':'Chile_GNSS.gflist', #GFlist for Fakequakes
         'Sta_ordering':'ALL_staname_order.txt', #ordering for features X
+        'EQinfo':'Chile_full_SRC.EQinfo',
         'E':'E_full_newEQlist.txt', #list of E data
         'N':'N_full_newEQlist.txt',
         'Z':'Z_full_newEQlist.txt',
@@ -71,4 +75,12 @@ train_params={
         'Loss_func':'mse', #can be default loss function string or self defined loss
         }
 
-'''
+
+mlarge_model.train(files,train_params)
+
+
+
+
+
+
+
