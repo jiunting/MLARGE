@@ -98,6 +98,10 @@ def gen_Xydata_list(X_dirs,y_dirs,outdir='Datalist'):
     #dirs can be multipath
     import glob
     #X_dirs=['/projects/tlalollin/jiunting/Fakequakes/run/Chile_full_new_ENZ']
+    if not (type(X_dirs) is list):
+        X_dirs=[X_dirs]
+    if not (type(y_dirs) is list):
+        y_dirs=[y_dirs]
     EE=[]
     NN=[]
     ZZ=[]

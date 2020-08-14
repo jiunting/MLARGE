@@ -13,6 +13,7 @@ import numpy as np
 
 #============data preparation===============
 save_data_from_FQ=True
+gen_list=True #generate abspath list file for MLARGE
 #these paths are same as FQs path in Mudpy
 home='/projects/tlalollin/jiunting/Fakequakes/'
 project_name='Chile_full_new'
@@ -24,8 +25,6 @@ outdir_list='Chile_full_Xylist'
 GFlist='Chile_GNSS.gflist'
 Sta_ordering='ALL_staname_order.txt'
 
-
-gen_list=True #generate abspath list file for MLARGE
 
 
 
