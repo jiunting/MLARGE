@@ -293,7 +293,7 @@ class feature_gen(keras.utils.Sequence):
                 ##########save the picked EQ name#############
                 sav_picked_EQ.append(real_EQid)
                 #-----What labeling do you want to use??-----
-                if y=='flat':
+                if y is 'flat':
                     #1.use the "flat" label (assuming strong determinism)
                     y_batch.append(y[int(rndEQidx[0])][-1] * np.ones(tmp_E.shape[0],1)) #the flat label
                 else:
