@@ -434,6 +434,7 @@ def train(files,train_params):
     X_valid_test_N=N[valid_and_test_idx]
     X_valid_test_Z=Z[valid_and_test_idx]
     y_valid_test=y[valid_and_test_idx]
+    EQinfo_valid_test=EQinfo[valid_and_test_idx]
     #Split the valid+test again to 0.2 and 0.1
     valid_idx,test_idx=train_test_split(np.arange(0,len(valid_and_test_idx)),test_size=0.1/0.3, random_state=16) #0.1 out of 0.3 is the testing dataset; 0.2 out of 0.3 is the validation
 
@@ -441,17 +442,19 @@ def train(files,train_params):
     X_valid_N=X_valid_test_N[valid_idx]
     X_valid_Z=X_valid_test_Z[valid_idx]
     y_valid=y_valid_test[valid_idx]
-    EQinfo_valid=EQinfo[valid_idx]
+    EQinfo_valid=EQinfo_valid_test[valid_idx]
 
     X_test_E=X_valid_test_E[test_idx]
     X_test_N=X_valid_test_N[test_idx]
     X_test_Z=X_valid_test_Z[test_idx]
     y_test=y_valid_test[test_idx]
-    EQinfo_test=EQinfo[test_idx]
+    EQinfo_test=EQinfo_valid_test[test_idx]
     print('Total training data, labels=',len(X_train_E),len(y_train))
     print(X_train_E,y_train)
     print('Total validation data, labels=',len(X_valid_E),len(y_valid))
+    print(X_valid_E,y_valid)
     print('Total test data, labels=',len(X_test_E),len(y_test))
+    print(X_test_E,y_test)
     
     
     #Build structure
@@ -498,9 +501,9 @@ def train(files,train_params):
     Dpath='Path_defined_in_file'
     #print('Training_X inp:',X_train_E)
     #print('Training_y inp:',y_train)
-    gtrain=feature_gen(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=7.0,save_ID=False,shuffle=True) #Use the "flat y"
-    gvalid=feature_gen(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=7.0,save_ID='Run%s_valid_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
-    gtest=feature_gen(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=7.0,save_ID='Run%s_test_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
+    gtrain=feature_gen(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=7.0,save_ID=False,shuffle=True) #Use the "flat y"
+    gvalid=feature_gen(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=7.0,save_ID='Run%s_valid_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
+    gtest=feature_gen(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=7.0,save_ID='Run%s_test_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
 
     #check file/dir exist,otherwise mkdir
     if not(os.path.exists('./Test'+Testnum)):
