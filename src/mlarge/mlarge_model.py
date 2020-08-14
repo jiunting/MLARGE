@@ -227,7 +227,7 @@ class feature_gen(keras.utils.Sequence):
                     if not Mwfilter:
                         break
                     #checkMw=get_mw(logfile)
-                    checkMw=y[int(rndEQidx[0])]
+                    checkMw=EQinfo[int(rndEQidx[0])][1]     #y[int(rndEQidx[0])]
                     print('checkMw,Mwfiter',checkMw,Mwfilter)
                     if checkMw>=Mwfilter:
                         break
