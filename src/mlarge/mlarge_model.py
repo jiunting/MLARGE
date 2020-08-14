@@ -444,9 +444,9 @@ def train(files,train_params):
     X_test_N=X_valid_test_N[test_idx]
     X_test_Z=X_valid_test_Z[test_idx]
     y_test=y_valid_test[test_idx]
-    print('Total training data=',len(X_train_E))
-    print('Total validation data=',len(X_valid_E))
-    print('Total test data=',len(X_test_E))
+    print('Total training data, labels=',len(X_train_E),len(y_train))
+    print('Total validation data, labels=',len(X_valid_E),len(y_valid))
+    print('Total test data, labels=',len(X_test_E),len(y_test))
     
     
     #Build structure
