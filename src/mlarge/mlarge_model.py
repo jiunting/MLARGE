@@ -448,20 +448,6 @@ def train(files,train_params):
     print('Total test data=',len(X_test_E))
     
     
-    train_params={
-        'Neurons':[256,256,128,128,64,32,8],
-        'Drops':[0.2,0.2],
-        'BS':128, #Batch Size for training
-        'BS_valid':1024, ######CHANGE it later!!!!! 1024
-        'BS_test':819, #batch size for testing
-        'scales':[0,1], #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
-        'Testnum':'00',
-        'NoiseP':0.0, #possibility of noise event
-        'Noise_level':[1,10,20,30,40,50,60,70,80,90], #GNSS noise level
-        'rm_stans':[0,115], #remove number of stations from 0~115
-        'Min_stan_dist':[4,3], #minumum 4 stations within 3 degree
-        'Loss_func':'mse', #can be default loss function string or self defined loss
-        }
 
     #Build structure
     HP=train_params['Neurons']
@@ -469,7 +455,7 @@ def train(files,train_params):
     BS=train_params['BS'] #Batch Size for training
     BS_valid=train_params['BS_valid'] #####################################CHANGE it later!!!!! 1024
     BS_test=train_params['BS_test'] #batch size for testing
-    scales=train_params['scale'] #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
+    scales=train_params['scales'] #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
     Testnum=train_params['Testnum']
     #FlatY=False #just change y='flat' in the y input
     NoiseP=train_params['NoiseP'] #possibility of noise event
