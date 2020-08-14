@@ -277,7 +277,7 @@ class feature_gen(keras.utils.Sequence):
                 eqlon=eqinfo[2]
                 eqlat=eqinfo[3]
                 #eqlon,eqlat=get_hypo(logfile)
-                print('Input E:',E)
+                print('Input E,y:',E,y)
                 print('rndEQIDX=%s,ID=%s, ID_from_EQinfo=%s eqlon,eqlat=%f %f'%(int(rndEQidx[0]),E[int(rndEQidx[0])],eqinfo[0],eqlon,eqlat))
                 #########################################################
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=8)==False:
@@ -493,8 +493,8 @@ def train(files,train_params):
 
     #build generator
     Dpath='Path_defined_in_file'
-    print('Training_X inp:',X_train_E)
-    print('Training_y inp:',y_train)
+    #print('Training_X inp:',X_train_E)
+    #print('Training_y inp:',y_train)
     gtrain=feature_gen(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=7.0,save_ID=False,shuffle=True) #Use the "flat y"
     gvalid=feature_gen(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=7.0,save_ID='Run%s_valid_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
     gtest=feature_gen(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=7.0,save_ID='Run%s_test_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
@@ -505,11 +505,13 @@ def train(files,train_params):
     #Add callback
     CB=keras.callbacks.ModelCheckpoint(filepath='./TrainingResults2/Test'+Testnum+'/weights.{epoch:04d}-{val_loss:.6f}.hdf5',monitor='val_loss',save_best_only=True,mode='min',period=5)
     
+    print('Start generating validation data')
     X_valid_out,y_valid_out=gvalid.__getitem__(1)
     np.save('Xvalid'+Testnum+'.npy',X_valid_out)
     np.save('yvalid'+Testnum+'.npy',y_valid_out)
 
     #Also save the testing data 
+    print('Start generating testing data')
     X_test_out,y_test_out=gtest.__getitem__(1)
     np.save('Xtest'+Testnum+'.npy',X_test_out)
     np.save('ytest'+Testnum+'.npy',y_test_out)
