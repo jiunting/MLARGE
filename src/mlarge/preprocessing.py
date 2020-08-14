@@ -102,7 +102,7 @@ def gen_Xydata_list(X_dirs,y_dirs,outdir='Datalist'):
     NN=[]
     ZZ=[]
     yy=[]
-    for Xdir,ydir in X_dirs,y_dirs:
+    for Xdir,ydir in zip(X_dirs,y_dirs):
         E_files=glob.glob(Xdir+'/*.E.npy')
         E_files.sort()
         N_files=glob.glob(Xdir+'/*.N.npy')
