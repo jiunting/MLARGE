@@ -20,15 +20,23 @@ run_name='subduction'
 tcs_samples=np.arange(5,515,5)
 outdir_X='Chile_full_ENZ'
 outdir_y='Chile_full_y'
-
+outdir_list='Chile_full_Xylist'
 GFlist='Chile_GNSS.gflist'
 Sta_ordering='ALL_staname_order.txt'
+
+
+gen_list=True #generate abspath list file for MLARGE
+
+
 
 
 if save_data_from_FQ:
     preprocessing.rdata_ENZ(home,project_name,run_name,Sta_ordering,tcs_samples=np.arange(5,515,5),outdir=outdir_X)
     preprocessing.rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
     
+
+if gen_list:
+    preprocessing.gen_Xydata_list(outdir_X,outdir_y,outdir=outdir_list)
 
 
 '''

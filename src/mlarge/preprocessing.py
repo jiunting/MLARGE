@@ -60,7 +60,6 @@ def rdata_ENZ(home,project_name,run_name,Sta_ordering,tcs_samples=np.arange(5,51
         np.save(outdir+'/'+project_name+'.'+eqid+'.E.npy',sav_E_sta)
         np.save(outdir+'/'+project_name+'.'+eqid+'.N.npy',sav_N_sta)
         np.save(outdir+'/'+project_name+'.'+eqid+'.Z.npy',sav_Z_sta)
-        break
 
 
 def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y'):
@@ -94,8 +93,41 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
     
 
 
-
-#def gen_Xy_list():
+def gen_Xydata_list(X_dirs,y_dirs,outdir='Datalist'):
+    #make data list for MLARGE training
+    #dirs can be multipath
+    import glob
+    #X_dirs=['/projects/tlalollin/jiunting/Fakequakes/run/Chile_full_new_ENZ']
+    EE=[]
+    NN=[]
+    ZZ=[]
+    yy=[]
+    for Dir in X_dirs:
+        E_files=glob.glob(X_dirs+'/*.E.npy')
+        E_files.sort()
+        N_files=glob.glob(X_dirs+'/*.N.npy')
+        N_files.sort()
+        Z_files=glob.glob(X_dirs+'/*.Z.npy')
+        Z_files.sort()
+        y_files=glob.glob(y_dirs+'*.npy')
+        EE=EE+E_files
+        NN=NN+N_files
+        ZZ=ZZ+Z_files
+        yy=yy+y_files
+    OUTE=open(outdir+'_E'+'.txt','w')
+    OUTN=open(outdir+'_N'+'.txt','w')
+    OUTZ=open(outdir+'_Z'+'.txt','w')
+    OUTy=open(outdir+'_y'+'.txt','w')
+    for line in range(len(EE)):
+        OUTE.write('%s\n'%(EE[line]))
+        OUTN.write('%s\n'%(NN[line]))
+        OUTZ.write('%s\n'%(ZZ[line]))
+        OUTy.write('%s\n'%(yy[line]))
+    OUTE.close()
+    OUTN.close()
+    OUTZ.close()
+    OUTy.close()
+    
     
     
     
