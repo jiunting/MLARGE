@@ -527,7 +527,7 @@ def group_STF(STF_T,STFs,G):
 minD=7.5
 maxD=9.5
 c_map=plt.cm.jet(plt.Normalize(minD,maxD)(ALLEQ[:,1]))
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(5.2,4.8))
 for i,st in enumerate(STF[::-1,:]):
     if i%100==0:
         print('Now at %d out of %d'%(i,len(STF)))
@@ -539,32 +539,50 @@ c_map_gp=plt.cm.jet(plt.Normalize(7.5,9.5)(np.arange(7.5,9.7,0.3)))
 for i,stf in enumerate(gp_STF):
     plt.plot(STF_T,stf,color=c_map_gp[i],linewidth=3)
 
-plt.xlabel('Time (s)',fontsize=16)
-plt.ylabel('$\dot \mathrm{M}$ (N-M/sec)',fontsize=16,labelpad=0) #moment rate
-plt.xlim([0,515])
+plt.xlabel('Time (sec)',fontsize=16)
+plt.ylabel('$\dot \mathrm{M}$ (N-m/sec)',fontsize=16,labelpad=-5) #moment rate
+plt.xlim([-5,515])
 plt.grid(True)
-plt.xticks(fontsize=14)
-plt.yticks(fontsize=14)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+ax1=plt.gca()
+ax1.tick_params(axis='y',pad=0)
+#plot box region
+y_max=6e20
+plt.plot([0,50],[0,0],'k--')
+plt.plot([0,50],[y_max,y_max],'k--')
+plt.plot([0,0],[0,y_max],'k--')
+plt.plot([50,50],[0,y_max],'k--')
+
+#add colorbar
 norm = matplotlib.colors.Normalize(vmin=minD, vmax=maxD)
 cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='jet')
 cmap.set_array([])
-cbaxes = fig.add_axes([0.58, 0.8, 0.28, 0.028])
+cbaxes = fig.add_axes([0.16, 0.8, 0.23, 0.028])
 clb=plt.colorbar(cmap,cax=cbaxes,orientation='horizontal')
 clb.set_label('M$_w$', rotation=0,labelpad=0,fontsize=14)
 clb.set_ticks(np.arange(7.5,9.6,0.5))
 ax1=plt.gca()
-ax1.tick_params(pad=1)
-plt.xticks(fontsize=12)
+ax1.tick_params(pad=0.5,rotation=30)
+plt.xticks(fontsize=14)
 
-ax1=fig.add_axes((0.57,0.35,0.3,0.3),fc='k')
+#ax1=fig.add_axes((0.57,0.35,0.3,0.3),fc='k')
+ax1=fig.add_axes((0.47,0.42,0.34,0.4),fc='k',alpha=0.5)
 for i,stf in enumerate(gp_STF):
     plt.plot(STF_T,stf,color=c_map_gp[i],linewidth=3)
 
+ax1.yaxis.tick_right()
+ax1.yaxis.label_position='right'
 plt.xlim(0,50)
-plt.xlabel('Time (s)',fontsize=12)
-plt.ylabel('$\dot \mathrm{M}$ (N-M/sec)',fontsize=12,labelpad=0) #moment rate
+plt.xlabel('Time (sec)',fontsize=14,labelpad=0)
+#plt.tick_params(axis='y', which='right', labelleft=False, labelright=True)
+plt.ylabel('$\dot \mathrm{M}$ (N-m/sec)',fontsize=15,labelpad=25) #moment rate
 ax1=plt.gca()
 ax1.tick_params(pad=0.5)
+plt.xticks([0,20,40],fontsize=14)
+#plt.yticks([0e21,0.5e21,1e21],fontsize=14)
+plt.yticks(fontsize=14)
+plt.ylim([0,y_max])
 plt.savefig('STF_gpSTF.png',dpi=300)
 #plt.savefig('STF_gpSTF.pdf',dpi=300)
 plt.show()
@@ -1046,15 +1064,18 @@ for ig in range(len(Gp_mw)):
 
 
 #plt.subplot(1,2,2)
-plt.figure()
+fig=plt.figure(figsize=(6,4.8))
+#ax=plt.gca()
+#ax.set_position([0.1, 0.11, 0.9, 0.88])
 wd=0.07
 #wd=0.1
 max_whiskers1=[]
 max_whiskers2=[]
 max_whiskers3=[]
-out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[1.,1.0,1.0],mew=0.1, marker='d',markersize=2)
-#wd=0.15
-bp=plt.boxplot(box_tau_c_d,positions=Gp_mw-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[1.,1.0,1.0],mew=0.1, marker='d',markersize=0)
+#Just plot the tau_c, tau_dur and their ratio
+#bp=plt.boxplot(box_tau_c_d,positions=Gp_mw-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+bp=plt.boxplot(box_tau_c,positions=Gp_mw-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
 whiskerloc=[item.get_ydata() for item in bp['whiskers']] #get the upper value of whiskers for plotting text
 for nw in range(int(len(whiskerloc)/2)):
     max_whiskers1.append( np.max(whiskerloc[nw*2+1]) )
@@ -1063,13 +1084,22 @@ for patch in bp['boxes']:
     patch.set_facecolor([1,0,0.])
     patch.set_edgecolor([0,0.,0])
     patch.set_linewidth(0.5)
-#    patch.set_alpha(0.7)
+    patch.set_alpha(0.8)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([1,0,0.])
+    whisker.set_linewidth(1.5)
+
+for cap in bp['caps']:
+    cap.set_color([1,0,0.])
+    cap.set_linewidth(1.5)
 
 for medn in bp['medians']:
     medn.set_color([0,0,0])
 
 #bp=plt.boxplot(box_tau_c_p,positions=Gp_mw+wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
-bp=plt.boxplot(box_tau_c_M3real,positions=Gp_mw+wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+#bp=plt.boxplot(box_tau_c_M3real,positions=Gp_mw+wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+bp=plt.boxplot(box_tau_d,positions=Gp_mw-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)    #duration
 whiskerloc=[item.get_ydata() for item in bp['whiskers']] #get the upper value of whiskers for plotting text
 for nw in range(int(len(whiskerloc)/2)):
     max_whiskers2.append( np.max(whiskerloc[nw*2+1]) )
@@ -1080,10 +1110,83 @@ for patch in bp['boxes']:
 #    patch.set_facecolor([1,0,0.])
     patch.set_edgecolor([0,0.,0])
     patch.set_linewidth(0.5)
-#    patch.set_alpha(0.7)
+    patch.set_alpha(0.8)
+
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0.2,0.50588,0.867])
+    whisker.set_linewidth(1.5)
+
+for cap in bp['caps']:
+    cap.set_color([0.2,0.50588,0.867])
+    cap.set_linewidth(1.5)
 
 for medn in bp['medians']:
     medn.set_color([0,0,0])
+
+plt.ylim([0,800])
+plt.yticks([0,200,400,600,800],fontsize=14)
+plt.xlim([7.3,9.8])
+plt.ylabel('Time (sec)',fontsize=16,labelpad=0)
+tmpax=plt.gca()
+tmpax.tick_params(axis='y',pad=0)
+plt.xticks([7.5,7.8,8.1,8.4,8.7,9.0,9.3,9.6],[7.5,7.8,8.1,8.4,8.7,9.0,9.3,9.6],fontsize=15)
+plt.xlabel('Mw',fontsize=16)
+#plot their ratio
+ax1=plt.gca()
+sav_ticks=ax1.get_xticks()
+sav_ticks_labels=ax1.get_xticklabels()
+ax2 = ax1.twinx()
+bp=ax2.boxplot(box_tau_c_d,positions=Gp_mw+wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+whiskerloc=[item.get_ydata() for item in bp['whiskers']] #get the upper value of whiskers for plotting text
+for nw in range(int(len(whiskerloc)/2)):
+    max_whiskers3.append( np.max(whiskerloc[nw*2+1]) )
+
+for patch in bp['boxes']:
+    patch.set_facecolor([0,0.6,0.])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+    patch.set_alpha(0.8)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0.0,0.6,0.])
+    whisker.set_linewidth(1.5)
+
+for cap in bp['caps']:
+    cap.set_color([0.0,0.6,0.])
+    cap.set_linewidth(1.5)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+plt.ylim([0,1])
+y1_max=ax1.get_ylim()[1]
+plt.yticks(ax1.get_yticks()/y1_max,fontsize=15) #assume ax2.get_ylim=1
+tmpax=plt.gca()
+tmpax.tick_params(axis='y',pad=0)
+plt.ylabel('Ratio',fontsize=16,labelpad=0)
+plt.xticks(sav_ticks,sav_ticks_labels,fontsize=15)
+
+ax1.set_ylim([0,800*0.9])
+ax2.set_ylim([0,1*0.9])
+ax2.grid(False)
+#ax2.set_xlabel('Mw',fontsize=16)
+
+#Add text for # in each groups
+props = dict(boxstyle='round', facecolor='white', alpha=0.5,pad=0.05)
+for i in range(len(Gp_mw)):
+    if i==0:
+        plt.text(Gp_mw[i],max_whiskers3[i]+0.028,'n=%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props,fontsize=15)
+    else:
+        if i==5:
+            plt.text(Gp_mw[i],0.58,'%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props,fontsize=15 )
+        elif i==6:
+            plt.text(Gp_mw[i],0.8,'%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props,fontsize=15 )
+        elif i==7:
+            plt.text(Gp_mw[i],0.75,'%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props,fontsize=15 )
+        else:
+            plt.text(Gp_mw[i],max_whiskers3[i]+0.03,'%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props,fontsize=15 )
+
 
 '''
 bp=plt.boxplot(box_tau_p_d,positions=Gp_mw+wd,widths=wd,patch_artist=True,flierprops=out_dots)
@@ -1102,8 +1205,9 @@ for medn in bp['medians']:
     medn.set_color([0,0,0])
 '''
 
-max_whiskers=np.vstack([max_whiskers1,max_whiskers2])
-max_whiskers=np.max(max_whiskers,axis=0)
+#max_whiskers=np.vstack([max_whiskers1,max_whiskers2])
+#max_whiskers=np.max(max_whiskers,axis=0)
+#max_whiskers=np.max(max_whiskers3,axis=0)
 
 #wd=0.07
 #bp=plt.boxplot(box_tau_c,positions=Gp_mw-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
@@ -1120,26 +1224,90 @@ max_whiskers=np.max(max_whiskers,axis=0)
 #
 #for medn in bp['medians']:
 #    medn.set_color([0,0,0])
+
 #----make legned manually------
+ax1=fig.add_axes((0.145,0.78,0.33,0.08),fc=[1,1,1]) #x0,y0,lengthX,lengthY
+
 out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[0.,0.0,0.0],mew=0.1, marker='d',markersize=0)
-tmpy=np.random.randn(1000)*0.1
-bp=plt.boxplot([tmpy+3.8],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
+#tmpy=np.random.randn(1000)*0.02
+tmpy=np.random.normal(0, 0.02, 10000)
+idx=np.where(np.abs(tmpy) < np.std(tmpy))[0]
+tmpy=tmpy[idx]
+#tmpy=np.random.normal(0,0.1,1000)
+#bp=plt.boxplot([tmpy+3.8],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
+#bp=plt.boxplot([tmpy+0.65],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
+bp=plt.boxplot([tmpy+0.675],positions=[7.3],widths=wd,patch_artist=True,flierprops=out_dots)
 for patch in bp['boxes']:
     patch.set_facecolor([1,0,0])
     patch.set_edgecolor([0,0.,0])
     patch.set_linewidth(0.5)
 
+for whisker in bp['whiskers']:
+    whisker.set_color([1,0,0])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([1,0,0])
+    cap.set_linewidth(1.)
+
 for medn in bp['medians']:
     medn.set_color([0,0,0])
 
-bp=plt.boxplot([tmpy+3.1],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
+
+#bp=plt.boxplot([tmpy+3.1],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
+#bp=plt.boxplot([tmpy+0.7],positions=[7.5],widths=wd,patch_artist=True,flierprops=out_dots)
+bp=plt.boxplot([tmpy+0.675],positions=[7.65],widths=wd,patch_artist=True,flierprops=out_dots)
 for patch in bp['boxes']:
     patch.set_facecolor([0.2,0.50588,0.867])
     patch.set_edgecolor([0,0.,0])
     patch.set_linewidth(0.5)
 
+for whisker in bp['whiskers']:
+    whisker.set_color([0.2,0.50588,0.867])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0.2,0.50588,0.867])
+    cap.set_linewidth(1.)
+
 for medn in bp['medians']:
     medn.set_color([0,0,0])
+
+
+#bp=plt.boxplot([tmpy+0.68],positions=[7.55],widths=wd,patch_artist=True,flierprops=out_dots)
+bp=plt.boxplot([tmpy+0.675],positions=[8.0],widths=wd,patch_artist=True,flierprops=out_dots)
+for patch in bp['boxes']:
+    patch.set_facecolor([0,0.6,0.])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0,0.6,0.])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0,0.6,0.])
+    cap.set_linewidth(1.)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+
+#plt.text(7.28,0.69,r'$\tau_{d}$',fontsize=20,rotation=90)
+#plt.text(7.28,0.64,r'$\tau_{c}$',fontsize=20,rotation=90)
+#plt.text(7.61,0.645,r'$\tau_{c}$/$\tau_{d}$',fontsize=20,rotation=90)
+plt.text(7.325,0.66,r'$\tau_{c}$',fontsize=20,rotation=0)
+plt.text(7.675,0.66,r'$\tau_{d}$',fontsize=20,rotation=0)
+plt.text(8.025,0.66,r'$\tau_{c}$/$\tau_{d}$',fontsize=20,rotation=0)
+
+plt.xlim([7.22,8.49])
+plt.ylim([0.675-0.03,0.675+0.03])
+plt.xticks([])
+plt.yticks([])
+
+plt.show()
+plt.savefig('tau_ratio_misfit0.3_100percent_new.png',dpi=450)
+#plt.savefig('tau_100percent.png',dpi=300)
 
 #bp=plt.boxplot([tmpy+3.4],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
 #for patch in bp['boxes']:
@@ -1153,36 +1321,36 @@ for medn in bp['medians']:
 #plt.text(7.5,4.4,r'$\tau_c$/$\tau_d$',fontsize=18)
 #plt.text(7.5,3.7,r'$\tau_c$/$\tau_p$',fontsize=18)
 #plt.text(7.5,3.0,r'$\tau_p$/$\tau_d$',fontsize=18)
-plt.text(7.5,3.7,r'$\tau_{correct}$/$\tau_{duration}$',fontsize=16)
-plt.text(7.5,3.0,r'$\tau_{correct}$/$\tau_{(real-0.3)}$',fontsize=16)
+#plt.text(7.5,3.7,r'$\tau_{correct}$/$\tau_{duration}$',fontsize=16)
+#plt.text(7.5,3.0,r'$\tau_{correct}$/$\tau_{(real-0.3)}$',fontsize=16)
 #plt.text(7.5,3.3,r'$\tau_{peak}$/$\tau_{duration}$',fontsize=16)
 #plt.text(7.5,3.0,r'$\tau_{duration}$/$\tau_{peak}$',fontsize=16)
 #----make legned manually END------
 
 #Add text for # in each groups
-props = dict(boxstyle='round', facecolor='white', alpha=0.5,pad=0.2)
-for i in range(len(Gp_mw)):
-    if i==0:
-        plt.text(Gp_mw[i],max_whiskers[i]+0.1,'n=%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props)
-    else:
-        plt.text(Gp_mw[i],max_whiskers[i]+0.1,'%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props )
+#props = dict(boxstyle='round', facecolor='white', alpha=0.5,pad=0.2)
+#for i in range(len(Gp_mw)):
+#    if i==0:
+#        plt.text(Gp_mw[i],max_whiskers3[i]+0.05,'n=%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props)
+#    else:
+#        plt.text(Gp_mw[i],max_whiskers3[i]+0.05,'%d'%(len(box_tau_c_p[i])),va='bottom',ha='center',bbox=props )
 
 
-plt.xticks(Gp_mw,['%3.1f'%(i) for i in Gp_mw ],fontsize=14)
-plt.yticks(fontsize=14)
-ax1=plt.gca()
-ax1.tick_params(pad=0.8)
-plt.xlim([7.3,9.8])
-#plt.ylim([-0.05,2.47])
-#plt.ylim([-0.05,5.3])
-plt.ylim([-0.05,4.2])
-#plt.text(7.45,plt.ylim()[1]*0.87,'misfit=%3.1f'%(Threshold),fontsize=16)
-plt.xlabel('M$_w$',fontsize=18,labelpad=0.5)
-plt.ylabel('Ratio',fontsize=18,labelpad=0.5)
+#plt.xticks(Gp_mw,['%3.1f'%(i) for i in Gp_mw ],fontsize=14)
+#plt.yticks(fontsize=14)
+#ax1=plt.gca()
+#ax1.tick_params(pad=0.8)
+#plt.xlim([7.3,9.8])
+##plt.ylim([-0.05,2.47])
+##plt.ylim([-0.05,5.3])
+#plt.ylim([-0.05,4.2])
+##plt.text(7.45,plt.ylim()[1]*0.87,'misfit=%3.1f'%(Threshold),fontsize=16)
+#plt.xlabel('M$_w$',fontsize=18,labelpad=0.5)
+#plt.ylabel('Ratio',fontsize=18,labelpad=0.5)
 #plt.ylabel(r'$\tau_c$/$\tau_d$',fontsize=18,labelpad=0.5)
 
 #plt.subplots_adjust(left=0.095,top=0.97,right=0.96,bottom=0.092,wspace=0.19,hspace=0.25)
-plt.show()
+#plt.show()
 #plt.savefig('tau_ratio_misfit0.3_100percent.png',dpi=300)
 #plt.savefig('tau_100percent.png',dpi=300)
 
@@ -1554,8 +1722,12 @@ for neq in range(len(predictions_real)):
         sav_Y_box.append(tmp_mw-tmpbox) #so that the distribution y is the
     fig=plt.figure(1)
     ax1 = fig.add_subplot(111)
-    bp=plt.boxplot(sav_Y_box,positions=sav_X_box,widths=1,patch_artist=True,flierprops=out_dots) #flierprops=red_square
-    plt.plot(sav_X_box,np.array([np.median(md) for md in sav_Y_box]),'r-',markersize=8,markeredgecolor=[1,0,0],markerfacecolor='None',mew=0.1)
+    #plot only after P-arrival
+    sav_X_box=np.array(sav_X_box)
+    sav_Y_box=np.array(sav_Y_box)
+    p_idx=np.where(sav_X_box>=sav_delay_sec[neq])[0]
+    bp=plt.boxplot(sav_Y_box[p_idx],positions=sav_X_box[p_idx],widths=1,patch_artist=True,flierprops=out_dots) #flierprops=red_square
+    plt.plot(sav_X_box[p_idx],np.array([np.median(md) for md in sav_Y_box[p_idx]]),'r-',markersize=8,markeredgecolor=[1,0,0],markerfacecolor='None',mew=0.1)
     #plot the prediction only
 #    plt.plot(np.arange(102)*5.0+5,predictions_real[neq,:,0],'b')
     ax1.plot([T_all.min(),T_all.max()],[EQMw[neq],EQMw[neq]],'k--')
@@ -1580,16 +1752,28 @@ for neq in range(len(predictions_real)):
     plt.xlim([0,510])
     plt.ylim([6.5,9.6])
     if neq==2:
-        plt.text(20,9.3,'%s'%(EQs_lb[neq]),fontsize=14,bbox=props)
-        plt.xlabel('Seconds since origin',fontsize=14)
-        plt.ylabel('Predicted Mw',fontsize=14)
-    else: #small subplots
+#        plt.text(20,9.3,'%s'%(EQs_lb[neq]),fontsize=14,bbox=props)
+#        plt.xlabel('Seconds since origin',fontsize=14)
+#        plt.ylabel('Predicted Mw',fontsize=14)
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
         ax1.tick_params(pad=2)
+        plt.text(20,9.3,'%s'%(EQs_lb[neq]),fontsize=17,bbox=props)
+        plt.xlabel('Seconds since origin',fontsize=17,labelpad=-1)
+        plt.ylabel('Predicted Mw',fontsize=17)
+    else: #small subplots
+#        plt.xticks(fontsize=16)
+#        plt.yticks(fontsize=16)
+#        ax1.tick_params(pad=2)
+#        plt.text(20,9.3,'%s'%(EQs_lb[neq]),fontsize=20,bbox=props)
+#        plt.xlabel('Seconds since origin',fontsize=20,labelpad=-1)
+#        plt.ylabel('Predicted Mw',fontsize=20)
+        plt.xticks(fontsize=19)
+        plt.yticks(fontsize=19)
+        ax1.tick_params(pad=1)
         plt.text(20,9.3,'%s'%(EQs_lb[neq]),fontsize=20,bbox=props)
-        plt.xlabel('Seconds since origin',fontsize=20,labelpad=-1)
-        plt.ylabel('Predicted Mw',fontsize=20)
+        plt.xlabel('Seconds since origin',fontsize=23,labelpad=-2.5)
+        plt.ylabel('Predicted Mw',fontsize=23)
     #####Mark the area before the P-wave arrival#####
     ax1.fill_between([0,sav_delay_sec[neq]],[6.0,6.0],[10.0,10.0],edgecolor='k',facecolor=[0.5,0.5,0.5],hatch="/")
     #############Make GFast prediction##############
@@ -1635,13 +1819,17 @@ for neq in range(len(predictions_real)):
 #    plt.xticks([0,100,200,300,400,500])
     plt.xlim([0,510])
 #    ax2.set_xlabel('Shifted time(sec)',fontsize=14)
-    ax2.tick_params(direction='out', length=2.5, width=1.2, colors='k',pad=1)
+    ax2.tick_params(direction='out', length=2.5, width=1.2, colors='k',pad=-3)
     ax2.grid(False)
     if neq==2:
-        ax2.set_xlabel('Seconds since p-wave arrival',fontsize=15)
-    else:#small subplots
-        ax2.set_xlabel('Seconds since p-wave arrival',fontsize=20)
+#        ax2.set_xlabel('Seconds since p-wave arrival',fontsize=15)
+        ax2.set_xlabel('Seconds since p-wave arrival',fontsize=18)
         plt.xticks(fontsize=16)
+    else:#small subplots
+#        ax2.set_xlabel('Seconds since p-wave arrival',fontsize=20)
+#        plt.xticks(fontsize=16)
+        ax2.set_xlabel('Seconds since p-wave arrival',fontsize=23,labelpad=1.5)
+        plt.xticks(fontsize=19)
     ###Third axis (y-axis) (PGD)###
     ax3 = ax1.twinx()
     ax3.set_xlim(ax1.get_xlim())
@@ -1651,9 +1839,11 @@ for neq in range(len(predictions_real)):
         if sav_X_data_orig[neq][-1,nsta]!=0:
             plt.plot(T,sav_X_data_orig[neq][:,nsta]*1,'--',color=[0.5,0.5,0.5],linewidth=0.8) #pad zero for the 0 sec
     if neq==2:
-        plt.text(370,maxPGD+maxPGD*0.04,'PGD$_m$$_a$$_x$=%3.2f m'%(maxPGD),fontsize=12)
+#        plt.text(370,maxPGD+maxPGD*0.04,'PGD$_m$$_a$$_x$=%3.2f m'%(maxPGD),fontsize=12)
+        plt.text(340,maxPGD+maxPGD*0.04,'PGD$_m$$_a$$_x$=%3.2f m'%(maxPGD),fontsize=15)
     else: #small subplots
-        plt.text(350,maxPGD+maxPGD*0.04,'PGD$_m$$_a$$_x$=%3.2f m'%(maxPGD),fontsize=15)
+#        plt.text(350,maxPGD+maxPGD*0.04,'PGD$_m$$_a$$_x$=%3.2f m'%(maxPGD),fontsize=15)
+        plt.text(310,maxPGD+maxPGD*0.04,'PGD$_m$$_a$$_x$=%3.2f m'%(maxPGD),fontsize=18)
     plt.ylim([0,maxPGD*mul_PGD_scale[neq]])
     plt.yticks([])
 #    plt.yticks(PGD_ticks[neq])

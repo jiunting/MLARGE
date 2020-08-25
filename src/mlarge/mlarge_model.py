@@ -449,12 +449,12 @@ def train(files,train_params):
     X_test_Z=X_valid_test_Z[test_idx]
     y_test=y_valid_test[test_idx]
     EQinfo_test=EQinfo_valid_test[test_idx]
-    print('Total training data, labels=',len(X_train_E),len(y_train))
-    print(X_train_E,y_train)
-    print('Total validation data, labels=',len(X_valid_E),len(y_valid))
-    print(X_valid_E,y_valid)
-    print('Total test data, labels=',len(X_test_E),len(y_test))
-    print(X_test_E,y_test)
+    #print('Total training data, labels=',len(X_train_E),len(y_train))
+    #print(X_train_E,y_train)
+    #print('Total validation data, labels=',len(X_valid_E),len(y_valid))
+    #print(X_valid_E,y_valid)
+    #print('Total test data, labels=',len(X_test_E),len(y_test))
+    #print(X_test_E,y_test)
     
     
     #Build structure
@@ -511,13 +511,13 @@ def train(files,train_params):
     #Add callback
     CB=keras.callbacks.ModelCheckpoint(filepath='./Test'+Testnum+'/weights.{epoch:04d}-{val_loss:.6f}.hdf5',monitor='val_loss',save_best_only=True,mode='min',period=5)
     
-    print('Start generating validation data')
+    #print('Start generating validation data')
     X_valid_out,y_valid_out=gvalid.__getitem__(1)
     np.save('Xvalid'+Testnum+'.npy',X_valid_out)
     np.save('yvalid'+Testnum+'.npy',y_valid_out)
 
     #Also save the testing data 
-    print('Start generating testing data')
+    #print('Start generating testing data')
     X_test_out,y_test_out=gtest.__getitem__(1)
     np.save('Xtest'+Testnum+'.npy',X_test_out)
     np.save('ytest'+Testnum+'.npy',y_test_out)
