@@ -47,7 +47,7 @@ export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/MLARGE/src
             -ruptures
             -waveforms
 ```
-> For example, this is my rupture scenarios  
+> For example, this is my data structure for rupture scenarios  
 
 ![](./image/Exp_datastructure.png "title1")  
 
