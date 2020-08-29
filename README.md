@@ -48,7 +48,8 @@ export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/MLARGE/src
             -waveforms
 ```
 > For example, this is my rupture scenarios  
-![Exp_fig1](Exp_fig1 "title1")  
+
+![](./image/Exp_datastructure.png "title1")  
 
 > Make a project directory
 ```bash
@@ -62,5 +63,5 @@ cp YOUR_PATH_MARGE/example/control.py . #copy example file to your project direc
 [Mudpy]:https://github.com/dmelgarm/MudPy "Multi-data source modeling and inversion toolkit"
 [FK]:http://www.eas.slu.edu/People/LZhu/home.html "FK package from Dr. Zhu Lupei"
 [Link_data]:https://zenodo.org/ "Data will be released soon..."
-[Exp_fig1]:./example/Exp_datastructure.png "Mudpy data structure"
+[Exp_fig1]:/image/Exp_datastructure.png "Mudpy data structure"
 
