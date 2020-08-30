@@ -60,6 +60,11 @@ export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/MLARGE/src
 
 ![](./image/Exp_datastructure.png "Example Fig.1")  
 
+#### In this case:  
+>*home_directory is the absolute path before the ```Chile```  (e.g. /Users/timlin/Test_MLARGE/)  
+>*project_name is ```Chile```  
+>*output, ruptures and waveforms should be exactly the name ```output; ruptures; waveforms```
+
 #### Make a project directory
 ```bash
 mkdir Project_Name
