@@ -4,12 +4,12 @@
 An deep-learning based mega-earthquake magnitude predictor  
 * [1. Installation](#1-Installation)
   * [1.1 Download M-LARGE](#cd-to-the-place-where-you-want-to-put-the-source-code)
-  * [1.2 Add environment variable](Add-M-LARGE-to-PYTHONPATH)
-* [2. Generate rupture and seismic waveforms data](2-Generating-seismic-waveforms-data)  
-* [3. Run M-LARGE training](3-Run-M-LARGE-training)
-  * [3.1 Check data structure](Before-running-the-M-LARGE-make-sure-you-have-data-following-Mudpys-structure)
-  * [3.2 Set the paths in control file](Change-all-the-paths-in-the-controlpy-file)
-  * [3.3 Variables in control file](Below-shows-the-variables-and-their-corresponding-meaning)
+  * [1.2 Add environment variable](#Add-M-LARGE-to-PYTHONPATH)
+* [2. Generate rupture and seismic waveforms data](#2-Generating-seismic-waveforms-data)  
+* [3. Run M-LARGE training](#3-Run-M-LARGE-training)
+  * [3.1 Check data structure](#Before-running-the-M-LARGE-make-sure-you-have-data-following-Mudpys-structure)
+  * [3.2 Set the paths in control file](#Change-all-the-paths-in-the-controlpy-file)
+  * [3.3 Variables in control file](#Below-shows-the-variables-and-their-corresponding-meaning)
 
 ****
 ## 1. Installation
