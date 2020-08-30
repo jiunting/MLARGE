@@ -14,20 +14,20 @@ An deep-learning based mega-earthquake magnitude predictor
 ****
 ## 1. Installation
 #### cd to the place where you want to put the source code  
-
-    cd Your_Local_Path  
-    git clone https://github.com/jiunting/MLARGE.git
-    
+```console
+cd Your_Local_Path  
+git clone https://github.com/jiunting/MLARGE.git
+```
 #### Add M-LARGE to PYTHONPATH
 
 > Go to your environval variable file (.base_profile or .bashrc)  
-
-    vi ~/.bashrc  
-    
-> or 
-
-    vi ~/.bash_profile      
-    
+```console
+vi ~/.bashrc  
+```
+> or  
+```console
+vi ~/.bash_profile      
+```
 > and add the following line in the file
 
 ```bash
@@ -58,7 +58,7 @@ export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/MLARGE/src
 ```
 #### For example, this is my data structure for rupture scenarios  
 
-![](./image/Exp_datastructure.png "Example Fig.1")  
+![][Exp_fig1] 
 
 #### In this case:  
 >*home_directory is the absolute path before the ```Chile```  (e.g. /Users/timlin/Test_MLARGE/)  
@@ -66,23 +66,25 @@ export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/MLARGE/src
 >*output, ruptures and waveforms should be exactly the name ```output; ruptures; waveforms```
 
 #### Make a project directory
-```bash
+```console
 mkdir Project_Name
 cd Project_Name
 cp YOUR_PATH_MARGE/example/control.py . #copy example file to your project directory
 ```
 #### Change all the paths in the `control.py` file  
-```
+```python
 home = PATH_To_Project_Name  #without the project name
 project_name = Project_Name_For_Data  #for data, not the Project_Name above
 run_name = Prepend_Name
 ```
 #### Check the above path by testing in python
-    >>print(home+project_name+'/output/ruptures/')  
-    >>print(home+project_name+'/output/waveforms/')  
+```python
+>>print(home+project_name+'/output/ruptures/')  
+>>print(home+project_name+'/output/waveforms/')  
+```
 > These should point you to the right directory to *.rupt/*.log and waveforms directory.   
 > The rupt files are named in run_name.xxxxxx.rupt.  
-#### Below shows the variables and their corresponding meaning
+#### Below shows the variables in the control file and their corresponding meaning
 |Variable Name  |Meaning |
 | :---------- | :-----------|
 | save_data_from_FQ   |True/False- Write E/N/Z.npy data and STFs from the above waveforms/ruptures directories   |
