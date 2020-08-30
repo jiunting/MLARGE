@@ -1,7 +1,7 @@
 # M-LARGE
 
 ### Machine-learning Assessed Rapid Geodetic Earthquake magnitude   
-An deep-learning based mega-earthquake magnitude predictor  
+A deep-learning based mega-earthquake magnitude predictor  
 * [1. Installation](#1-Installation)
   * [1.1 Download M-LARGE](#cd-to-the-place-where-you-want-to-put-the-source-code)
   * [1.2 Add environment variable](#Add-M-LARGE-to-PYTHONPATH)
