@@ -1,7 +1,15 @@
 # M-LARGE
 
 ### Machine-learning Assessed Rapid Geodetic Earthquake magnitude   
-An deep-learning based mega-earthquake magnitude predictor
+An deep-learning based mega-earthquake magnitude predictor  
+* [1. Installation](1-Installation)
+  * [1.1 Download M-LARGE](cd-to-the-place-where-you-want-to-put-the-source-code)
+  * [1.2 Add environment variable](Add-M-LARGE-to-PYTHONPATH)
+* [2. Generate rupture and seismic waveforms data](2-Generating-seismic-waveforms-data)  
+* [3. Run M-LARGE training](3-Run-M-LARGE-training)
+  * [3.1 Check data structure](Before-running-the-M-LARGE-make-sure-you-have-data-following-Mudpys-structure)
+  * [3.2 Set the paths in control file](Change-all-the-paths-in-the-controlpy-file)
+  * [3.3 Variables in control file](Below-shows-the-variables-and-their-corresponding-meaning)
 
 ****
 ## 1. Installation
@@ -26,9 +34,9 @@ An deep-learning based mega-earthquake magnitude predictor
 #set MLARGE
 export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/MLARGE/src
 ```    
-****
 
-## 2. Generating seismic waveforms data
+****
+## 2. Generating rupture and seismic waveforms data
 #### Earthquake scenario and synthetic seismic waves are based on the below methods  
 * Melgar, D., LeVeque, R. J., Dreger, D. S., & Allen, R. M. (2016). Kinematic rupture scenarios and synthetic displacement data: An example application to the Cascadia subduction zone. Journal of Geophysical Research: Solid Earth, 121(9), 6658-6674.  
 
@@ -38,6 +46,7 @@ export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/MLARGE/src
 
 > Or download the example data directly from [HERE][Link_data]
 
+****
 ## 3. Run M-LARGE training  
 #### Before running the M-LARGE, make sure you have data following Mudpy's structure  
 ```
@@ -63,12 +72,12 @@ home = PATH_To_Project_Name  #without the project name
 project_name = Project_Name_For_Data  #for data, not the Project_Name above
 run_name = Prepend_Name
 ```
-###### Check the above path by testing in python
+#### Check the above path by testing in python
     >>print(home+project_name+'/output/ruptures/')  
     >>print(home+project_name+'/output/waveforms/')  
-###### These should point you to the right directory to *.rupt/*.log and waveforms directory   
-###### The rupt files are named in run_name.xxxxxx.rupt  
-###### Below shows the variables and their corresponding meaning
+> These should point you to the right directory to *.rupt/*.log and waveforms directory.   
+> The rupt files are named in run_name.xxxxxx.rupt.  
+#### Below shows the variables and their corresponding meaning
 |Variable Name  |Meaning |
 | :---------- | :-----------|
 | save_data_from_FQ   |True/False- Write E/N/Z.npy data and STFs from the above waveforms/ruptures directories   |
@@ -81,6 +90,8 @@ run_name = Prepend_Name
 | out_EQinfo| Output name for rupture information|
 | GFlist| Path of GFlist that used to generate rupture scenarios|
 | Sta_ordering| Path of station ordering file (keep always the same order while in training/prediction)|
+
+****
 
 
 [Mudpy]:https://github.com/dmelgarm/MudPy "Multi-data source modeling and inversion toolkit"
