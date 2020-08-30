@@ -57,7 +57,30 @@ mkdir Project_Name
 cd Project_Name
 cp YOUR_PATH_MARGE/example/control.py . #copy example file to your project directory
 ```
-#### Change all the paths in the `control.py` file
+#### Change all the paths in the `control.py` file  
+```
+home = PATH_To_Project_Name  #without the project name
+project_name = Project_Name_For_Data  #for data, not the Project_Name above
+run_name = Prepend_Name
+```
+###### Check the above path by testing in python
+    >>print(home+project_name+'/output/ruptures/')  
+    >>print(home+project_name+'/output/waveforms/')  
+###### These should point you to the right directory to *.rupt/*.log and waveforms directory   
+###### The rupt files are named in run_name.xxxxxx.rupt  
+###### Below shows the variables and their corresponding meaning
+|Variable Name  |Meaning |
+| :---------- | :-----------|
+| save_data_from_FQ   |True/False- Write E/N/Z.npy data and STFs from the above waveforms/ruptures directories   |
+| gen_list   |True/False- Generate data path for later training   |
+| gen_EQinfo |True/False- Read above rupture files and generate rupture information file  |
+| tcs_samples|Array of the time for ENZ and STF |
+| outdir_X| Output directory name for E/N/Z.npy|
+| outdir_y| Output directory name for STF|
+| out_list| Prepended output name for E/N/Z/STF list file|
+| out_EQinfo| Output name for rupture information|
+| GFlist| Path of GFlist that used to generate rupture scenarios|
+| Sta_ordering| Path of station ordering file (keep always the same order while in training/prediction)|
 
 
 [Mudpy]:https://github.com/dmelgarm/MudPy "Multi-data source modeling and inversion toolkit"
