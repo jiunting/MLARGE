@@ -1,5 +1,5 @@
 # M-LARGE
-
+![GitHub last commit](https://img.shields.io/github/last-commit/jiunting/MLARGE?style=plastic)  
 ### Machine-learning Assessed Rapid Geodetic Earthquake magnitude   
 A deep-learning based mega-earthquake magnitude predictor  
 * [1. Installation](#1-Installation)
