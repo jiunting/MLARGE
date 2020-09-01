@@ -11,6 +11,8 @@ A deep-learning based mega-earthquake magnitude predictor
   * [3.2 Set the paths in control file](#Change-all-the-paths-in-the-controlpy-file)
   * [3.3 Variables in control file](#Below-shows-the-variables-and-their-corresponding-meaning)
 
+![][Exp_fig2] 
+
 ****
 ## 1. Installation
 #### cd to the place where you want to put the source code  
@@ -104,4 +106,5 @@ run_name = Prepend_Name
 [FK]:http://www.eas.slu.edu/People/LZhu/home.html "FK package from Dr. Zhu Lupei"
 [Link_data]:https://zenodo.org/ "Data will be released soon..."
 [Exp_fig1]:/image/Exp_datastructure.png "Mudpy data structure"
+[Exp_fig2]:/image/Exp_architecture.png "MLARGE model structure"
 
