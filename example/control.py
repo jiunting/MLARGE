@@ -16,19 +16,22 @@ import numpy as np
 save_data_from_FQ=False
 gen_list=False #generate abspath list file for MLARGE
 gen_EQinfo=False  #generate EQinfo file 
-#these paths are same as FQs path in Mudpy
+
+#---these paths are same as FQs path in Mudpy---
 home='/projects/tlalollin/jiunting/Fakequakes/'
 project_name='Chile_full_new'
 run_name='subduction'
+
+#---set the sampled time and output name---
 tcs_samples=np.arange(5,515,5)
 outdir_X='Chile_full_ENZ'
 outdir_y='Chile_full_y'
 out_list='Chile_full_Xylist'
 out_EQinfo='Chile_full_SRC'
+
+#---input file for station loc and ordering for training---
 GFlist='Chile_GNSS.gflist'
 Sta_ordering='ALL_staname_order.txt'
-
-
 
 
 
@@ -36,14 +39,11 @@ if save_data_from_FQ:
     preprocessing.rdata_ENZ(home,project_name,run_name,Sta_ordering,tcs_samples=np.arange(5,515,5),outdir=outdir_X)
     preprocessing.rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
     
-
 if gen_list:
     preprocessing.gen_Xydata_list(outdir_X,outdir_y,outname=out_list)
 
 if gen_EQinfo:
     preprocessing.get_EQinfo(home,project_name,run_name,outname=out_EQinfo)
-
-
 
 
 
@@ -78,9 +78,6 @@ train_params={
 
 
 mlarge_model.train(files,train_params)
-
-
-
 
 
 
