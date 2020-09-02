@@ -61,6 +61,7 @@ files={
 #the structure in default: Dense+Dense+Drop+LSTM+Dense+Dense+Dense+Dense+Drop+Output
 train_params={
         'Neurons':[256,256,128,128,64,32,8],
+        'epochs':50000,
         'Drops':[0.2,0.2],
         'BS':128, #Batch Size for training
         'BS_valid':1024, ######CHANGE it later!!!!! 1024
