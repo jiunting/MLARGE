@@ -52,10 +52,10 @@ files={
         'GFlist':'Chile_GNSS.gflist', #GFlist for Fakequakes
         'Sta_ordering':'ALL_staname_order.txt', #ordering for features X
         'EQinfo':'Chile_full_SRC.EQinfo',
-        'E':'E_full_newEQlist.txt', #list of E data
-        'N':'N_full_newEQlist.txt',
-        'Z':'Z_full_newEQlist.txt',
-        'y':None, #read y directly in the generator
+        'E':'Chile_full_Xylist_E.txt', #list of E data
+        'N':'Chile_full_Xylist_N.txt',
+        'Z':'Chile_full_Xylist_Z.txt',
+        'y':'Chile_full_Xylist_y.txt', #read y directly in the generator
         }
 
 #the structure in default: Dense+Dense+Drop+LSTM+Dense+Dense+Dense+Dense+Drop+Output
@@ -64,7 +64,7 @@ train_params={
         'Drops':[0.2,0.2],
         'BS':128, #Batch Size for training
         'BS_valid':1024, ######CHANGE it later!!!!! 1024
-        'BS_test':819, #batch size for testing
+        'BS_test':8192, #batch size for testing
         'scales':[0,1], #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
         'Testnum':'00',
         'FlatY':False, #using flat labeling?
