@@ -119,10 +119,10 @@ def gen_Xydata_list(X_dirs,y_dirs,outname='Datalist'):
         NN=NN+N_files
         ZZ=ZZ+Z_files
         yy=yy+y_files
-    OUTE=open(outdir+'_E'+'.txt','w')
-    OUTN=open(outdir+'_N'+'.txt','w')
-    OUTZ=open(outdir+'_Z'+'.txt','w')
-    OUTy=open(outdir+'_y'+'.txt','w')
+    OUTE=open(outname+'_E'+'.txt','w')
+    OUTN=open(outname+'_N'+'.txt','w')
+    OUTZ=open(outname+'_Z'+'.txt','w')
+    OUTy=open(outname+'_y'+'.txt','w')
     for line in range(len(EE)):
         OUTE.write('%s\n'%(EE[line]))
         OUTN.write('%s\n'%(NN[line]))
