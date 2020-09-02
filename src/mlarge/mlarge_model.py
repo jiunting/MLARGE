@@ -223,7 +223,7 @@ class feature_gen(keras.utils.Sequence):
                     #from: /projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_ENZ/Chile_full.002709.Z.npy to 
                     real_EQid=E[int(rndEQidx[0])].split('/')[-1].split('.')[1] #this will be, for example '002709'
                     pre_pend=E[int(rndEQidx[0])].split('/')[-1].split('.')[0] #This will be, for example 'Chile_full' or Chile_small
-                    logfile='/projects/tlalollin/jiunting/Fakequakes/'+pre_pend+'/output/ruptures/subduction.'+real_EQid+'.log'
+                    #logfile='/projects/tlalollin/jiunting/Fakequakes/'+pre_pend+'/output/ruptures/subduction.'+real_EQid+'.log'
                     if not Mwfilter:
                         break
                     #checkMw=get_mw(logfile)
@@ -459,6 +459,7 @@ def train(files,train_params):
     
     #Build structure
     HP=train_params['Neurons']
+    epochs=train_params['epochs']
     Drops=train_params['Drops']
     BS=train_params['BS'] #Batch Size for training
     BS_valid=train_params['BS_valid'] #####################################CHANGE it later!!!!! 1024
@@ -524,7 +525,7 @@ def train(files,train_params):
     
     
     #start training
-    model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=50000,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
+    model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
 
     #save training result and training curve
     tf.keras.models.save_model(network,'./Test'+Testnum+'.h5py')
