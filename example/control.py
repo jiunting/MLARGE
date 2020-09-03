@@ -16,6 +16,8 @@ import numpy as np
 save_data_from_FQ=False
 gen_list=False #generate abspath list file for MLARGE
 gen_EQinfo=False  #generate EQinfo file 
+train_model=Flase
+test_model=True
 
 #---these paths are same as FQs path in Mudpy---
 home='/projects/tlalollin/jiunting/Fakequakes/'
@@ -44,8 +46,6 @@ if gen_list:
 
 if gen_EQinfo:
     preprocessing.get_EQinfo(home,project_name,run_name,outname=out_EQinfo)
-
-
 
 
 files={
@@ -77,7 +77,22 @@ train_params={
         }
 
 
-mlarge_model.train(files,train_params)
+#Train MLARGE
+if train_model:
+    mlarge_model.train(files,train_params)
+
+
+#Test MLARGE
+if test_model:
+    import mlarge.scaling as scale
+    #mlarge_model.test(Model_path,X,y,[scale_X,b_scale_X],[scale_y,b_scale_y])
+    mlarge_model.test(Model_path,X,y,[scale.scale_X,scale.back_scale_X],[scale.scale_y,scale.back_scale_y])
+
+
+
+
+
+
 
 
 

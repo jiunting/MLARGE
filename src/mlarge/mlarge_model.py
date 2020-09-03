@@ -532,8 +532,17 @@ def train(files,train_params):
     np.save('./Test'+Testnum+'.npy',model_hist.history)
 
 
-#def prediction():
 
+
+def prediction(Model_path,X,y,[scale_X,b_scale_X],[scale_y,b_scale_y],):
+    import tensorflow as tf
+    import tensorflow.keras as keras
+    
+    if Model_path='Lin2020':
+        import mlarge
+        model_loaded=tf.keras.models.load_model(mlarge.__path__[0].replace('src/mlarge','models/Test81_weights.49475-0.000131.hdf5'),compile=False)
+    else:
+        model_loaded=tf.keras.models.load_model(Model_path,compile=False)
     
     
     
