@@ -64,7 +64,7 @@ train_params={
         'epochs':50000,
         'Drops':[0.2,0.2],
         'BS':128, #Batch Size for training
-        'BS_valid':1024, ######CHANGE it later!!!!! 1024
+        'BS_valid':1024, #validation batch size
         'BS_test':8192, #batch size for testing
         'scales':[0,1], #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
         'Testnum':'00',
@@ -85,10 +85,19 @@ if train_model:
 #Test MLARGE
 if test_model:
     import mlarge.scaling as scale
-    #mlarge_model.test(Model_path,X,y,[scale_X,b_scale_X],[scale_y,b_scale_y])
-    mlarge_model.test(Model_path,X,y,[scale.scale_X,scale.back_scale_X],[scale.scale_y,scale.back_scale_y])
-
-
+    Model_path='Lin2020'
+    X=np.load('Xtest00.npy')
+    y=np.load('ytest00.npy')
+    M=mlarge_model.Model(Model_path,X,y,f,scale.back_scale_X,f,scale.back_scale_y)
+    M.predict()
+    print(M.predictions) # predicted Mw time series
+    print(M.real) #the real Mw
+    #calculate model accuracy with 0.3 threshold
+    M.accuracy(0.3)
+    print('Mean model accuracy is {}'.format(M.sav_acc.mean())) #model accuracy 
+    #calculate model accuracy with 0.2 threshold, and use the final Mw as target
+    M.accuracy(0.2,False)
+    print('Mean model accuracy is {}'.format(M.sav_acc.mean())) #model accuracy 
 
 
 
