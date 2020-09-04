@@ -86,7 +86,9 @@ run_name = Prepend_Name
 ```
 > These should point you to the right directory to *.rupt/*.log and waveforms directory.   
 > The rupt files are named in run_name.xxxxxx.rupt.  
+
 #### Below shows the variables in the control file and their corresponding meaning
+
 |Variable Name  |Meaning |
 | :---------- | :-----------|
 | save_data_from_FQ   |True/False- Write E/N/Z.npy data and STFs from the above waveforms/ruptures directories   |
@@ -100,7 +102,72 @@ run_name = Prepend_Name
 | GFlist| Path of GFlist that used to generate rupture scenarios|
 | Sta_ordering| Path of station ordering file (keep always the same order while in training/prediction)|
 
+#### Then set the training parameters:
+```python
+train_params={
+        'Neurons':[256,256,128,128,64,32,8],
+        'epochs':50000,
+        'Drops':[0.2,0.2],
+        'BS':128, #Batch Size for training
+        'BS_valid':1024, #validation batch size
+        'BS_test':8192, #batch size for testing
+        'scales':[0,1], #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
+        'Testnum':'00', #Note use string
+        'FlatY':False, #using flat labeling?
+        'NoiseP':0.0, #possibility of noise event
+        'Noise_level':[1,10,20,30,40,50,60,70,80,90], #GNSS noise level
+        'rm_stans':[0,115], #remove number of stations from 0~115
+        'Min_stan_dist':[4,3], #minumum 4 stations within 3 degree
+        'Loss_func':'mse', #can be default loss function string or self defined loss
+        }
+```
+> The model architecture is fixed and can only be modified inside the function ```mlarge_model.py```
+
+#### After setting, start training by setting:
+```python
+#In control.py file 
+train_model=True
+```
+>then,
+```console
+python control.py
+```
+> The trainning model should be saved in the "Testnum" directory
 ****
+## 4. Test M-LARGE performance
+#### Now test the model by testing dataset
+```python
+#In control.py file 
+test_model=True
+```
+> and set the inputs
+
+|Variable Name  |Meaning |
+| :---------- | :-----------|
+|Model_path | Path of your model. Load example model by setting Model_path='Lin2020' |
+|X|Scaled/unscaled features in dimension of [samples,timesteps,Nfeatures] |
+|y|Labels in dimension of [samples,timesteps,1]|
+|scale_X|A scaling function f, so that f(X) is ready for training, if X is already scaled, pass a dummy function. |
+|back_scale_X|A backward scaling function bf, so that bf(X') is X |
+|scale_y|Same as X but scaling function for label|
+|back_scale_y|Same as X but scaling function for label|
+
+****
+> Finally run,
+```python
+>>import mlarge.scaling as scale
+>>M=mlarge_model.Model(Model_path,X,y,f,scale.back_scale_X,f,scale.back_scale_y) #load model as M
+>>M.predict() #make prediction
+>>print(M.predictions) # predicted Mw time series
+>>print(M.real) #the real Mw
+#calculate model accuracy with 0.3 threshold
+>>M.accuracy(0.3)
+>>print('Mean model accuracy is {}'.format(M.sav_acc.mean())) #model accuracy 
+#calculate model accuracy with 0.2 threshold, and use the final Mw as target
+>>M.accuracy(0.2,False)
+>>print('Mean model accuracy is {}'.format(M.sav_acc.mean())) #model accuracy 
+```
+
 
 [Mudpy]:https://github.com/dmelgarm/MudPy "Multi-data source modeling and inversion toolkit"
 [FK]:http://www.eas.slu.edu/People/LZhu/home.html "FK package from Dr. Zhu Lupei"
