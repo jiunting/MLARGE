@@ -10,6 +10,7 @@ A deep-learning based mega-earthquake magnitude predictor
   * [3.1 Check data structure](#Before-running-the-M-LARGE-make-sure-you-have-data-following-Mudpys-structure)
   * [3.2 Set the paths in control file](#Change-all-the-paths-in-the-controlpy-file)
   * [3.3 Variables in control file](#Below-shows-the-variables-and-their-corresponding-meaning)
+ * [4. Test M-LARGE model](#4-Test-M-LARGE-performance)
 
 ![][Exp_fig2] 
 
