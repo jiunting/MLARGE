@@ -534,15 +534,99 @@ def train(files,train_params):
 
 
 
-def prediction(Model_path,X,y,[scale_X,b_scale_X],[scale_y,b_scale_y],):
-    import tensorflow as tf
-    import tensorflow.keras as keras
+class Model():
+    def __init__(self,Model_path,X,y,scale_X,back_scale_X,scale_y,back_scale_y):
+        self.Model_path = Model_path
+        self.X = X
+        self.y = y
+        self.scale_X = scale_X
+        self.back_scale_X = back_scale_X
+        self.scale_y = scale_y
+        self.back_scale_y = back_scale_y
+        self.model=None
+        self.predictions=None
+        self.real=None
+
+    def check(self):
+        import numpy as np
+        assert len(self.X)==len(self.y)
+        print('Nsamples={}'.format(len(self.X)))
+        assert np.max(self.y)<10.0, 'error:Mw>10'
+        print('Input data are okay')
+
+    def predict(self):
+        import tensorflow as tf
+        import tensorflow.keras as keras
+        import matplotlib.pyplot as plt
+        Model_path,X,y,scale_X,back_scale_X,scale_y,back_scale_y=(self.Model_path,self.X,self.y,self.scale_X,self.back_scale_X,
+        self.scale_y,self.back_scale_y)
+        if Model_path=='Lin2020':
+            import mlarge
+            model_loaded=tf.keras.models.load_model(mlarge.__path__[0].replace('src/mlarge','models/Test81_weights.49475-0.000131.hdf5'),compile=False)
+        else:
+            model_loaded=tf.keras.models.load_model(Model_path,compile=False)
+
+        self.model=model_loaded
+        X1=scale_X(X)
+        predictions=model_loaded.predict(X1)
+        #scale the labels back to the real sense
+        predictions=back_scale_y(predictions)
+        self.predictions=predictions
+        y1=back_scale_y(y)
+        self.real=y1
+
+    def accuracy(self,tolerance=0.3,current=True):
+        import numpy as np
+        def get_accuracy(pred_Mw,real_Mw,tolorance=0.3,NoiseMw=False,tolorance_noise=False):
+            #Make accuracy calculation
+            #tolorance: constant +- tolorance consider as corrected prediction
+            #NoiseMw: what are the noise event magnitude? or False if no noise events
+            #tolorance_noise can be +- tolorance for noise magnitude, or False (do not count noise event)
+            if NoiseMw==False and tolorance_noise==False:
+                #only EQ events
+                #accuracy for EQ
+                n_success_EQ=np.where( np.abs(pred_Mw-real_Mw)<=tolorance )[0] #Mw is the Mw prediction at certain time t
+                return (len(n_success_EQ)/len(pred_Mw))*100, None
+            else:
+                #noise and EQ events
+                EQidx=np.where(real_Mw!=NoiseMw)[0]
+                Noiseidx=np.where(real_Mw==NoiseMw)[0]
+                #accuracy for EQ
+                n_success_EQ=np.where(np.abs(pred_Mw[EQidx]-real_Mw[EQidx])<=tolorance)[0] #Mw is the Mw prediction at certain time t
+                #accuracy for Noise
+                n_success_Noise=np.where(np.abs(pred_Mw[Noiseidx]-real_Mw[Noiseidx])<=tolorance_noise )[0] #Mw is the Mw prediction at certain time t
+                return (len(n_success_EQ)/len(pred_Mw))*100, (len(n_success_Noise)/len(Noiseidx))*100
+        predictions=self.predictions
+        y1=self.real
+        if predictions is None:
+            print('Please make prediction first by .prediction() method')
+            return
+        else: 
+            sav_acc=[]
+            if current:
+                for i_epoch in range(predictions.shape[1]):
+                    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],tolerance)
+                    sav_acc.append(acc_EQ)
+            else:
+                for i_epoch in range(predictions.shape[1]):
+                    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,-1],tolerance)
+                    sav_acc.append(acc_EQ)
+        sav_acc=np.array(sav_acc)
+        self.sav_acc=sav_acc
+
+
+
+            
     
-    if Model_path='Lin2020':
-        import mlarge
-        model_loaded=tf.keras.models.load_model(mlarge.__path__[0].replace('src/mlarge','models/Test81_weights.49475-0.000131.hdf5'),compile=False)
-    else:
-        model_loaded=tf.keras.models.load_model(Model_path,compile=False)
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
