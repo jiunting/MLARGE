@@ -546,7 +546,7 @@ class Model():
         self.model=None
         self.predictions=None
         self.real=None
-
+        self.sav_acc=None
     def check(self):
         import numpy as np
         assert len(self.X)==len(self.y)
@@ -614,6 +614,17 @@ class Model():
         sav_acc=np.array(sav_acc)
         self.sav_acc=sav_acc
 
+    def plot_acc(self,T,show=True):
+        if self.sav_acc is None:
+            print('Please make prediction first by .accuracy() method')
+            return
+        else:
+            import matplotlib.pyplot as plt
+            plt.plot(T,self.sav_acc)
+            plt.xlabel('Time(s)',fontsize=16)
+            plt.xlabel('Accuracy(%)',fontsize=16)
+            if show:
+                plt.show()
 
 
             
