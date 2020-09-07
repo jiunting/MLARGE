@@ -627,7 +627,13 @@ class Model():
                 plt.show()
 
 
-            
+    def show_data(self,show=True):
+        import matplolib.pyplot as plt
+        plt.hist(back_scale_y(self.y[:,-1,0]))
+        plt.xlabel('Mw',fontsize=16)
+        plt.ylabel('frequency',fontsize=16)
+        if show:
+            plt.show()
     
 
 
