@@ -157,7 +157,8 @@ test_model=True
 > Finally run,
 ```python
 >>import mlarge.scaling as scale
->>M=mlarge_model.Model(Model_path,X,y,f,scale.back_scale_X,f,scale.back_scale_y) #load model as M
+>>f = lambda a:a
+>>M = mlarge_model.Model(Model_path,X,y,f,scale.back_scale_X,f,scale.back_scale_y) #load model as M
 >>M.predict() #make prediction
 >>print(M.predictions) # predicted Mw time series
 >>print(M.real) #the real Mw
