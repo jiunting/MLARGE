@@ -622,7 +622,7 @@ class Model():
             import matplotlib.pyplot as plt
             plt.plot(T,self.sav_acc)
             plt.xlabel('Time(s)',fontsize=16)
-            plt.xlabel('Accuracy(%)',fontsize=16)
+            plt.ylabel('Accuracy(%)',fontsize=16)
             if show:
                 plt.show()
 

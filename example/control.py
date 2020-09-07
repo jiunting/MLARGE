@@ -88,6 +88,7 @@ if test_model:
     Model_path='Lin2020'
     X=np.load('Xtest00.npy')
     y=np.load('ytest00.npy')
+    f=lambda a : a
     M=mlarge_model.Model(Model_path,X,y,f,scale.back_scale_X,f,scale.back_scale_y)
     M.predict()
     print(M.predictions) # predicted Mw time series
