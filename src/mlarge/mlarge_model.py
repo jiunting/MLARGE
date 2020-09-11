@@ -201,15 +201,15 @@ class feature_gen(keras.utils.Sequence):
             if Dpath==None:
                 #E,N,Z are already a muge matrix (not recommended!)
                 #Station existence code, generally doesn't matter but you want the value close to features
-                Data=np.ones([E[0].shape[0],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
-                #Data=0.5*np.ones([E[0].shape[0],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
+                #Data=np.ones([E[0].shape[0],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
+                Data=0.5*np.ones([E[0].shape[0],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
             else:
                 #read the data from Directory, now the E/N/Z should be EQids (e.g. '002356')
                 #Dpath=/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_ENZ   Chile_full.002709.Z.npy
                 #test_read=glob.glob(Dpath+'/'+'Chile_full.'+E[0]+'.Z.npy')
                 #test_read=np.load(test_read[0])
                 test_read=np.load(E[0])
-                Data=np.ones([test_read.shape[1],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
+                Data=0.5*np.ones([test_read.shape[1],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
             if EQ_flag==0:
                 EQ_or_noise=np.random.rand() #EQ or noise?
             else:
