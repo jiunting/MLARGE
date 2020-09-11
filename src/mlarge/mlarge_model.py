@@ -630,7 +630,7 @@ class Model():
     def plot_snap(self,T=[60,120,240]):
         #plot prediction snap shot
         tcs_time=np.arange(102)*5+5
-        if self.predictions=None:
+        if self.predictions==None:
             print('Please make prediction first by .predict() method')
             return
         else:
