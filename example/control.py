@@ -16,7 +16,7 @@ import numpy as np
 save_data_from_FQ=False
 gen_list=False #generate abspath list file for MLARGE
 gen_EQinfo=False  #generate EQinfo file 
-train_model=Flase
+train_model=False
 test_model=True
 
 #---these paths are same as FQs path in Mudpy---

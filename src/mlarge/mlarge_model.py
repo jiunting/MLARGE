@@ -738,7 +738,7 @@ def train_cont(files,train_params,Model_path,):
     epochs=train_params['epochs']
     Drops=train_params['Drops']
     BS=train_params['BS'] #Batch Size for training
-    BS_valid=train_params['BS_valid'] #####################################CHANGE it later!!!!! 1024
+    BS_valid=train_params['BS_valid'] #batch size for validation
     BS_test=train_params['BS_test'] #batch size for testing
     scales=train_params['scales'] #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
     Testnum=train_params['Testnum']
