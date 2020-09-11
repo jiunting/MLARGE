@@ -663,12 +663,8 @@ class Model():
                 plt.show()
             else:
                 #plot and save all figures need to be done
+                pass
         
-                
-
-
-
-
 
     def show_data(self,show=True):
         import matplolib.pyplot as plt
