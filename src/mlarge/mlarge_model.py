@@ -753,7 +753,7 @@ def train_cont(files,train_params,Model_path,):
     logdir = "logs/scalars/Test"+Testnum+'_'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
     
-    if Model_path='Lin2020':
+    if Model_path=='Lin2020':
         network=tf.keras.models.load_model(mlarge.__path__[0].replace('src/mlarge','models/Test81_weights.49475-0.000131.hdf5'),compile=False)
     else:
         network=tf.keras.models.load_model(Model_path,compile=False)
