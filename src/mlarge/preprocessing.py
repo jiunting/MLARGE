@@ -193,7 +193,7 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo'):
     
     
     
-    
+
     
     
     
