@@ -624,42 +624,48 @@ class Model():
             plt.plot(T,self.sav_acc)
             plt.xlabel('Time(s)',fontsize=16)
             plt.ylabel('Accuracy(%)',fontsize=16)
+            plt.xlim([10,510])
+            plt.grid(True)
             if show:
                 plt.show()
 
-    def plot_snap(self,T=[60,120,240]):
+    def plot_snap(self,T=[60,120,240],err_range=0.3):
+        import matplotlib.pyplot as plt
+        import numpy as np
         #plot prediction snap shot
         tcs_time=np.arange(102)*5+5
-        if self.predictions==None:
+        if self.predictions is None:
             print('Please make prediction first by .predict() method')
             return
         else:
-            import matplotlib.pyplot as plt
             y=self.real
             y_pred=self.predictions
-            if T != 'All':
+            props = dict(boxstyle='round', facecolor='white', alpha=0.7)
+            if not(T is 'All'):
                 subplot_w=int(len(T)**0.5)
-                subplot_l=int(len(T)/subplot_w)
+                subplot_l=int(np.ceil(len(T)/subplot_w))
                 plt.figure()
                 for i,t in enumerate(T):
-                    idx = np.where(tcs_time==t)[0]
-                    plt.subplot(subplot_w,subplot_l,i)
-                    plt.plot(y[:,-1,0],y_pred[:,epoch,0],'o',markerfacecolor=[0.65,0.65,0.65],markeredgecolor='k',mew=0.25,ms=3.5)
+                    idx = np.where(tcs_time==t)[0][0]
+                    plt.subplot(subplot_w,subplot_l,i+1)
+                    plt.plot(y[:,-1,0],y_pred[:,idx,0],'o',markerfacecolor=[0.65,0.65,0.65],markeredgecolor='k',mew=0.25,ms=3.5)
                     plt.grid(True)
-                    plt.plot([y1.min(),y1.max()],[y1.min(),y1.max()],'k--',linewidth=2)
-                    plt.plot([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],'k--',linewidth=0.5)
-                    plt.plot([y1.min(),y1.max()],[y1.min()+err_range,y1.max()+err_range],'k--',linewidth=0.5)
-                    plt.fill_between([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],[y1.min()+err_range,y1.max()+err_range],facecolor='k',alpha=0.25)
+                    plt.plot([y.min(),y.max()],[y.min(),y.max()],'k--',linewidth=2)
+                    plt.plot([y.min(),y.max()],[y.min()-err_range,y.max()-err_range],'k--',linewidth=0.5)
+                    plt.plot([y.min(),y.max()],[y.min()+err_range,y.max()+err_range],'k--',linewidth=0.5)
+                    plt.fill_between([y.min(),y.max()],[y.min()-err_range,y.max()-err_range],[y.min()+err_range,y.max()+err_range],facecolor='k',alpha=0.25)
                     plt.xlim([7.4,9.52])
                     plt.ylim([7.4,9.52])
                     Xlim=plt.xlim()
                     Ylim=plt.ylim()
                     Xpos=(Xlim[1]-Xlim[0])*0.06+Xlim[0]
                     Ypos=(Ylim[1]-Ylim[0])*0.9+Ylim[0]
-                    plt.text(Xpos,Ypos,'%03d sec'%(epoch*5+5),bbox=props,fontsize=12)
+                    plt.text(Xpos,Ypos,'%03d sec'%(idx*5+5),bbox=props,fontsize=12)
                     plt.ylabel('Predicted Mw',fontsize=14)
                     plt.xlabel('Final Mw',fontsize=14)
+                    ax1=plt.gca()
                     ax1.tick_params(pad=0.3)
+                plt.subplots_adjust(left=0.08,top=0.88,right=0.97,bottom=0.1,wspace=0.07)
                 plt.show()
             else:
                 #plot and save all figures need to be done
@@ -667,8 +673,11 @@ class Model():
         
 
     def show_data(self,show=True):
-        import matplolib.pyplot as plt
-        plt.hist(back_scale_y(self.y[:,-1,0]))
+        import matplotlib.pyplot as plt
+        if self.real is None:
+            print('Please make prediction first by .predict() method')
+            return
+        plt.hist(self.real[:,-1,0])
         plt.xlabel('Mw',fontsize=16)
         plt.ylabel('frequency',fontsize=16)
         if show:
