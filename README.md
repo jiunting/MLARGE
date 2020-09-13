@@ -166,14 +166,11 @@ test_model=True
 #calculate model accuracy with 0.3 threshold
 >>M.accuracy(0.3)
 >>print('Mean model accuracy is {}'.format(M.sav_acc.mean())) #model accuracy 
-
-#calculate model accuracy with 0.2 threshold, and use the final Mw as target
->>M.accuracy(0.2,False)
->>print('Mean model accuracy is {}'.format(M.sav_acc.mean())) #model accuracy 
-
-#plot the result
+```
+Mean model accuracy with thres=0.3, current is 97.38%
+```python
+#plot the accuracy as a function of time
 >>M.plot_acc(T=np.arange(102)*5+5,show=True)
-
 ```
 
 
