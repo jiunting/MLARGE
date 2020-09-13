@@ -154,7 +154,7 @@ test_model=True
 |back_scale_y|Same as X but scaling function for label|
 
 ****
-> Finally run,
+> Finally, test the model by:
 ```python
 >>import mlarge.scaling as scale
 >>f = lambda a:a
