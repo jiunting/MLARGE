@@ -47,7 +47,7 @@ export PYTHONPATH=$PYTHONPATH:YOUR_PATH_MARGE/MLARGE/src
 
 > You can make your own rupture scenarios and waveforms. The Mudpy source code can be downloaded [HERE][Mudpy]  
 
-> Or download the example data directly from [HERE][Link_data]
+> Or download the example data directly from [![Data](https://zenodo.org/badge/DOI/10.5281/zenodo.4008690.svg)](https://doi.org/10.5281/zenodo.4008690)
 
 ****
 ## 3. Run M-LARGE training  
