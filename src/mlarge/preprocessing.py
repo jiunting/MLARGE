@@ -71,6 +71,11 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
     def M02Mw(M0):
         Mw=(2.0/3)*np.log10(M0*1e7)-10.7 #M0 input is dyne-cm, convert to N-M by 1e7
         return(Mw)
+
+    #another functon for M02Mw
+    #def M02Mw(M0):
+    #    Mw=(np.log10(M0)-9.1)/1.5 
+    #    return(Mw)
      
     def get_accM0(ruptfile,T=np.arange(5,515,5)):
         t,Mrate=viewFQ.source_time_function(ruptfile,epicenter=None,dt=0.05,t_total=520,stf_type='dreger',plot=False)
