@@ -195,14 +195,112 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo'):
                                                                         cenlat,cendep,hypo_slip,max_slip))
     OUT1.close()
         
-    
-    
-    
 
     
+def get_fault_LW_cent(rupt_file,dist_strike,dist_dip,center_fault,tcs_samples=np.arange(5,515,5),find_center=False):
+    #get fault Length/Width and centroid location one-by-one
+    #rupt_file : path of .rupt file
+    #dist_strike : path of distance matrix for strike
+    #center_fault :index for the center subfault
+    #plot fault and check where is the center(only needs to be done once)
+    dip=np.load(dist_dip)
+    strike=np.load(dist_strike)
+    new_x=dip[:,center_fault]
+    new_y=strike[:,center_fault]
+    rupt=np.genfromtxt(rupt_file)
+    rupt_time=rupt[:,-2]
+    slip=(rupt[:,8]**2 + rupt[:,9]**2)**0.5
+    mu=rupt[:,-1]
+    Area=rupt[:,10]*rupt[:,11]
+    if find_center:
+        order_x = np.zeros(len(dip)) #x=along D; y=along S
+        order_y = np.zeros(len(strike))
+        for i in range(len(dip)):
+            #for each i, what you know is points are larger(left) or smaller(right)
+            large_idx = np.where(dip[i,:]>0)[0]
+            small_idx = np.where(dip[i,:]<0)[0]
+            order_x[large_idx] -= 1
+            order_x[small_idx] += 1
+        for j in range(len(strike)):
+            large_idx = np.where(strike[j,:]>0)[0]
+            small_idx = np.where(strike[j,:]<0)[0]
+            order_y[large_idx] += 1
+            order_y[small_idx] -= 1
+        dist_xy=(order_x**2+order_y**2)**0.5
+        cent_idx=np.where(dist_xy==np.min(dist_xy))[0][0]
+        print('center index=',cent_idx)
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.subplot(1,2,1)
+        plt.scatter(rupt[:,1],rupt[:,2])
+        for nf in range(len(rupt)):
+            plt.text(rupt[nf,1],rupt[nf,2],rupt[nf,0])
+        plt.subplot(1,2,2)
+        plt.scatter(order_x,order_y,c=np.arange(len(order_x)),cmap=plt.cm.jet)
+        for k in range(len(order_x)):
+            plt.text(order_x[k],order_y[k],int(rupt[k,0]),fontsize=6)
+        plt.plot(order_x[cent_idx],order_y[cent_idx],'r^')
+        plt.show()
+    ##start calculate L/W/cent
+    rupt_L=[]
+    rupt_W=[]
+    cen_lon=[]
+    cen_lat=[]
+    cen_dep=[]
+    for t in tcs_samples:
+        ind=np.where( (slip!=0) & (rupt_time<=t) )[0]
+        rupt_W.append(new_x[ind].max() - new_x[ind].min())
+        rupt_L.append(new_y[ind].max() - new_y[ind].min())
+        curr_M0=mu[ind]*Area[ind] * slip[ind]
+        cen_lon.append( np.sum(rupt[ind,1] * curr_M0 / curr_M0.sum()) )
+        cen_lat.append( np.sum(rupt[ind,2] * curr_M0 / curr_M0.sum()) )
+        cen_dep.append( np.sum(rupt[ind,3] * curr_M0 / curr_M0.sum()) )
+    return rupt_L,rupt_W,cen_lon,cen_lat,cen_dep
+
+
     
+
+
+def get_fault_LW_cent_batch(home,project_name,center_fault,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y'):
+    #get all fault Length/Width and centroid location
+    #make sure there is only one distance matrix for strike/dip
+    import glob
+    import os
+    #dist_dip=glob.glob(home+project_name+'/')
+    #dist_strike=glob.glob(home+project_name+'/')
+    dip=np.load(dist_dip)
+    strike=np.load(dist_strike)
+    new_x=dip[:,center_fault]
+    new_y=strike[:,center_fault]
+    if not(os.path.exists(outdir)):
+        os.makedirs(outdir)
     
-    
+    ruptures=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*')
+    ruptures.sort()
+    for rupt_file in ruptures:
+        rupt=np.genfromtxt(rupt_file)
+        rupt_time=rupt[:,-2]
+        slip=(rupt[:,8]**2 + rupt[:,9]**2)**0.5
+        mu=rupt[:,-1]
+        Area=rupt[:,10]*rupt[:,11]
+        ##start calculate L/W/cent
+        rupt_L=[]
+        rupt_W=[]
+        cen_lon=[]
+        cen_lat=[]
+        cen_dep=[]
+        for t in tcs_samples:
+            ind=np.where( (slip!=0) & (rupt_time<=t) )[0]
+            rupt_W.append(new_x[ind].max() - new_x[ind].min())
+            rupt_L.append(new_y[ind].max() - new_y[ind].min())
+            curr_M0=mu[ind]*Area[ind] * slip[ind]
+            cen_lon.append( np.sum(rupt[ind,1] * curr_M0 / curr_M0.sum()) )
+            cen_lat.append( np.sum(rupt[ind,2] * curr_M0 / curr_M0.sum()) )
+            cen_dep.append( np.sum(rupt[ind,3] * curr_M0 / curr_M0.sum()) )
+        #save the result individually
+        np.save(outdir+'/'+project_name+'.'+eqid+'.E.npy',sav_E_sta)
+        
+    return rupt_L,rupt_W,cen_lon,cen_lat,cen_dep
     
     
     
