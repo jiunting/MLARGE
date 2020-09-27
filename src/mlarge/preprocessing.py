@@ -307,8 +307,11 @@ def get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=
         rupt_dep=np.array(rupt_dep)
         #save the result individually
         np.save(outdir+'/'+project_name+'.'+eqid+'.Width.npy',rupt_W)
-        
-    return rupt_L,rupt_W,cen_lon,cen_lat,cen_dep
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Length.npy',rupt_L)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Lon.npy',rupt_lon)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Lat.npy',rupt_lat)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Dep.npy',rupt_dep)
+
     
     
     

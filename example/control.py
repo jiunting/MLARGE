@@ -13,34 +13,35 @@ import numpy as np
 
 
 #============data preparation===============
-save_data_from_FQ=False
-gen_list=False #generate abspath list file for MLARGE
-gen_EQinfo=False  #generate EQinfo file 
-train_model=False
-test_model=True
+save_data_from_FQ = 0    #read .txt data and generate .npy data from FQ folders
+gen_list = 0             #generate abspath file list for MLARGE training
+gen_EQinfo = 0           #generate EQinfo file
+train_model = 0
+test_model = 1
 
 #---these paths are same as FQs path in Mudpy---
-home='/projects/tlalollin/jiunting/Fakequakes/'
-project_name='Chile_full_new'
-run_name='subduction'
+home = '/projects/tlalollin/jiunting/Fakequakes/'
+project_name = 'Chile_full_new'
+run_name = 'subduction'
 
 #---set the sampled time and output name---
-tcs_samples=np.arange(5,515,5)
-outdir_X='Chile_full_ENZ'
-outdir_y='Chile_full_y'
-out_list='Chile_full_Xylist'
-out_EQinfo='Chile_full_SRC'
+tcs_samples = np.arange(5,515,5)
+outdir_X = 'Chile_full_ENZ'
+outdir_y = 'Chile_full_y'
+out_list = 'Chile_full_Xylist'
+out_EQinfo = 'Chile_full_SRC'
 
 #---input file for station loc and ordering for training---
-GFlist='Chile_GNSS.gflist'
-Sta_ordering='ALL_staname_order.txt'
+GFlist = 'Chile_GNSS.gflist'
+Sta_ordering = 'ALL_staname_order.txt'
 
 
 
 if save_data_from_FQ:
     preprocessing.rdata_ENZ(home,project_name,run_name,Sta_ordering,tcs_samples=np.arange(5,515,5),outdir=outdir_X)
     preprocessing.rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
-    
+    preprocessing.get_fault_LW_cent_batch(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
+
 if gen_list:
     preprocessing.gen_Xydata_list(outdir_X,outdir_y,outname=out_list)
 
