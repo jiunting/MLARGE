@@ -93,7 +93,7 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
     for rupt in ruptures:
         T,sumMw=get_accM0(ruptfile=rupt,T=tcs_samples)
         eqid=rupt.split('/')[-1].split('.')[1]
-        np.save(outdir+'/'+project_name+'.'+eqid+'.npy',sumMw)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.STF.npy',sumMw)
         
     
 
@@ -261,13 +261,15 @@ def get_fault_LW_cent(rupt_file,dist_strike,dist_dip,center_fault,tcs_samples=np
     
 
 
-def get_fault_LW_cent_batch(home,project_name,center_fault,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y'):
+def get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y'):
     #get all fault Length/Width and centroid location
     #make sure there is only one distance matrix for strike/dip
     import glob
     import os
-    #dist_dip=glob.glob(home+project_name+'/')
-    #dist_strike=glob.glob(home+project_name+'/')
+    dist_dip=glob.glob(home+project_name+'/data/distances/'+'*'+run_name+'*.dip.npy')[0]
+    dist_strike=glob.glob(home+project_name+'/data/distances/'+'*'+run_name+'*.strike.npy')[0]
+    print('Loading dip distance matrix:',dist_dip)
+    print('Loading strike distance matrix:',dist_strike)
     dip=np.load(dist_dip)
     strike=np.load(dist_strike)
     new_x=dip[:,center_fault]
@@ -275,10 +277,11 @@ def get_fault_LW_cent_batch(home,project_name,center_fault,tcs_samples=np.arange
     if not(os.path.exists(outdir)):
         os.makedirs(outdir)
     
-    ruptures=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*')
+    ruptures=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*.rupt')
     ruptures.sort()
     for rupt_file in ruptures:
         rupt=np.genfromtxt(rupt_file)
+        eqid=rupt.split('/')[-1].split('.')[-2]
         rupt_time=rupt[:,-2]
         slip=(rupt[:,8]**2 + rupt[:,9]**2)**0.5
         mu=rupt[:,-1]
@@ -297,8 +300,13 @@ def get_fault_LW_cent_batch(home,project_name,center_fault,tcs_samples=np.arange
             cen_lon.append( np.sum(rupt[ind,1] * curr_M0 / curr_M0.sum()) )
             cen_lat.append( np.sum(rupt[ind,2] * curr_M0 / curr_M0.sum()) )
             cen_dep.append( np.sum(rupt[ind,3] * curr_M0 / curr_M0.sum()) )
+        rupt_W=np.array(rupt_W)
+        rupt_L=np.array(rupt_L)
+        rupt_lon=np.array(rupt_lon)
+        rupt_lat=np.array(rupt_lat)
+        rupt_dep=np.array(rupt_dep)
         #save the result individually
-        np.save(outdir+'/'+project_name+'.'+eqid+'.E.npy',sav_E_sta)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Width.npy',rupt_W)
         
     return rupt_L,rupt_W,cen_lon,cen_lat,cen_dep
     
