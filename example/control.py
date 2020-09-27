@@ -40,7 +40,8 @@ Sta_ordering = 'ALL_staname_order.txt'
 if save_data_from_FQ:
     preprocessing.rdata_ENZ(home,project_name,run_name,Sta_ordering,tcs_samples=np.arange(5,515,5),outdir=outdir_X)
     preprocessing.rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
-    preprocessing.get_fault_LW_cent_batch(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
+    center_fault=1519 #1519 for Chile
+    preprocessing.get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
 
 if gen_list:
     preprocessing.gen_Xydata_list(outdir_X,outdir_y,outname=out_list)
