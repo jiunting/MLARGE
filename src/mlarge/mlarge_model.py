@@ -409,12 +409,12 @@ class feature_gen_multi(keras.utils.Sequence):
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
-                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',,shuffle=True):
-        self.Dpath=Dpath #The path of the individual [E/N/U].npy data (should be a list or a numpy array)
-        self.E_path=E_path #The path of the individual [E/N/U].npy data (should be a list or a numpy array)
+                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',Xout='PGD',yout=['STF','Length','Width'],shuffle=True):
+        self.Dpath=Dpath #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
+        self.E_path=E_path #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.N_path=N_path
         self.Z_path=Z_path
-        self.y_path=y_path
+        self.y_path=y_path   # file name of y_path, string or list with multie string. This needs to be same length as yout
         self.EQinfo=EQinfo   #EQinfo file with the same number of lines of X,y list
         self.STAinfo=STAinfo #Stainfo files
         self.Nstan=Nstan
@@ -428,6 +428,8 @@ class feature_gen_multi(keras.utils.Sequence):
         self.BatchSize=BatchSize
         self.Mwfilter=Mwfilter #Threshold magnitude for generated events, or False means everything
         self.save_ID=save_ID #save the original eqid with this name (e.g. sav_pickedID_73_2_valid.npy)
+        self.Xout=Xout  #define the output feature X: a string of 'PGD' or 'ENZ'.
+        self.yout=yout  #define the output label y: a list selected from  ['STF','Lon','Lat','Dep','Length','Width']
         self.shuffle=shuffle  #shuffle always True (shuffle station and eqs?)
         #self.__check_shape__()
     def __len__(self):
@@ -547,8 +549,8 @@ class feature_gen_multi(keras.utils.Sequence):
         scale: scale the added noise (if any) to the same scale as Normalization (i.e. PGD_mean,PGD_var), if not scale, simply set scale=(0,1)
         index is useless here since I want every batches to be different
         '''
-        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,shuffle= \
-        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.shuffle)
+        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,Xout,yout,shuffle= \
+        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.Xout,self.yout,self.shuffle)
         #Get station information and ordering in X
         sta_loc_file=STAinfo['sta_loc_file']
         station_order_file=STAinfo['station_order_file']
@@ -578,14 +580,20 @@ class feature_gen_multi(keras.utils.Sequence):
                 #E,N,Z are already a muge matrix (not recommended!)
                 #Station existence code, generally doesn't matter but you want the value close to features
                 #Data=np.ones([E[0].shape[0],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
-                Data=0.5*np.ones([E[0].shape[0],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
+                if Xout=='PGD':
+                    Data=0.5*np.ones([E[0].shape[0],int(Nstan*(1+1))]) #filling the data matrix, set the status code as zero when remove station
+                elif Xout=='ENZ':
+                    Data=0.5*np.ones([E[0].shape[0],int(Nstan*(3+1))]) #filling the data matrix, set the status code as zero when remove station
             else:
                 #read the data from Directory, now the E/N/Z should be EQids (e.g. '002356')
                 #Dpath=/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_ENZ   Chile_full.002709.Z.npy
                 #test_read=glob.glob(Dpath+'/'+'Chile_full.'+E[0]+'.Z.npy')
                 #test_read=np.load(test_read[0])
-                test_read=np.load(E[0])
-                Data=0.5*np.ones([test_read.shape[1],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
+                test_read=np.load(E[0])  #shape=[Nsta,Timesteps]
+                if Xout=='PGD':
+                    Data=0.5*np.ones([test_read.shape[1],int(Nstan*(1+1))]) #filling the data matrix, set the status code as zero when remove station
+                elif Xout=='ENZ':
+                    Data=0.5*np.ones([test_read.shape[1],int(Nstan*(3+1))])
             if EQ_flag==0:
                 EQ_or_noise=np.random.rand() #EQ or noise?
             else:
@@ -602,8 +610,8 @@ class feature_gen_multi(keras.utils.Sequence):
                     #logfile='/projects/tlalollin/jiunting/Fakequakes/'+pre_pend+'/output/ruptures/subduction.'+real_EQid+'.log'
                     if not Mwfilter:
                         break
-                    #checkMw=get_mw(logfile)
-                    checkMw=EQinfo[int(rndEQidx[0])][1]     #y[int(rndEQidx[0])]
+                    #checkMw=get_mw(logfile) #check Mw from .log file
+                    checkMw=EQinfo[int(rndEQidx[0])][1]   #or simply check Mw from EQinf file
                     #print('checkMw,Mwfiter',checkMw,Mwfilter)
                     if checkMw>=Mwfilter:
                         break
@@ -615,10 +623,10 @@ class feature_gen_multi(keras.utils.Sequence):
                 else:
                     #print('# %d EQ selected:'%(nb),E[int(rndEQidx[0])])
                     #tmp_E=glob.glob(Dpath+'/'+'Chile_full.'+E[int(rndEQidx[0])]+'.E.npy') #Note E[int(rndEQidx[0])]==N[int(rndEQidx[0])]==Z[int(rndEQidx[0])]
-                    tmp_E=np.load(E[int(rndEQidx[0])])
+                    tmp_E=np.load(E[int(rndEQidx[0])]) #shape=[Nsta,Timesteps]
                     tmp_N=np.load(N[int(rndEQidx[0])])
                     tmp_Z=np.load(Z[int(rndEQidx[0])])
-                    tmp_E=tmp_E.T
+                    tmp_E=tmp_E.T  #shape=[Timesteps,Nsta]
                     tmp_N=tmp_N.T
                     tmp_Z=tmp_Z.T
                     #y_batch.append(y[int(rndEQidx[0])].reshape(-1,1)) #and its label
@@ -641,11 +649,20 @@ class feature_gen_multi(keras.utils.Sequence):
                     tmp_E[:,rmidx]=np.zeros(tmp_E.shape[0])
                     tmp_N[:,rmidx]=np.zeros(tmp_N.shape[0])
                     tmp_Z[:,rmidx]=np.zeros(tmp_Z.shape[0])
-                    #Also set the "status code" to 0,Nstan means skip ["station"] and go to status code
-                    Data[:,Nstan+rmidx]=np.zeros(tmp_E.shape[0])
-                PGD=D2PGD((tmp_E**2+tmp_N**2+tmp_Z**2)**0.5)
-                PGD=(PGD-scale[0])/scale[1]
-                Data[:,:Nstan]=PGD.copy()
+                    #Also set the "status code" to 0,Nstan means skip station columns and go to status code
+                    if Xout=='PGD':
+                        Data[:,Nstan+rmidx]=np.zeros(tmp_E.shape[0])
+                    elif Xout=='ENZ':
+                        Data[:,Nstan*3+rmidx]=np.zeros(tmp_E.shape[0])
+                if Xout=='PGD':
+                    PGD=D2PGD((tmp_E**2+tmp_N**2+tmp_Z**2)**0.5)
+                    PGD=(PGD-scale[0])/scale[1]
+                    Data[:,:Nstan]=PGD.copy()
+                elif Xout=='ENZ':
+                    ENZ_Data=np.hstack([tmp_E,tmp_N,tmp_Z])
+                    ENZ_Data=(ENZ_Data-scale[0])/scale[1]
+                    Data[:,:Nstan*3]=ENZ_Data.copy()
+
                 #--------check if the removed Data is meaningful---------------
                 ##############get hypocenter of the eq###################
                 #logfile='/projects/tlalollin/jiunting/Fakequakes/Chile_full/output/ruptures/subduction.'+E[int(rndEQidx[0])]+'.log'
@@ -656,9 +673,6 @@ class feature_gen_multi(keras.utils.Sequence):
                 #print('Input E,y:',E,y)
                 #print('rndEQIDX=%s,ID=%s, ID_from_EQinfo=%s eqlon,eqlat=%f %f'%(int(rndEQidx[0]),E[int(rndEQidx[0])],eqinfo[0],eqlon,eqlat))
                 #########################################################
-                #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=8)==False:
-                #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=5)==False: #This is for Test#48, and Test#49
-                #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=3)==False: #This is for Test#48, and Test#49, #63
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=3.0,min_Nsta=4)==False: #This is for Test#72 (Even the Melinka has 5 stations within 3deg),#73,#75
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=10)==False: #This is for Test#74 
                 if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=Min_stan_dist[1],min_Nsta=Min_stan_dist[0])==False: 
@@ -673,7 +687,11 @@ class feature_gen_multi(keras.utils.Sequence):
                     #1.use the "flat" label (assuming strong determinism)
                     y_batch.append(y[int(rndEQidx[0])][-1] * np.ones(tmp_E.shape[0],1)) #the flat label
                 else:
-                    #2.none-determinism
+                    #2.none-determinism or multiple output
+                    if type(y) is list:
+                        for iy in y:
+                            np.load(y[iy][int(rndEQidx[0])])
+                    
                     #_t,sumMw=get_accM0(E[int(rndEQidx[0])]) #E[int(rndEQidx[0])] is the eqID (e.g. '002340')
                     #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_STF/Chile_full.'+E[int(rndEQidx[0])]+'.npy') #or directly loaded from .npy file
                     #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_STF/Chile_full.'+real_EQid+'.npy') #or directly loaded from .npy file
@@ -795,11 +813,18 @@ def train(files,train_params):
     E=np.genfromtxt(E_file,'S')
     N=np.genfromtxt(N_file,'S')
     Z=np.genfromtxt(Z_file,'S')
-    y=np.genfromtxt(y_file,'S')
     #For python3, reading from the genfromtxt will be \b prepended
     E=np.array([i.decode() for i in E])
     N=np.array([i.decode() for i in N])
     Z=np.array([i.decode() for i in Z])
+    #dealing with label
+    if y_file is 'flat':
+        y='flat'
+    elif type(y_file) is list:
+        y=np.array([np.genfromtxt(y_file,'S') for iy in y_file])
+
+
+    y=np.genfromtxt(y_file,'S')
     y=np.array([i.decode() for i in y])
     
     #load EQinfo file into array
