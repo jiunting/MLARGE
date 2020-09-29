@@ -409,12 +409,12 @@ class feature_gen_multi(keras.utils.Sequence):
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
-                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',Xout='PGD',yout=['STF','Length','Width'],shuffle=True):
+                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',Xout='PGD',shuffle=True):
         self.Dpath=Dpath #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.E_path=E_path #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.N_path=N_path
         self.Z_path=Z_path
-        self.y_path=y_path   # file name of y_path, string or list with multie string. This needs to be same length as yout
+        self.y_path=y_path   # file name of y_path, string or list with multie string.
         self.EQinfo=EQinfo   #EQinfo file with the same number of lines of X,y list
         self.STAinfo=STAinfo #Stainfo files
         self.Nstan=Nstan
@@ -429,7 +429,6 @@ class feature_gen_multi(keras.utils.Sequence):
         self.Mwfilter=Mwfilter #Threshold magnitude for generated events, or False means everything
         self.save_ID=save_ID #save the original eqid with this name (e.g. sav_pickedID_73_2_valid.npy)
         self.Xout=Xout  #define the output feature X: a string of 'PGD' or 'ENZ'.
-        self.yout=yout  #define the output label y: a list selected from  ['STF','Lon','Lat','Dep','Length','Width']
         self.shuffle=shuffle  #shuffle always True (shuffle station and eqs?)
         #self.__check_shape__()
     def __len__(self):
@@ -456,7 +455,7 @@ class feature_gen_multi(keras.utils.Sequence):
             IN1.close()
             return float(Hypo_xyz[0]),float(Hypo_xyz[1])
         
-        def check_PGDs_hypoInfo(Data,STA,hypo,dist_thres,min_Nsta):
+        def check_PGDs_hypoInfo(Data,STA,nsta,hypo,dist_thres,min_Nsta):
             #Given the hypocenter, check if after the removal, the PGDs are still meaningful
             '''
                 Data: the PGD data [steps,features]
@@ -466,7 +465,7 @@ class feature_gen_multi(keras.utils.Sequence):
                 dist_thres:a distance from hypo
                 min_Nsta: at least min_Nsta stations closer than the above dist_thres
             '''
-            rec_idx=np.where(Data[-1,:121]!=0.0)[0] #the last PGD is not zero, means the station is not removed
+            rec_idx=np.where(Data[-1,:nsta]!=0.0)[0] #the last PGD is not zero, means the station is not removed
             #print('number of non-removed=',len(rec_idx))
             if len(rec_idx)<min_Nsta:
                 #oops, you removed all the near and far field stations
@@ -549,8 +548,8 @@ class feature_gen_multi(keras.utils.Sequence):
         scale: scale the added noise (if any) to the same scale as Normalization (i.e. PGD_mean,PGD_var), if not scale, simply set scale=(0,1)
         index is useless here since I want every batches to be different
         '''
-        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,Xout,yout,shuffle= \
-        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.Xout,self.yout,self.shuffle)
+        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,Xout,shuffle= \
+        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.Xout,self.shuffle)
         #Get station information and ordering in X
         sta_loc_file=STAinfo['sta_loc_file']
         station_order_file=STAinfo['station_order_file']
@@ -675,7 +674,7 @@ class feature_gen_multi(keras.utils.Sequence):
                 #########################################################
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=3.0,min_Nsta=4)==False: #This is for Test#72 (Even the Melinka has 5 stations within 3deg),#73,#75
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=10)==False: #This is for Test#74 
-                if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=Min_stan_dist[1],min_Nsta=Min_stan_dist[0])==False: 
+                if check_PGDs_hypoInfo(Data,STA,Nstan,hypo=[eqlon,eqlat],dist_thres=Min_stan_dist[1],min_Nsta=Min_stan_dist[0])==False:
                     #print('Not enough near field stations......try again! at nb=%d'%(nb)) #but not just try again, make sure next one should be an earthquake, not noise.
                     EQ_flag=1 #remove too many near-field station, run again in "EQ" case (not noise) so the possibility of EQ/noise states the same
                     continue #skip this generation, try again......
@@ -689,15 +688,19 @@ class feature_gen_multi(keras.utils.Sequence):
                 else:
                     #2.none-determinism or multiple output
                     if type(y) is list:
-                        for iy in y:
-                            np.load(y[iy][int(rndEQidx[0])])
-                    
-                    #_t,sumMw=get_accM0(E[int(rndEQidx[0])]) #E[int(rndEQidx[0])] is the eqID (e.g. '002340')
-                    #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_STF/Chile_full.'+E[int(rndEQidx[0])]+'.npy') #or directly loaded from .npy file
-                    #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_STF/Chile_full.'+real_EQid+'.npy') #or directly loaded from .npy file
-                    #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_full_new_STF/Chile_full_new.'+real_EQid+'.npy') #or directly loaded from .npy file
-                    sumMw=np.load(y[int(rndEQidx[0])]) #or directly load from the sorted data list
-                    y_batch.append(sumMw.reshape(-1,1))
+                        merg_y=[]
+                        for iy in range(len(y)):
+                            tmp_y=np.load(y[iy][int(rndEQidx[0])])
+                            merg_y.append(tmp_y.reshape(-1,1))
+                        merg_y=np.array(merg_y)
+                        y_batch.append(merg_y)
+                    else:
+                        #_t,sumMw=get_accM0(E[int(rndEQidx[0])]) #E[int(rndEQidx[0])] is the eqID (e.g. '002340')
+                        #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_STF/Chile_full.'+E[int(rndEQidx[0])]+'.npy') #or directly loaded from .npy file
+                        #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_STF/Chile_full.'+real_EQid+'.npy') #or directly loaded from .npy file
+                        #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_full_new_STF/Chile_full_new.'+real_EQid+'.npy') #or directly loaded from .npy file
+                        sumMw=np.load(y[int(rndEQidx[0])]) #or directly load from the sorted data list
+                        y_batch.append(sumMw.reshape(-1,1))
                 #--------------------------------------------
                 if add_code:
                     X_batch.append(Data)
@@ -771,7 +774,7 @@ class feature_gen_multi(keras.utils.Sequence):
                 EQ_flag=0
         X_batch=np.array(X_batch)
         y_batch=np.array(y_batch)
-        y_batch=y_batch/10.0 #normalized the y so that they are closer 
+        y_batch=y_batch/10.0 #normalized the y so that they are closer
 
         #######save the real_EQID########
         #Save the real EQid if you curious about the real EQID (e.g. to compare them with GFAST)
@@ -787,8 +790,8 @@ class feature_gen_multi(keras.utils.Sequence):
         #X_batch[:,:,:121]=X_batch[:,:,:121]**0.5 #take the sqrt #this is rerun #14
         #X_batch[:,:,:121]=(X_batch[:,:,:121]**0.5)/10.0 #take the sqrt and /10. This is rerun #19
         #If feature is smaller than 0.01, set to 0.01 (this is necessarily because log(0) is -inf will cause problem)
-        X_batch[:,:,:121]=np.where(X_batch[:,:,:121]>=0.01,X_batch[:,:,:121],0.01) #this mean if X>=0.01, return X, otherwise(i.e. <0.01), return 0.01
-        X_batch[:,:,:121]=np.log10(X_batch[:,:,:121]) #take the log10(x), starting from #67
+        X_batch[:,:,:Nstan]=np.where(X_batch[:,:,:Nstan]>=0.01,X_batch[:,:,:Nstan],0.01) #this mean if X>=0.01, return X, otherwise(i.e. <0.01), return 0.01
+        X_batch[:,:,:Nstan]=np.log10(X_batch[:,:,:Nstan]) #take the log10(x), starting from #67
         return X_batch,y_batch
     
 
@@ -821,11 +824,10 @@ def train(files,train_params):
     if y_file is 'flat':
         y='flat'
     elif type(y_file) is list:
-        y=np.array([np.genfromtxt(y_file,'S') for iy in y_file])
-
-
-    y=np.genfromtxt(y_file,'S')
-    y=np.array([i.decode() for i in y])
+        y=np.array([ [tmpy.decode() for tmpy in np.genfromtxt(iy,'S')] for iy in y_file  ])
+    else:
+        y=np.genfromtxt(y_file,'S')
+        y=np.array([i.decode() for i in y])
     
     #load EQinfo file into array
     EQinfo=np.genfromtxt(EQinfo_file)
