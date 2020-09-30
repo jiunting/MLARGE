@@ -794,8 +794,9 @@ class feature_gen_multi(keras.utils.Sequence):
             X_batch[:,:,:Nstan]=np.where(X_batch[:,:,:Nstan]>=0.01,X_batch[:,:,:Nstan],0.01) #this mean if X>=0.01, return X, otherwise(i.e. <0.01), return 0.01
             X_batch[:,:,:Nstan]=np.log10(X_batch[:,:,:Nstan]) #take the log10(x), starting from #67
         elif Xout=='ENZ':
-            X_batch[:,:,:Nstan*3]=np.where(X_batch[:,:,:Nstan*3]>=0.01,X_batch[:,:,:Nstan*3],0.01) #this mean if X>=0.01, return X, otherwise(i.e. <0.01), return 0.01
-            X_batch[:,:,:Nstan*3]=np.log10(X_batch[:,:,:Nstan*3]) #take the log10(x), starting from #67
+            X_batch[:,:,:Nstan*3]=X_batch[:,:,:Nstan*3] * 0.1 #simple scaling
+            #X_batch[:,:,:Nstan*3]=np.where(X_batch[:,:,:Nstan*3]>=0.01,X_batch[:,:,:Nstan*3],0.01) #this mean if X>=0.01, return X, otherwise(i.e. <0.01), return 0.01
+            #X_batch[:,:,:Nstan*3]=np.log10(X_batch[:,:,:Nstan*3]) #take the log10(x), starting from #67
         
         return X_batch,y_batch
     
