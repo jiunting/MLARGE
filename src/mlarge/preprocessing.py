@@ -95,8 +95,6 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
         eqid=rupt.split('/')[-1].split('.')[1]
         np.save(outdir+'/'+project_name+'.'+eqid+'.STF.npy',sumMw * 0.1) #scale the Mw = 0.1Mw
         
-    
-
 
 def gen_Xydata_list(X_dirs,y_dirs,outname='Datalist'):
     #make data list for MLARGE training
@@ -137,7 +135,72 @@ def gen_Xydata_list(X_dirs,y_dirs,outname='Datalist'):
     OUTN.close()
     OUTZ.close()
     OUTy.close()
-    
+
+
+for yt in y_type:
+    i_y_files=glob.glob(ydir+'/*.'+yt+'.npy')
+    i_y_files.sort()
+    try:
+        yy[yt]+=i_y_files
+    except:
+        yy[yt]=i_y_files[:]
+
+#yy[yt].append(i_y_files)
+        #
+#yy[yt]=i_y_files[:]
+
+
+def gen_multi_Xydata_list(X_dirs,y_dirs,y_type=['STF','Lon','Lat','Dep','Length','Width'],outname='Datalist'):
+    #make data list for MLARGE training
+    #dirs can be multipath
+    import glob
+    #X_dirs=['/projects/tlalollin/jiunting/Fakequakes/run/Chile_full_new_ENZ']
+    if not (type(X_dirs) is list):
+        X_dirs=[X_dirs]
+    if not (type(y_dirs) is list):
+        y_dirs=[y_dirs]
+    EE=[]
+    NN=[]
+    ZZ=[]
+    yy=[]
+    yy={}
+    for Xdir,ydir in zip(X_dirs,y_dirs):
+        E_files=glob.glob(Xdir+'/*.E.npy')
+        E_files.sort()
+        N_files=glob.glob(Xdir+'/*.N.npy')
+        N_files.sort()
+        Z_files=glob.glob(Xdir+'/*.Z.npy')
+        Z_files.sort()
+        for yt in y_type:
+            i_y_files=glob.glob(ydir+'/*.'+yt+'.npy')
+            i_y_files.sort()
+            try:
+                yy[yt]+=i_y_files
+            except:
+                yy[yt]=i_y_files[:]
+
+        EE=EE+E_files #joint files from different directories if any
+        NN=NN+N_files
+        ZZ=ZZ+Z_files
+    OUTE=open(outname+'_E'+'.txt','w')
+    OUTN=open(outname+'_N'+'.txt','w')
+    OUTZ=open(outname+'_Z'+'.txt','w')
+    for line in range(len(EE)):
+        OUTE.write('%s\n'%(EE[line]))
+        OUTN.write('%s\n'%(NN[line]))
+        OUTZ.write('%s\n'%(ZZ[line]))
+    OUTE.close()
+    OUTN.close()
+    OUTZ.close()
+    #output y
+    for ik in yy.keys():
+        OUT_ik=open(outname+'_'+ik+'.txt','w')
+        for line in yy[ik]:
+            OUT_ik.write('%s\n'%(line))
+        OUT_ik.close()
+
+
+
     
 def get_EQinfo(home,project_name,run_name,outname='EQinfo'):
     import glob
