@@ -137,19 +137,6 @@ def gen_Xydata_list(X_dirs,y_dirs,outname='Datalist'):
     OUTy.close()
 
 
-for yt in y_type:
-    i_y_files=glob.glob(ydir+'/*.'+yt+'.npy')
-    i_y_files.sort()
-    try:
-        yy[yt]+=i_y_files
-    except:
-        yy[yt]=i_y_files[:]
-
-#yy[yt].append(i_y_files)
-        #
-#yy[yt]=i_y_files[:]
-
-
 def gen_multi_Xydata_list(X_dirs,y_dirs,y_type=['STF','Lon','Lat','Dep','Length','Width'],outname='Datalist'):
     #make data list for MLARGE training
     #dirs can be multipath
@@ -162,7 +149,6 @@ def gen_multi_Xydata_list(X_dirs,y_dirs,y_type=['STF','Lon','Lat','Dep','Length'
     EE=[]
     NN=[]
     ZZ=[]
-    yy=[]
     yy={}
     for Xdir,ydir in zip(X_dirs,y_dirs):
         E_files=glob.glob(Xdir+'/*.E.npy')
