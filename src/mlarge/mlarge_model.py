@@ -687,20 +687,27 @@ class feature_gen_multi(keras.utils.Sequence):
                     y_batch.append(y[int(rndEQidx[0])][-1] * np.ones(tmp_E.shape[0],1)) #the flat label
                 else:
                     #2.none-determinism or multiple output
-                    if type(y) is list:
+                    if y.ndim==2:
                         merg_y=[]
                         for iy in range(len(y)):
                             tmp_y=np.load(y[iy][int(rndEQidx[0])])
-                            merg_y.append(tmp_y.reshape(-1,1))
+                            if len(merg_y)==0:
+                                merg_y=tmp_y.reshape(-1,1)
+                            else:
+                                merg_y=np.hstack([merg_y,tmp_y.reshape(-1,1)])
+                            #merg_y.append(tmp_y.reshape(-1,1))
                         merg_y=np.array(merg_y)
                         y_batch.append(merg_y)
-                    else:
+                    elif y.ndim==1:
+                        #the original label, only Mw
                         #_t,sumMw=get_accM0(E[int(rndEQidx[0])]) #E[int(rndEQidx[0])] is the eqID (e.g. '002340')
                         #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_STF/Chile_full.'+E[int(rndEQidx[0])]+'.npy') #or directly loaded from .npy file
                         #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_STF/Chile_full.'+real_EQid+'.npy') #or directly loaded from .npy file
                         #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_full_new_STF/Chile_full_new.'+real_EQid+'.npy') #or directly loaded from .npy file
                         sumMw=np.load(y[int(rndEQidx[0])]) #or directly load from the sorted data list
                         y_batch.append(sumMw.reshape(-1,1))
+                    else:
+                        print('Unknown y format, please check input y!')
                 #--------------------------------------------
                 if add_code:
                     X_batch.append(Data)
