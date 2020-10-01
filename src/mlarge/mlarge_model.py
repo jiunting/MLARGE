@@ -658,6 +658,8 @@ class feature_gen_multi(keras.utils.Sequence):
                     Data[:,:Nstan]=PGD.copy()
                 elif Xout=='ENZ':
                     ENZ_Data=np.hstack([tmp_E,tmp_N,tmp_Z])
+                    print('ENZdata=',ENZ_Data)
+                    print('scaling function=',Xscale)
                     #ENZ_Data=(ENZ_Data-scale[0])/scale[1]
                     #scale the feature by Xscale function
                     ENZ_Date=Xscale(ENZ_Date)
@@ -799,7 +801,7 @@ class feature_gen_multi(keras.utils.Sequence):
                 EQ_flag=0
         X_batch=np.array(X_batch)
         y_batch=np.array(y_batch)
-        #y_batch=y_batch/10.0 #normalized the y so that they are closer. Already done 
+        #y_batch=y_batch/10.0 #normalized the y so that they are closer. Already done
 
         #######save the real_EQID########
         #Save the real EQid if you curious about the real EQID (e.g. to compare them with GFAST)
