@@ -662,7 +662,7 @@ class feature_gen_multi(keras.utils.Sequence):
                     print('scaling function=',Xscale)
                     #ENZ_Data=(ENZ_Data-scale[0])/scale[1]
                     #scale the feature by Xscale function
-                    ENZ_Date=Xscale(ENZ_Date)
+                    ENZ_Data=Xscale(ENZ_Data)
                     Data[:,:Nstan*3]=ENZ_Data.copy()
 
                 #--------check if the removed Data is meaningful---------------
