@@ -830,6 +830,10 @@ def train(files,train_params):
         y=np.genfromtxt(y_file,'S')
         y=np.array([i.decode() for i in y])
     
+    ###If more than 1 output, y.shape is [Nparams X Samples] (i.e. Mw, Lon, Lat, Depth, Length, Width. -> Nparams=6)
+    ###
+    ###
+    
     #load EQinfo file into array
     EQinfo=np.genfromtxt(EQinfo_file)
     
@@ -839,13 +843,19 @@ def train(files,train_params):
     X_train_E=E[train_idx]
     X_train_N=N[train_idx]
     X_train_Z=Z[train_idx]
-    y_train=y[train_idx]
+    if y.ndim==2:
+        y_train=y[:,train_idx]
+    else:
+        y_train=y[train_idx]
     EQinfo_train=EQinfo[train_idx]
 
     X_valid_test_E=E[valid_and_test_idx]
     X_valid_test_N=N[valid_and_test_idx]
     X_valid_test_Z=Z[valid_and_test_idx]
-    y_valid_test=y[valid_and_test_idx]
+    if y.ndim==2:
+        y_valid_test=y[:,valid_and_test_idx]
+    else:
+        y_valid_test=y[valid_and_test_idx]
     EQinfo_valid_test=EQinfo[valid_and_test_idx]
     #Split the valid+test again to 0.2 and 0.1
     valid_idx,test_idx=train_test_split(np.arange(0,len(valid_and_test_idx)),test_size=0.1/0.3, random_state=16) #0.1 out of 0.3 is the testing dataset; 0.2 out of 0.3 is the validation
@@ -853,13 +863,19 @@ def train(files,train_params):
     X_valid_E=X_valid_test_E[valid_idx]
     X_valid_N=X_valid_test_N[valid_idx]
     X_valid_Z=X_valid_test_Z[valid_idx]
-    y_valid=y_valid_test[valid_idx]
+    if y.ndim==2:
+        y_valid=y_valid_test[:,valid_idx]
+    else:
+        y_valid=y_valid_test[valid_idx]
     EQinfo_valid=EQinfo_valid_test[valid_idx]
 
     X_test_E=X_valid_test_E[test_idx]
     X_test_N=X_valid_test_N[test_idx]
     X_test_Z=X_valid_test_Z[test_idx]
-    y_test=y_valid_test[test_idx]
+    if y.ndim==2:
+        y_test=y_valid_test[:,test_idx]
+    else:
+        y_test=y_valid_test[test_idx]
     EQinfo_test=EQinfo_valid_test[test_idx]
     #print('Total training data, labels=',len(X_train_E),len(y_train))
     #print(X_train_E,y_train)
