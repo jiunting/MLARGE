@@ -404,7 +404,7 @@ class feature_gen_multi(keras.utils.Sequence):
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
-                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',Xout='PGD', Xscale=, yscale=,shuffle=True):
+                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',Xout='PGD', Xscale=lambda x:x, yscale=lambda x:x,shuffle=True):
         self.Dpath=Dpath #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.E_path=E_path #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.N_path=N_path
@@ -685,7 +685,7 @@ class feature_gen_multi(keras.utils.Sequence):
                 #-----What labeling do you want to use??-----
                 if y is 'flat':
                     #1.use the "flat" label (assuming strong determinism)
-                    y_batch.append(y[int(rndEQidx[0])][-1] * np.ones(tmp_E.shape[0],1)) #the flat label
+                    y_batch.append( yscale(y[int(rndEQidx[0])][-1] * np.ones(tmp_E.shape[0],1)) ) #the flat label
                 else:
                     #2.none-determinism or multiple output
                     if y.ndim==2:
@@ -693,9 +693,9 @@ class feature_gen_multi(keras.utils.Sequence):
                         for iy in range(len(y)):
                             tmp_y=np.load(y[iy][int(rndEQidx[0])])
                             if len(merg_y)==0:
-                                merg_y=tmp_y.reshape(-1,1)
+                                merg_y=yscale[iy](tmp_y.reshape(-1,1))
                             else:
-                                merg_y=np.hstack([merg_y,tmp_y.reshape(-1,1)])
+                                merg_y=np.hstack([merg_y, yscale[iy](tmp_y.reshape(-1,1)) ])
                             #merg_y.append(tmp_y.reshape(-1,1))
                         merg_y=np.array(merg_y)
                         y_batch.append(merg_y)
@@ -706,7 +706,7 @@ class feature_gen_multi(keras.utils.Sequence):
                         #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_STF/Chile_full.'+real_EQid+'.npy') #or directly loaded from .npy file
                         #sumMw=np.load('/projects/tlalollin/jiunting/Fakequakes/run/Chile_full_new_STF/Chile_full_new.'+real_EQid+'.npy') #or directly loaded from .npy file
                         sumMw=np.load(y[int(rndEQidx[0])]) #or directly load from the sorted data list
-                        y_batch.append(sumMw.reshape(-1,1))
+                        y_batch.append(yscale(sumMw.reshape(-1,1)))
                     else:
                         print('Unknown y format, please check input y!')
                 #--------------------------------------------
@@ -799,7 +799,7 @@ class feature_gen_multi(keras.utils.Sequence):
                 EQ_flag=0
         X_batch=np.array(X_batch)
         y_batch=np.array(y_batch)
-        y_batch=y_batch/10.0 #normalized the y so that they are closer
+        #y_batch=y_batch/10.0 #normalized the y so that they are closer. Already done 
 
         #######save the real_EQID########
         #Save the real EQid if you curious about the real EQID (e.g. to compare them with GFAST)
