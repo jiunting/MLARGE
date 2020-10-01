@@ -658,8 +658,6 @@ class feature_gen_multi(keras.utils.Sequence):
                     Data[:,:Nstan]=PGD.copy()
                 elif Xout=='ENZ':
                     ENZ_Data=np.hstack([tmp_E,tmp_N,tmp_Z])
-                    print('ENZdata=',ENZ_Data)
-                    print('scaling function=',Xscale)
                     #ENZ_Data=(ENZ_Data-scale[0])/scale[1]
                     #scale the feature by Xscale function
                     ENZ_Data=Xscale(ENZ_Data)
