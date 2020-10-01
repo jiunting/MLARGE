@@ -404,7 +404,7 @@ class feature_gen_multi(keras.utils.Sequence):
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
-                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',Xout='PGD',shuffle=True):
+                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',Xout='PGD', Xscale=, yscale=,shuffle=True):
         self.Dpath=Dpath #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.E_path=E_path #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.N_path=N_path
@@ -424,6 +424,8 @@ class feature_gen_multi(keras.utils.Sequence):
         self.Mwfilter=Mwfilter #Threshold magnitude for generated events, or False means everything
         self.save_ID=save_ID #save the original eqid with this name (e.g. sav_pickedID_73_2_valid.npy)
         self.Xout=Xout  #define the output feature X: a string of 'PGD' or 'ENZ'.
+        self.Xscale=Xscale #scaling function for X (one scaling function apply to PGD or E,N,Z)
+        self.yscale=yscale #scaling function for y (multiple functions apply to each parameter)
         self.shuffle=shuffle  #shuffle always True (shuffle station and eqs?)
         #self.__check_shape__()
     def __len__(self):
@@ -543,8 +545,8 @@ class feature_gen_multi(keras.utils.Sequence):
         scale: scale the added noise (if any) to the same scale as Normalization (i.e. PGD_mean,PGD_var), if not scale, simply set scale=(0,1)
         index is useless here since I want every batches to be different
         '''
-        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,Xout,shuffle= \
-        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.Xout,self.shuffle)
+        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,Xout,Xscale,yscale,shuffle= \
+        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.Xout,self.Xscale,self.yscale,self.shuffle)
         #Get station information and ordering in X
         sta_loc_file=STAinfo['sta_loc_file']
         station_order_file=STAinfo['station_order_file']
@@ -650,11 +652,15 @@ class feature_gen_multi(keras.utils.Sequence):
                         Data[:,Nstan*3+rmidx]=np.zeros(tmp_E.shape[0])
                 if Xout=='PGD':
                     PGD=D2PGD((tmp_E**2+tmp_N**2+tmp_Z**2)**0.5)
-                    PGD=(PGD-scale[0])/scale[1]
+                    #PGD=(PGD-scale[0])/scale[1]
+                    #scale the feature by Xcale function
+                    PGD=Xscale(PGD)
                     Data[:,:Nstan]=PGD.copy()
                 elif Xout=='ENZ':
                     ENZ_Data=np.hstack([tmp_E,tmp_N,tmp_Z])
-                    ENZ_Data=(ENZ_Data-scale[0])/scale[1]
+                    #ENZ_Data=(ENZ_Data-scale[0])/scale[1]
+                    #scale the feature by Xscale function
+                    ENZ_Date=Xscale(ENZ_Date)
                     Data[:,:Nstan*3]=ENZ_Data.copy()
 
                 #--------check if the removed Data is meaningful---------------
@@ -707,7 +713,10 @@ class feature_gen_multi(keras.utils.Sequence):
                 if add_code:
                     X_batch.append(Data)
                 else:
-                    X_batch.append(PGD)
+                    if Xout=='PGD':
+                        X_batch.append(Data[:,:Nstan])
+                    elif Xout=='ENZ':
+                        X_batch.append(Data[:,:Nstan*3])
                 EQ_flag=0
             else:
                 #this is just noise
@@ -727,25 +736,38 @@ class feature_gen_multi(keras.utils.Sequence):
                         if Dpath==None:
                             #removed data
                             #Data[:,n]=np.zeros(E[0].shape[0])# but not just zero, this should be SCALED!!!
-                            Data[:,n]=(np.zeros(E[0].shape[0])-scale[0])/scale[1] # but not just zero, this should be SCALED!!! in order to keep consistent to EQ part. (Xnew[:,:,:121]*10)+5=original
-                            #remove code
-                            Data[:,Nstan+n]=np.zeros(E[0].shape[0])
+                            #Data[:,n]=(np.zeros(E[0].shape[0])-scale[0])/scale[1] # but not just zero, this should be SCALED!!! in order to keep consistent to EQ part. (Xnew[:,:,:121]*10)+5=original
+                            if Xout=='PGD':
+                                Data[:,n]=np.zeros(E[0].shape)
+                                Data[:,Nstan+n]=np.zeros(E[0].shape[0]) #remove code
+                            elif Xour=='ENZ':
+                                Data[:,n]=np.zeros([E[0].shape])
+                                Data[:,n+Nstan]=np.zeros([E[0].shape])
+                                Data[:,n+2*Nstan]=np.zeros([E[0].shape])
+                                Data[:,n+3*Nstan]=np.zeros([E[0].shape]) #remove code
                         else:
                             #test_read=glob.glob(Dpath+'/'+'Chile_full.'+E[0]+'.Z.npy')
                             #test_read=np.load(test_read[0]) #test_read=[Nsta,time_epochs]
                             test_read=np.load(E[0])
                             #removed data
                             #Data[:,n]=np.zeros(test_read.shape[1])
-                            Data[:,n]=(np.zeros(test_read.shape[1])-scale[0])/scale[1] #but not just zero! this should be SCALED!!!
-                            #remove code
-                            Data[:,Nstan+n]=np.zeros(test_read.shape[1])
+                            #Data[:,n]=(np.zeros(test_read.shape[1])-scale[0])/scale[1] #but not just zero! this should be SCALED!!!
+                            if Xout=='PGD':
+                                Data[:,n]=np.zeros(test_read.shape[1])
+                                Data[:,Nstan+n]=np.zeros(test_read.shape[1]) #remove code
+                            elif Xout=='ENZ':
+                                Data[:,n]=np.zeros([test_read.shape[1]])
+                                Data[:,n+Nstan]=np.zeros([test_read.shape[1]])
+                                Data[:,n+2*Nstan]=np.zeros([test_read.shape[1]])
+                                Data[:,n+3*Nstan]=np.zeros([test_read.shape[1]]) #remove code
                     else:
                         if Dpath==None:
                             np.random.shuffle(level)
                             f,Epsd,Npsd,Zpsd=gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False) #
                             Noise_add_E,Noise_add_N,Noise_add_Z=make_noise(E[0].shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
                             PGD=D2PGD((Noise_add_E**2+Noise_add_N**2+Noise_add_Z**2)**0.5)
-                            PGD=(PGD-scale[0])/scale[1]
+                            #PGD=(PGD-scale[0])/scale[1]
+                            PGD=Xscale(PGD)
                             Data[:,n]=PGD.copy()
                         else:
                             #test_read=glob.glob(Dpath+'/'+'Chile_full.'+E[0]+'.Z.npy')
@@ -755,7 +777,8 @@ class feature_gen_multi(keras.utils.Sequence):
                             f,Epsd,Npsd,Zpsd=gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False) #randomly make noise psd
                             Noise_add_E,Noise_add_N,Noise_add_Z=make_noise(test_read.shape[1],f,Epsd,Npsd,Zpsd,PGD=False)
                             PGD=D2PGD((Noise_add_E**2+Noise_add_N**2+Noise_add_Z**2)**0.5)
-                            PGD=(PGD-scale[0])/scale[1]
+                            #PGD=(PGD-scale[0])/scale[1]
+                            PGD=Xacale(PGD)
                             Data[:,n]=PGD.copy()
                 #When it is noise, don't care the hypo
                 #if check_PGDs_hypoInfo(Data,STA,hypo,dist_thres=5.0,min_Nsta=3):
@@ -789,16 +812,12 @@ class feature_gen_multi(keras.utils.Sequence):
         #else:
         #    print('Return a Training batch, value= %f RNDID=%7.5f'%(Data[23,55],RNDID))
         #ngen+=1
-        #X_batch[:,:,:121]=X_batch[:,:,:121]**0.5 #take the sqrt #this is rerun #14
-        #X_batch[:,:,:121]=(X_batch[:,:,:121]**0.5)/10.0 #take the sqrt and /10. This is rerun #19
         #If feature is smaller than 0.01, set to 0.01 (this is necessarily because log(0) is -inf will cause problem)
-        if Xout=='PGD':
-            X_batch[:,:,:Nstan]=np.where(X_batch[:,:,:Nstan]>=0.01,X_batch[:,:,:Nstan],0.01) #this mean if X>=0.01, return X, otherwise(i.e. <0.01), return 0.01
-            X_batch[:,:,:Nstan]=np.log10(X_batch[:,:,:Nstan]) #take the log10(x), starting from #67
-        elif Xout=='ENZ':
-            X_batch[:,:,:Nstan*3]=X_batch[:,:,:Nstan*3] * 0.1 #simple scaling
-            #X_batch[:,:,:Nstan*3]=np.where(X_batch[:,:,:Nstan*3]>=0.01,X_batch[:,:,:Nstan*3],0.01) #this mean if X>=0.01, return X, otherwise(i.e. <0.01), return 0.01
-            #X_batch[:,:,:Nstan*3]=np.log10(X_batch[:,:,:Nstan*3]) #take the log10(x), starting from #67
+        #if Xout=='PGD':
+        #    X_batch[:,:,:Nstan]=np.where(X_batch[:,:,:Nstan]>=0.01,X_batch[:,:,:Nstan],0.01) #this mean if X>=0.01, return X, otherwise(i.e. <0.01), return 0.01
+        #    X_batch[:,:,:Nstan]=np.log10(X_batch[:,:,:Nstan]) #take the log10(x), starting from #67
+        #elif Xout=='ENZ':
+        #    X_batch[:,:,:Nstan*3]=X_batch[:,:,:Nstan*3] * 0.1 #simple scaling
         
         return X_batch,y_batch
     
@@ -831,8 +850,6 @@ def train(files,train_params):
         y=np.array([i.decode() for i in y])
     
     ###If more than 1 output, y.shape is [Nparams X Samples] (i.e. Mw, Lon, Lat, Depth, Length, Width. -> Nparams=6)
-    ###
-    ###
     
     #load EQinfo file into array
     EQinfo=np.genfromtxt(EQinfo_file)
