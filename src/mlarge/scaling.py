@@ -1,5 +1,6 @@
 #scaling function for features
 import numpy as np
+import glob
 
 def scale_X(X,half=True):
     #Forward scaling
@@ -33,4 +34,49 @@ def back_scale_X(X,half=True):
 
 scale_y  = lambda y : y * 0.1
 back_scale_y  = lambda y : y * 10.0
+
+
+#=====scaling functions for multiple X, y========
+
+def get_ENZ_range(Xpath):
+    #load the data and have a sense of the value range
+    E_files=glob.glob(Xpath+'/*.E.npy')
+    E_files.sort()
+    N_files=glob.glob(Xpath+'/*.N.npy')
+    N_files.sort()
+    Z_files=glob.glob(Xpath+'/*.Z.npy')
+    Z_files.sort()
+    sav_min=np.inf
+    sav_max=-np.inf
+    for E_file in E_files:
+        E=np.load(E_file)
+        Emin=E.min()
+        Emax=E.max()
+        if Emin<sav_min:
+            sav_min=Emin
+        if Emax>sav_min:
+            sav_max=Emax
+
+    for N_file in N_files:
+        N=np.load(N_file)
+        Nmin=N.min()
+        Nmax=N.max()
+        if Nmin<sav_min:
+            sav_min=Nmin
+        if Nmax>sav_min:
+            sav_max=Nmax
+
+    for Z_file in Z_files:
+        Z=np.load(Z_file)
+        Zmin=Z.min()
+        Zmax=Z.max()
+        if Zmin<sav_min:
+            sav_min=Zmin
+        if Zmax>sav_min:
+            sav_max=Zmax
+    return sav_min,sav_max
+
+
+
+scale_ENZ = lambda X : X*0.1 #X is the ENZ displacement
 
