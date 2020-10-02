@@ -80,7 +80,7 @@ def get_ENZ_range(Xpath):
 def make_linear_scale(min_value,max_value,target_min=0,target_max=1):
     r=(target_max-target_min)/(max_value-min_value)
     shft=(max_value+min_value)*0.5
-    return lambda x:(x-shft)*r
+    return lambda x:(x-min_value)*r + min_value
 
 
 #some scaling for Chile
