@@ -77,6 +77,19 @@ def get_ENZ_range(Xpath):
     return sav_min,sav_max
 
 
+def make_linear_scale(min_value,max_value,target_min=0,target_max=1):
+    r=(target_max-target_min)/(max_value-min_value)
+    shft=(max_value+min_value)*0.5
+    return lambda x:(x-shft)*r
 
-scale_ENZ = lambda X : X*0.1 #X is the ENZ displacement
+
+#some scaling for Chile
+#minENZ=-44.00901794433594
+#maxENZ=10.02457046508789
+#make_linear_scale(-30,10,target_min=0,target_max=1)
+
+
+
+
+
 
