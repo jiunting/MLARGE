@@ -979,6 +979,175 @@ def train(files,train_params):
 
 
 
+
+def train_multi(files,train_params,output_params=1):
+    STAinfo={}
+    STAinfo['sta_loc_file']=files['GFlist']
+    STAinfo['station_order_file']=files['Sta_ordering']
+    EQinfo_file=files['EQinfo']
+    E_file=files['E']
+    N_file=files['N']
+    Z_file=files['Z']
+    y_file=files['y']
+    E=np.genfromtxt(E_file,'S')
+    N=np.genfromtxt(N_file,'S')
+    Z=np.genfromtxt(Z_file,'S')
+    #For python3, reading from the genfromtxt will be \b prepended
+    E=np.array([i.decode() for i in E])
+    N=np.array([i.decode() for i in N])
+    Z=np.array([i.decode() for i in Z])
+    #dealing with label
+    if y_file is 'flat':
+        y='flat'
+    elif type(y_file) is list:
+        y=np.array([ [tmpy.decode() for tmpy in np.genfromtxt(iy,'S')] for iy in y_file  ])
+    else:
+        y=np.genfromtxt(y_file,'S')
+        y=np.array([i.decode() for i in y])
+    
+    ###If more than 1 output, y.shape is [Nparams X Samples] (i.e. Mw, Lon, Lat, Depth, Length, Width. -> Nparams=6)
+    
+    #load EQinfo file into array
+    EQinfo=np.genfromtxt(EQinfo_file)
+    
+    
+    #train-test split
+    train_idx,valid_and_test_idx=train_test_split(np.arange(0,len(E)),test_size=0.3, random_state=16)
+    X_train_E=E[train_idx]
+    X_train_N=N[train_idx]
+    X_train_Z=Z[train_idx]
+    if y.ndim==2:
+        y_train=y[:,train_idx]
+    else:
+        y_train=y[train_idx]
+    EQinfo_train=EQinfo[train_idx]
+
+    X_valid_test_E=E[valid_and_test_idx]
+    X_valid_test_N=N[valid_and_test_idx]
+    X_valid_test_Z=Z[valid_and_test_idx]
+    if y.ndim==2:
+        y_valid_test=y[:,valid_and_test_idx]
+    else:
+        y_valid_test=y[valid_and_test_idx]
+    EQinfo_valid_test=EQinfo[valid_and_test_idx]
+    #Split the valid+test again to 0.2 and 0.1
+    valid_idx,test_idx=train_test_split(np.arange(0,len(valid_and_test_idx)),test_size=0.1/0.3, random_state=16) #0.1 out of 0.3 is the testing dataset; 0.2 out of 0.3 is the validation
+
+    X_valid_E=X_valid_test_E[valid_idx]
+    X_valid_N=X_valid_test_N[valid_idx]
+    X_valid_Z=X_valid_test_Z[valid_idx]
+    if y.ndim==2:
+        y_valid=y_valid_test[:,valid_idx]
+    else:
+        y_valid=y_valid_test[valid_idx]
+    EQinfo_valid=EQinfo_valid_test[valid_idx]
+
+    X_test_E=X_valid_test_E[test_idx]
+    X_test_N=X_valid_test_N[test_idx]
+    X_test_Z=X_valid_test_Z[test_idx]
+    if y.ndim==2:
+        y_test=y_valid_test[:,test_idx]
+    else:
+        y_test=y_valid_test[test_idx]
+    EQinfo_test=EQinfo_valid_test[test_idx]
+    #print('Total training data, labels=',len(X_train_E),len(y_train))
+    #print(X_train_E,y_train)
+    #print('Total validation data, labels=',len(X_valid_E),len(y_valid))
+    #print(X_valid_E,y_valid)
+    #print('Total test data, labels=',len(X_test_E),len(y_test))
+    #print(X_test_E,y_test)
+    
+    
+    #Build structure
+    HP=train_params['Neurons']
+    epochs=train_params['epochs']
+    Drops=train_params['Drops']
+    BS=train_params['BS'] #Batch Size for training
+    BS_valid=train_params['BS_valid'] #####################################CHANGE it later!!!!! 1024
+    BS_test=train_params['BS_test'] #batch size for testing
+    scales=train_params['scales'] #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
+    Testnum=train_params['Testnum']
+    #FlatY=False #just change y='flat' in the y input
+    NoiseP=train_params['NoiseP'] #possibility of noise event
+    Noise_level=train_params['Noise_level']
+    rm_stans=train_params['rm_stans'] #remove number of stations from 0~115
+    Min_stan_dist=train_params['Min_stan_dist'] #minumum 4 stations within 3 degree
+    Loss_func=train_params['Loss_func'] #can be default loss function string or self defined loss
+
+    #params for feature and label scaling
+    Xscale=train_params['Xscale']
+    yscale=train_params['yscale']
+
+    #add a tensorflow callback
+    logdir = "logs/scalars/Test"+Testnum+'_'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
+    
+    #MLARGE structure
+    network = models.Sequential()
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(102,242,)))
+    network.add(layers.LeakyReLU(alpha=0.1))
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[1])))
+    network.add(layers.LeakyReLU(alpha=0.1))
+    network.add(layers.Dropout(Drops[0]))
+    network.add(layers.LSTM(HP[2],return_sequences=True,input_shape=(102,242,),dropout=0.2, recurrent_dropout=0.2))
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[3])))
+    network.add(layers.LeakyReLU(alpha=0.1))
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[4])))
+    network.add(layers.LeakyReLU(alpha=0.1))
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[5])))
+    network.add(layers.LeakyReLU(alpha=0.1))
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[6])))
+    network.add(layers.LeakyReLU(alpha=0.1))
+    network.add(layers.Dropout(Drops[1]))
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(output_params,activation='relu')))
+    network.summary()
+    network.compile(loss=Loss_func,optimizer='adam')
+
+    #build generator
+    Dpath='Path_defined_in_file'
+    #print('Training_X inp:',X_train_E)
+    #print('Training_y inp:',y_train)
+    gtrain=feature_gen_multi(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=7.0,save_ID=False,Xout='ENZ',Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
+    gvalid=feature_gen_multi(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=7.0,save_ID='Run%s_valid_EQID.npy'%(Testnum),Xout='ENZ',Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
+    gtest=feature_gen_multi(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=7.0,save_ID='Run%s_test_EQID.npy'%(Testnum),Xout='ENZ',Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
+
+    #check file/dir exist,otherwise mkdir
+    if not(os.path.exists('./Test'+Testnum)):
+        os.makedirs('./Test'+Testnum)
+    #Add callback
+    CB=keras.callbacks.ModelCheckpoint(filepath='./Test'+Testnum+'/weights.{epoch:04d}-{val_loss:.6f}.hdf5',monitor='val_loss',save_best_only=True,mode='min',period=5)
+    
+    #print('Start generating validation data')
+    X_valid_out,y_valid_out=gvalid.__getitem__(1)
+    np.save('Xvalid'+Testnum+'.npy',X_valid_out)
+    np.save('yvalid'+Testnum+'.npy',y_valid_out)
+
+    #Also save the testing data 
+    #print('Start generating testing data')
+    X_test_out,y_test_out=gtest.__getitem__(1)
+    np.save('Xtest'+Testnum+'.npy',X_test_out)
+    np.save('ytest'+Testnum+'.npy',y_test_out)
+    
+    
+    #start training
+    model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
+
+    #save training result and training curve
+    tf.keras.models.save_model(network,'./Test'+Testnum+'.h5py')
+    np.save('./Test'+Testnum+'.npy',model_hist.history)
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Model():
     def __init__(self,Model_path,X,y,scale_X,back_scale_X,scale_y,back_scale_y):
         self.Model_path = Model_path

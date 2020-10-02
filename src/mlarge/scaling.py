@@ -83,10 +83,25 @@ def make_linear_scale(min_value,max_value,target_min=0,target_max=1):
     return lambda x:(x-min_value)*r + target_min
 
 
-#some scaling for Chile
-#minENZ=-44.00901794433594
-#maxENZ=10.02457046508789
-#make_linear_scale(-30,10,target_min=0,target_max=1)
+#Note of parameters range for Chilean fakequakes
+#ENZ=(-44.00901794433594,10.02457046508789)
+#Mw=(7.3577,9.6254)
+#hypo_Lon=(-75.68104,-69.73932)
+#hypo_Lat=(-43.91879,-18.028)
+#hypo_dep=(4.3,53.69)
+#cent_Lon=(-75.23913,-69.86168)
+#cent_Lat=(-43.5795,-18.19313)
+#cent_dep=(8.6,50.2900)
+
+#Xscale=make_linear_scale(-15,10,target_min=0,target_max=1) #displacement reaches -44 is very unusual
+#yscale=[
+#        make_linear_scale(7.5,9.5,target_min=0,target_max=1), #Mw
+#        make_linear_scale(-75.5,-69.5,target_min=0,target_max=1), #cent_lon
+#        make_linear_scale(-43.5,-18.5,target_min=0,target_max=1), #cent_lat
+#        make_linear_scale(8.5,50,target_min=0,target_max=1), #cent_dep
+#        make_linear_scale(0,1200,target_min=0,target_max=1), #length
+#        make_linear_scale(0,150,target_min=0,target_max=1), #width
+#]
 
 
 

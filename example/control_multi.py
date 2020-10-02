@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Aug 13 12:55:51 2020
+Created on Thu Oct 02 14:50:31 2020
 
 @author: timlin
 """
@@ -16,8 +16,8 @@ import numpy as np
 save_data_from_FQ = 0    #read .txt data and generate .npy data from FQ folders
 gen_list = 0             #generate abspath file list for MLARGE training
 gen_EQinfo = 0           #generate EQinfo file
-train_model = 0
-test_model = 1
+train_model = 1
+test_model = 0
 
 #---these paths are same as FQs path in Mudpy---
 home = '/projects/tlalollin/jiunting/Fakequakes/'
@@ -31,17 +31,14 @@ outdir_y = 'Chile_full_y'
 out_list = 'Chile_full_Xylist'
 out_EQinfo = 'Chile_full_SRC'
 
-#---input file for station loc and ordering for training---
-GFlist = 'Chile_GNSS.gflist'
-Sta_ordering = 'ALL_staname_order.txt'
 
 
 
 if save_data_from_FQ:
     preprocessing.rdata_ENZ(home,project_name,run_name,Sta_ordering,tcs_samples=np.arange(5,515,5),outdir=outdir_X)
     preprocessing.rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
-    #center_fault=1519 #1519 for Chile
-    #preprocessing.get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
+    center_fault=1519 #1519 for Chile
+    preprocessing.get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=np.arange(5,515,5),outdir=outdir_y)
 
 if gen_list:
     preprocessing.gen_Xydata_list(outdir_X,outdir_y,outname=out_list)
@@ -57,8 +54,22 @@ files={
         'E':'Chile_full_Xylist_E.txt', #list of E data
         'N':'Chile_full_Xylist_N.txt',
         'Z':'Chile_full_Xylist_Z.txt',
-        'y':'Chile_full_Xylist_y.txt', #read y directly in the generator
+        'y':['Chile_full_Xylist_STF.txt','Chile_full_Xylist_Lon.txt','Chile_full_Xylist_Lat.txt',
+             'Chile_full_Xylist_Dep.txt','Chile_full_Xylist_Length.txt','Chile_full_Xylist_Width.txt'], #read y directly in the generator
         }
+
+
+from mlarge.scaling import make_linear_scale
+Xscale=make_linear_scale(-15,10,target_min=0,target_max=1)
+yscale=[
+        make_linear_scale(7.5,9.5,target_min=0,target_max=1), #Mw
+        make_linear_scale(-75.5,-69.5,target_min=0,target_max=1), #cent_lon
+        make_linear_scale(-43.5,-18.5,target_min=0,target_max=1), #cent_lat
+        make_linear_scale(8.5,50,target_min=0,target_max=1), #cent_dep
+        make_linear_scale(0,1000,target_min=0,target_max=1), #length
+        make_linear_scale(0,150,target_min=0,target_max=1), #width
+        ]
+
 
 #the structure in default: Dense+Dense+Drop+LSTM+Dense+Dense+Dense+Dense+Drop+Output
 train_params={
@@ -76,12 +87,17 @@ train_params={
         'rm_stans':[0,115], #remove number of stations from 0~115
         'Min_stan_dist':[4,3], #minumum 4 stations within 3 degree
         'Loss_func':'mse', #can be default loss function string or self defined loss
+        'Xscale':Xscale,
+        'yscale':yscale,
         }
+
+
 
 
 #Train MLARGE
 if train_model:
-    mlarge_model.train(files,train_params)
+    #mlarge_model.train(files,train_params)
+    mlarge_model.train_multi(files,train_params,output_params=6) #final output parameters=6
 
 
 #Test MLARGE
