@@ -97,7 +97,7 @@ train_params={
 #Train MLARGE
 if train_model:
     #mlarge_model.train(files,train_params)
-    mlarge_model.train_multi(files,train_params,output_params=6) #final output parameters=6
+    mlarge_model.train_multi(files,train_params,Nstan=121,output_params=6) #final output parameters=6
 
 
 #Test MLARGE
