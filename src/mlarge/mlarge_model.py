@@ -822,7 +822,8 @@ class feature_gen_multi(keras.utils.Sequence):
         return X_batch,y_batch
     
 
-    
+
+
        
 def train(files,train_params):
     STAinfo={}
