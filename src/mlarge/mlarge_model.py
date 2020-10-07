@@ -1100,7 +1100,8 @@ def train_multi(files,train_params,Nstan=121,output_params=1):
     network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[6])))
     network.add(layers.LeakyReLU(alpha=0.1))
     network.add(layers.Dropout(Drops[1]))
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(output_params,activation='relu')))
+    #network.add(tf.keras.layers.TimeDistributed(layers.Dense(output_params,activation='relu')))
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(output_params))) #remove relu for only positive value
     network.summary()
     network.compile(loss=Loss_func,optimizer='adam')
 
