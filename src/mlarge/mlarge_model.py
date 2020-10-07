@@ -1129,8 +1129,14 @@ def train_multi(files,train_params,Nstan=121,output_params=1):
     X_test_out,y_test_out=gtest.__getitem__(1)
     np.save('Xtest'+Testnum+'.npy',X_test_out)
     np.save('ytest'+Testnum+'.npy',y_test_out)
-    
-    
+
+    #save training parameters
+    save_train_params = train_params.copy()
+    del save_train_params['Xscale']
+    del save_train_params['yscale']
+    np.save('./Test'+Testnum+'/train_params.npy',save_train_params)
+
+
     #start training
     model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
 
