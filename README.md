@@ -170,6 +170,9 @@ test_model=True
 ```
 Mean model accuracy is 97.38%  
 Note that the accuracy is low at the begining (i.e. 30 sec) and then increases when more data available.
+Print the model accuracy as a function of time.
+>>print(M.sav_acc)
+
 ```python
 #plot the accuracy as a function of time
 >>M.plot_acc(T=np.arange(102)*5+5,show=True)
