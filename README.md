@@ -169,9 +169,11 @@ test_model=True
 >>print('Mean model accuracy is {:.2f}%'.format(M.sav_acc.mean())) #model accuracy 
 ```
 Mean model accuracy is 97.38%  
-Note that the accuracy is low at the begining (i.e. 30 sec) and then increases when more data available.
+Note that the accuracy is low at the begining (i.e. 30 sec) and then increases when more data available.  
 Print the model accuracy as a function of time.  
+```python
 >>print(M.sav_acc)  
+```
 
 ```python
 #plot the accuracy as a function of time
