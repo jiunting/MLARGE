@@ -86,6 +86,33 @@ def make_linear_scale(min_value,max_value,target_min=0,target_max=1):
     return lambda x:(x-min_value)*r + target_min   # cannot be saved by pickle
     #return f
 
+'''
+A way to save functions in npy, however, the function input in M-LARGE will be complicated
+class make_linear_scale():
+    def __init__(self,min_value,max_value,target_min=0,target_max=1):
+        self.min_value = min_value
+        self.max_value = max_value
+        self.target_min = target_min
+        self.target_max = target_max
+        
+    def scale(self):
+        r=(self.target_max-self.target_min)/(self.max_value-self.min_value)
+        shft=(self.max_value+self.min_value)*0.5
+        return lambda x:(x-self.min_value)*r + self.target_min
+
+class make_X_scale():
+    #make_X_scale(np.arctan,0,0.1)
+    def __init__(self,function,add,mul):
+        self.function = function
+        self.add = add
+        self.mul = mul
+    
+    def scale(self):
+        Xscale = lambda x : self.function((x+self.add)*self.mul)
+        return Xscale
+'''
+
+
 
 #Note of parameters range for Chilean fakequakes
 #ENZ=(-44.00901794433594,10.02457046508789)

@@ -128,16 +128,24 @@ sav_accEQ_3=[] #accuracy function for threshold=0.3
 sav_accEQ_2=[]
 sav_accEQ_1=[]
 for i_epoch in range(102):
-    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.3)
-    sav_accEQ_3.append(acc_EQ)
-    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.2)
-    sav_accEQ_2.append(acc_EQ)
-    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.1)
-    sav_accEQ_1.append(acc_EQ)
-
+    if Misfit_current:
+        acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.3)
+        sav_accEQ_3.append(acc_EQ)
+        acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.2)
+        sav_accEQ_2.append(acc_EQ)
+        acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],0.1)
+        sav_accEQ_1.append(acc_EQ)
+    else:
+        acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,-1],0.3)
+        sav_accEQ_3.append(acc_EQ)
+        acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,-1],0.2)
+        sav_accEQ_2.append(acc_EQ)
+        acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,-1],0.1)
+        sav_accEQ_1.append(acc_EQ)
 
 plt.figure()
-plt.plot(np.arange(102)*5+5,sav_accEQ_3,'bo-')
+print(sav_accEQ_1)
+plt.plot(np.arange(105)*5+5,sav_accEQ_3,'bo-')
 plt.plot(np.arange(102)*5+5,sav_accEQ_2,'yo-')
 plt.plot(np.arange(102)*5+5,sav_accEQ_1,'ro-')
 plt.xlabel('Time (sec)',fontsize=14)
@@ -385,8 +393,8 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=Fa
 #            plt.plot(y1[idx_finalM,epoch,0],predictions[idx_finalM,epoch,0],'r.')
 #        if len(idx_NfinalM)>0:
 #            plt.plot(y1[idx_NfinalM,epoch,0],predictions[idx_NfinalM,epoch,0],'bo',markerfacecolor='None',mew=0.5,ms=3)
-#        plt.plot(y1[:,epoch,0],predictions[:,epoch,0],'o',markerfacecolor=[0.6,0.6,0.6],markeredgecolor='k',mew=0.25,ms=3.5) #X is target Mw
-        plt.plot(y1[:,-1,0],predictions[:,epoch,0],'o',markerfacecolor=[0.65,0.65,0.65],markeredgecolor='k',mew=0.25,ms=3.5) # X is final Mw
+        plt.plot(y1[:,epoch,0],predictions[:,epoch,0],'o',markerfacecolor=[0.6,0.6,0.6],markeredgecolor='k',mew=0.25,ms=3.5) #X is target Mw
+#        plt.plot(y1[:,-1,0],predictions[:,epoch,0],'o',markerfacecolor=[0.65,0.65,0.65],markeredgecolor='k',mew=0.25,ms=3.5) # X is final Mw
         #plt.scatter(filt_y1[:,-1,0],filt_misfit[:,int(nsub*t_step),0],c=sav_lon,s=10,cmap=plt.cm.bwr)
         plt.plot([y1.min(),y1.max()],[y1.min(),y1.max()],'k--',linewidth=2)
         plt.plot([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],'k--',linewidth=0.5)
@@ -400,13 +408,17 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=Fa
         #-----plot real data predictions (run the later part to get the predictions_real first!)----------
         EQMw=[8.3,8.1,8.8,7.6,7.7]
         EQs=['Illapel2015','Iquique2014','Maule2010','Melinka2016','Iquique_aftershock2014']
+        STFs=['Illapel.mr.npy','Iquique.mr.npy','Maule.mr.npy','Melinka.mr.npy','Iquique_aft.mr.npy']
         smbs=['^','s','*','p','D']
 #        smbs_size=[20,17,23,20,17]
         smbs_size=[16,13,19,16,13]
         colrs=[[0,0,1],[0,1,0],[1,0,0],[1,1,0],[1,0,1]]
         hans=[]
+        predictions_real=np.load('RealEQs_pred_Test81.npy')
         for neq in range(len(predictions_real)):
-            han=plt.plot(EQMw[neq],predictions_real[neq,epoch,0],smbs[neq],mew=0.25,ms=smbs_size[neq],markerfacecolor=colrs[neq],markeredgecolor='k')
+            #han=plt.plot(EQMw[neq],predictions_real[neq,epoch,0],smbs[neq],mew=0.25,ms=smbs_size[neq],markerfacecolor=colrs[neq],markeredgecolor='k') #final Mw
+            AA=np.load('/Users/timlin/Documents/Project/MLARGE/data/STF_realEQs/'+STFs[neq])
+            han=plt.plot(AA[epoch,1],predictions_real[neq,epoch,0],smbs[neq],mew=0.25,ms=smbs_size[neq],markerfacecolor=colrs[neq],markeredgecolor='k') #current real Mw
             hans.append(han)
         #---------END real data predictions---------------------------------------------------------------
         if Zoomed:
@@ -416,17 +428,19 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=Fa
         Ylim=plt.ylim()
         Xpos=(Xlim[1]-Xlim[0])*0.06+Xlim[0]
         Ypos=(Ylim[1]-Ylim[0])*0.9+Ylim[0]
-        plt.text(Xpos,Ypos,'%03d sec'%(epoch*5+5),bbox=props,fontsize=17)
+        plt.text(Xpos,Ypos,'%d s'%(epoch*5+5),bbox=props,fontsize=17)
         plt.ylabel('Predicted Mw',fontsize=19)
-#        plt.xlabel('Target Mw',fontsize=19)
-        plt.xlabel('Final Mw',fontsize=19)
+        plt.xlabel('Real Mw',fontsize=19)
+#        plt.xlabel('Final Mw',fontsize=19)
         plt.xticks(fontsize=17, rotation=30)
         #ax1.set_aspect('equal')
         ax1.tick_params(pad=0.3)
         plt.yticks(fontsize=17, rotation=0)
 #        plt.legend((hans[0][0],hans[1][0],hans[2][0],hans[3][0],hans[4][0]),('Illapel','Iquique','Maule','Melinka','Iquique aft.'),loc=0,fontsize=25)
-        if epoch==11:
-            #60 sec
+#        if epoch==11:
+#            #60 sec
+        if epoch>=0:
+            #all sec
             plt.legend((hans[3][0],hans[4][0],hans[1][0],hans[0][0],hans[2][0]),('Melinka','Iquique aft.','Iquique','Illapel','Maule'),loc=4,fontsize=14,frameon=True)
 #            break
         if save_dir:
@@ -442,7 +456,517 @@ def make_epoch_fitting(real,pred,err_range,Zoomed=True,save_dir='Tmp',savegif=Fa
         imageio.mimsave(save_dir+'/movie.gif', images)
 
 #save all the predictions snapshot
-make_epoch_fitting(y1,predictions,0.3,Zoomed=True,save_dir='%s_figs'%(run_name),savegif=False)
+make_epoch_fitting(y1,predictions,0.3,Zoomed=True,save_dir='%s_figs_new'%(run_name),savegif=False)
+
+#========================manually plot the Fig.2========================
+def groupMw_boxinp(y_real,y_pred,G,minMw=7.2,rng_mw=0.2):
+    #Group the data, and make it for boxplot input (for GFAST v.s. M-LARGE)
+    sav_avgMw=[]
+    sav_std=[]
+    y_real=np.array(y_real)
+    y_pred=np.array(y_pred)
+    data={}
+    sav_x=[]
+    sav_y=[]
+    print(type(y_real))
+    for i in G:
+        idx=np.where(  np.abs(y_real-i) < rng_mw )[0]
+        x=['%3.2f'%(round(j+0.0001,2)) for j in np.ones(len(idx))*i.reshape(-1)]
+        y=y_pred[idx].reshape(-1)
+        sav_x=np.hstack([sav_x,x])
+        sav_y=np.hstack([sav_y,y])
+    data['GpMw']=sav_x
+    data['PredMw']=sav_y
+    return data
+
+
+plt.figure(figsize=(14,10))
+err_range = 0.3
+plt.subplot(2,3,1)
+plt.grid(True)
+epoch = 11 #11*5+5 = 60s
+plt.plot(y1[:,epoch,0],predictions[:,epoch,0],'o',markerfacecolor=[0.65,0.65,0.65],markeredgecolor='k',mew=0.25,ms=3.5)
+plt.plot([y1.min(),y1.max()],[y1.min(),y1.max()],'k--',linewidth=2)
+plt.plot([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],'k--',linewidth=0.5)
+plt.plot([y1.min(),y1.max()],[y1.min()+err_range,y1.max()+err_range],'k--',linewidth=0.5)
+plt.fill_between([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],[y1.min()+err_range,y1.max()+err_range],facecolor='k',alpha=0.25)
+EQMw=[8.3,8.1,8.8,7.6,7.7] #final Mw
+EQs=['Illapel2015','Iquique2014','Maule2010','Melinka2016','Iquique_aftershock2014']
+STFs=['Illapel.mr.txt','Iquique.mr.txt','Maule.mr.txt','Melinka.mr.txt','Iquique_aft.mr.txt']
+smbs=['^','s','*','p','D']
+#        smbs_size=[20,17,23,20,17]
+smbs_size=[16,13,19,16,13]
+colrs=[[0,0,1],[0,1,0],[1,0,0],[1,1,0],[1,0,1]]
+hans = [] #handles for legned at 60s
+predictions_real = np.load('RealEQs_pred_Test81.npy')
+#from scipy.integrate import cumtrapz
+for neq in range(len(predictions_real)):
+    han = plt.plot(EQMw[neq],predictions_real[neq,epoch,0],smbs[neq],mew=0.25,ms=smbs_size[neq],markerfacecolor=colrs[neq],markeredgecolor='k')
+    hans.append(han)
+#for neq in range(len(predictions_real)):
+#    #load STF
+#    stf = np.genfromtxt('/Users/timlin/Documents/Project/MLARGE/data/STF_realEQs/'+STFs[neq])
+#    interp_stf = np.interp(np.arange(102)*5+5,stf[:,0],stf[:,1])
+#    sumM0 = cumtrapz(interp_stf,np.arange(102)*5+5)*1e-7
+#    EQMw = M02Mw(sumM0)
+#    han = plt.plot(EQMw[epoch],predictions_real[neq,epoch,0],smbs[neq],mew=0.25,ms=smbs_size[neq],markerfacecolor=colrs[neq],markeredgecolor='k')
+#    hans.append(han)
+
+plt.xlim([7.4,9.52])
+plt.ylim([7.4,9.52])
+Xlim=plt.xlim()
+Ylim=plt.ylim()
+Xpos=(Xlim[1]-Xlim[0])*0.06+Xlim[0]
+Ypos=(Ylim[1]-Ylim[0])*0.9+Ylim[0]
+plt.text(Xpos,Ypos,'%d s'%(epoch*5+5),bbox=props,fontsize=15)
+plt.ylabel('Predicted M$_w$',fontsize=14)
+#plt.xlabel('Final Mw',fontsize=19)
+plt.xticks(fontsize=14, rotation=30)
+ax1 = plt.gca()
+ax1.tick_params(pad=0.0)
+plt.yticks(fontsize=14, rotation=0)
+plt.legend((hans[3][0],hans[4][0],hans[1][0],hans[0][0],hans[2][0]),('Melinka','Iquique aft.','Iquique','Illapel','Maule'),loc=4,fontsize=12,frameon=True)
+
+#2nd fig
+plt.subplot(2,3,2)
+plt.grid(True)
+epoch = 23 #120sec
+plt.plot(y1[:,epoch,0],predictions[:,epoch,0],'o',markerfacecolor=[0.65,0.65,0.65],markeredgecolor='k',mew=0.25,ms=3.5)
+plt.plot([y1.min(),y1.max()],[y1.min(),y1.max()],'k--',linewidth=2)
+plt.plot([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],'k--',linewidth=0.5)
+plt.plot([y1.min(),y1.max()],[y1.min()+err_range,y1.max()+err_range],'k--',linewidth=0.5)
+plt.fill_between([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],[y1.min()+err_range,y1.max()+err_range],facecolor='k',alpha=0.25)
+for neq in range(len(predictions_real)):
+    han = plt.plot(EQMw[neq],predictions_real[neq,epoch,0],smbs[neq],mew=0.25,ms=smbs_size[neq],markerfacecolor=colrs[neq],markeredgecolor='k')
+    hans.append(han)
+#for neq in range(len(predictions_real)):
+#    #load STF
+#    stf = np.genfromtxt('/Users/timlin/Documents/Project/MLARGE/data/STF_realEQs/'+STFs[neq])
+#    interp_stf = np.interp(np.arange(102)*5+5,stf[:,0],stf[:,1])
+#    sumM0 = cumtrapz(interp_stf,np.arange(102)*5+5)*1e-7
+#    EQMw = M02Mw(sumM0)
+#    han = plt.plot(EQMw[epoch],predictions_real[neq,epoch,0],smbs[neq],mew=0.25,ms=smbs_size[neq],markerfacecolor=colrs[neq],markeredgecolor='k')
+#    hans.append(han)
+
+
+plt.xlim([7.4,9.52])
+plt.ylim([7.4,9.52])
+Xlim=plt.xlim()
+Ylim=plt.ylim()
+Xpos=(Xlim[1]-Xlim[0])*0.06+Xlim[0]
+Ypos=(Ylim[1]-Ylim[0])*0.9+Ylim[0]
+plt.text(Xpos,Ypos,'%d s'%(epoch*5+5),bbox=props,fontsize=15)
+#plt.ylabel('Predicted Mw',fontsize=14)
+#plt.xlabel('Final Mw',fontsize=19)
+plt.xticks(fontsize=14, rotation=30)
+ax1 = plt.gca()
+ax1.tick_params(pad=0.0)
+ax1.tick_params(axis='y',labelleft=False)
+#plt.yticks(fontsize=14, rotation=0)
+
+#3rd fig
+plt.subplot(2,3,3)
+plt.grid(True)
+epoch = 47 #240sec
+plt.plot(y1[:,epoch,0],predictions[:,epoch,0],'o',markerfacecolor=[0.65,0.65,0.65],markeredgecolor='k',mew=0.25,ms=3.5)
+plt.plot([y1.min(),y1.max()],[y1.min(),y1.max()],'k--',linewidth=2)
+plt.plot([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],'k--',linewidth=0.5)
+plt.plot([y1.min(),y1.max()],[y1.min()+err_range,y1.max()+err_range],'k--',linewidth=0.5)
+plt.fill_between([y1.min(),y1.max()],[y1.min()-err_range,y1.max()-err_range],[y1.min()+err_range,y1.max()+err_range],facecolor='k',alpha=0.25)
+for neq in range(len(predictions_real)):
+    han = plt.plot(EQMw[neq],predictions_real[neq,epoch,0],smbs[neq],mew=0.25,ms=smbs_size[neq],markerfacecolor=colrs[neq],markeredgecolor='k')
+    hans.append(han)
+#for neq in range(len(predictions_real)):
+#    #load STF
+#    stf = np.genfromtxt('/Users/timlin/Documents/Project/MLARGE/data/STF_realEQs/'+STFs[neq])
+#    interp_stf = np.interp(np.arange(102)*5+5,stf[:,0],stf[:,1])
+#    sumM0 = cumtrapz(interp_stf,np.arange(102)*5+5)*1e-7
+#    EQMw = M02Mw(sumM0)
+#    han = plt.plot(EQMw[epoch],predictions_real[neq,epoch,0],smbs[neq],mew=0.25,ms=smbs_size[neq],markerfacecolor=colrs[neq],markeredgecolor='k')
+#    hans.append(han)
+
+
+plt.xlim([7.4,9.52])
+plt.ylim([7.4,9.52])
+Xlim=plt.xlim()
+Ylim=plt.ylim()
+Xpos=(Xlim[1]-Xlim[0])*0.06+Xlim[0]
+Ypos=(Ylim[1]-Ylim[0])*0.9+Ylim[0]
+plt.text(Xpos,Ypos,'%d s'%(epoch*5+5),bbox=props,fontsize=15)
+#plt.ylabel('Predicted Mw',fontsize=14)
+#plt.xlabel('Final Mw',fontsize=19)
+plt.xticks(fontsize=14, rotation=30)
+ax1 = plt.gca()
+ax1.tick_params(pad=0.0)
+ax1.tick_params(axis='y',labelleft=False)
+#plt.yticks(fontsize=14, rotation=0)
+
+
+#4th fig, starting GFAST v.s. M-LARGE
+import pandas as pd
+#load GFAST results
+sav_Mw = np.load('/Users/timlin/Documents/Project/NASA/LSTM_training/Chile/Compare_ML_GFast/GFAST_y.npy') #Dont use this, use the time-dependent Mw
+sav_Pred_Mw = np.load('/Users/timlin/Documents/Project/NASA/LSTM_training/Chile/Compare_ML_GFast/GFAST_yhat.npy',allow_pickle=True)
+sav_Pred_Mw = sav_Pred_Mw.item()
+plt.subplot(2,3,4)
+plt.grid(True)
+Gp=np.arange(7.5,9.5,0.25)
+#Make input for boxplot
+runtime = 60
+#data_GFAST=groupMw_boxinp(sav_Mw,sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+data_GFAST = groupMw_boxinp(y1[:,int(runtime/5-1),0],sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+#data_LSTM=groupMw_boxinp(y1[EQId,int(runtime/5-1) ],predictions[EQId,int(runtime/5-1)],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
+data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
+#data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
+data_GFAST_LSTM={}
+#data_GFAST_LSTM['GpMw'] = np.hstack([data_GFAST['GpMw'], data_LSTM['GpMw']])
+data_GFAST_LSTM['GpMw'] = np.hstack([ [float(i) for i in data_GFAST['GpMw']] , [float(i) for i in data_LSTM['GpMw']]])
+data_GFAST_LSTM['Method'] = np.hstack([['GFAST']*len(data_GFAST['GpMw']), ['M-LARGE']*len(data_LSTM['GpMw'])  ])
+data_GFAST_LSTM['PredMw'] = np.hstack([data_GFAST['PredMw'], data_LSTM['PredMw'] ])
+data_GFAST_LSTM = pd.DataFrame.from_dict(data_GFAST_LSTM) #convert the dict to pd
+flatui = [[0.486, 0.655, 0.922],'red']
+#use matplotlib boxplot instead of sns
+sav_GFAST_boxes = [] #save lists of prediction in each Mw group
+for g in Gp:
+    tmpGP = np.array([float(i) for i in data_GFAST['GpMw']])
+    tmpidx = np.where(tmpGP==g)[0]
+    sav_GFAST_boxes.append(data_GFAST['PredMw'][tmpidx])
+
+sav_MLARGE_boxes = [] #save lists of prediction in each Mw group
+for g in Gp:
+    tmpGP = np.array([float(i) for i in data_LSTM['GpMw']])
+    tmpidx = np.where(tmpGP==g)[0]
+    sav_MLARGE_boxes.append(data_LSTM['PredMw'][tmpidx])
+
+wd = 0.1
+out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[1.,1.0,1.0],mew=0.1, marker='d',markersize=5)
+bp=plt.boxplot(sav_GFAST_boxes,positions=Gp-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+for patch in bp['boxes']:
+    patch.set_facecolor([0.2,0.50588,0.867,0.7])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0,0,0])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0,0,0])
+    cap.set_linewidth(1.5)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+bp=plt.boxplot(sav_MLARGE_boxes,positions=Gp+wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+for patch in bp['boxes']:
+    patch.set_facecolor([1,0,0,0.7])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0,0,0])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0,0,0])
+    cap.set_linewidth(1.5)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+
+plt.ylim([7.5,9.8])
+plt.xlim([7.35,9.4])
+
+ax1 = plt.gca()
+#add text for seconds
+min_axx,max_axx=ax1.get_xlim() #Know the min-max of x
+min_axy,max_axy=ax1.get_ylim() #Know the min-max of y
+plt.text(min_axx+(max_axx-min_axx)*0.8,min_axy+(max_axy-min_axy)*0.08,'%d s'%(runtime),fontsize=15,bbox=props)
+ax1.tick_params(pad=0)
+
+plt.minorticks_on()
+plt.grid(b=True,which='minor',axis='y',color=[1,1,1],linewidth=0.8,alpha=0.7)
+plt.grid(b=True,which='major',axis='x',color=[1,1,1],linewidth=0.8,alpha=0.7)
+
+ax1.yaxis.grid(True) # horizontal lines
+ax1.xaxis.grid(False) # vertical lines
+
+plt.xticks(Gp,Gp,fontsize=14,rotation=30)
+plt.yticks(fontsize=14, rotation=0)
+plt.xlabel('True M$_w$',fontsize=14)
+plt.xticks(rotation=30)
+plt.ylabel('Predicted M$_w$',fontsize=14)
+#plt.plot([7.5,8.0],[8.0,9.1],'r')
+
+#add 1:1 line
+dg = Gp[1]-Gp[0]
+sh_g = (dg-2*wd)*0.5+wd
+ratio_linex = []
+ratio_liney = []
+for g in Gp:
+    ratio_linex += [g-sh_g]
+    ratio_linex += [g+sh_g]
+    ratio_liney += [g,g]
+
+plt.plot(ratio_linex,ratio_liney,'g--',linewidth=1)
+
+
+#make the legend manually
+tmpy=np.random.normal(0, 0.15, 10000)
+idx=np.where(np.abs(tmpy) < np.std(tmpy))[0]
+tmpy=tmpy[idx]
+bp=plt.boxplot([tmpy+9.5],positions=[7.5],widths=wd,patch_artist=True,flierprops=out_dots)
+for patch in bp['boxes']:
+    patch.set_facecolor([1,0,0,0.7])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0,0,0])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0,0,0])
+    cap.set_linewidth(1.5)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+
+bp=plt.boxplot([tmpy+9.15],positions=[7.5],widths=wd,patch_artist=True,flierprops=out_dots)
+for patch in bp['boxes']:
+    patch.set_facecolor([0.2,0.50588,0.867,0.7])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0,0,0])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0,0,0])
+    cap.set_linewidth(1.5)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+#calculate acc for M-LARGE
+
+plt.text(7.55,9.68,'Method',fontsize=14)
+acc_EQ,acc_noise=get_accuracy(predictions[:,int(runtime/5-1),0],y1[:,int(runtime/5-1),0],0.3)
+plt.text(7.6,9.5,'M-LARGE (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
+acc_EQ,acc_noise=get_accuracy(sav_Pred_Mw[runtime],y1[:,int(runtime/5-1),0],0.3)
+plt.text(7.6,9.15,'GFAST (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
+
+plt.xticks(Gp,Gp,fontsize=14,rotation=30)
+plt.yticks(fontsize=14, rotation=0)
+plt.xlabel('True M$_w$',fontsize=14)
+plt.xticks(rotation=30)
+plt.ylabel('Predicted M$_w$',fontsize=14)
+
+
+#add fig5
+plt.subplot(2,3,5)
+plt.grid(True)
+runtime = 120
+#data_GFAST=groupMw_boxinp(sav_Mw,sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+data_GFAST = groupMw_boxinp(y1[:,int(runtime/5-1),0],sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+#data_LSTM=groupMw_boxinp(y1[EQId,int(runtime/5-1) ],predictions[EQId,int(runtime/5-1)],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
+data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
+#data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
+#use matplotlib boxplot instead of sns
+sav_GFAST_boxes = [] #save lists of prediction in each Mw group
+for g in Gp:
+    tmpGP = np.array([float(i) for i in data_GFAST['GpMw']])
+    tmpidx = np.where(tmpGP==g)[0]
+    sav_GFAST_boxes.append(data_GFAST['PredMw'][tmpidx])
+
+sav_MLARGE_boxes = [] #save lists of prediction in each Mw group
+for g in Gp:
+    tmpGP = np.array([float(i) for i in data_LSTM['GpMw']])
+    tmpidx = np.where(tmpGP==g)[0]
+    sav_MLARGE_boxes.append(data_LSTM['PredMw'][tmpidx])
+
+wd = 0.1
+out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[1.,1.0,1.0],mew=0.1, marker='d',markersize=5)
+bp=plt.boxplot(sav_GFAST_boxes,positions=Gp-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+for patch in bp['boxes']:
+    patch.set_facecolor([0.2,0.50588,0.867,0.7])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0,0,0])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0,0,0])
+    cap.set_linewidth(1.5)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+bp=plt.boxplot(sav_MLARGE_boxes,positions=Gp+wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+for patch in bp['boxes']:
+    patch.set_facecolor([1,0,0,0.7])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0,0,0])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0,0,0])
+    cap.set_linewidth(1.5)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+
+plt.ylim([7.5,9.8])
+plt.xlim([7.35,9.4])
+
+ax1 = plt.gca()
+#add text for seconds
+min_axx,max_axx=ax1.get_xlim() #Know the min-max of x
+min_axy,max_axy=ax1.get_ylim() #Know the min-max of y
+plt.text(min_axx+(max_axx-min_axx)*0.8,min_axy+(max_axy-min_axy)*0.08,'%d s'%(runtime),fontsize=15,bbox=props)
+ax1.tick_params(pad=0)
+
+plt.minorticks_on()
+plt.grid(b=True,which='minor',axis='y',color=[1,1,1],linewidth=0.8,alpha=0.7)
+plt.grid(b=True,which='major',axis='x',color=[1,1,1],linewidth=0.8,alpha=0.7)
+
+ax1.yaxis.grid(True) # horizontal lines
+ax1.xaxis.grid(False) # vertical lines
+
+plt.xticks(Gp,Gp,fontsize=14,rotation=30)
+plt.yticks(fontsize=14, rotation=0)
+plt.xlabel('True M$_w$',fontsize=14)
+plt.xticks(rotation=30)
+ax1 = plt.gca()
+ax1.tick_params(pad=0.0)
+ax1.tick_params(axis='y',labelleft=False)
+#plt.ylabel('Predicted M$_w$',fontsize=14)
+#plt.plot([7.5,8.0],[8.0,9.1],'r')
+
+#add 1:1 line
+plt.plot(ratio_linex,ratio_liney,'g--',linewidth=1)
+
+acc_EQ,acc_noise=get_accuracy(predictions[:,int(runtime/5-1),0],y1[:,int(runtime/5-1),0],0.3)
+plt.text(7.5,9.5,'M-LARGE (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
+acc_EQ,acc_noise=get_accuracy(sav_Pred_Mw[runtime],y1[:,int(runtime/5-1),0],0.3)
+plt.text(7.5,9.3,'GFAST (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
+#plt.text(7.5,9.5,'M-LARGE (Acc. = 99%)',horizontalalignment='left',verticalalignment='center',fontsize=14)
+#plt.text(7.5,9.3,'GFAST (Acc. = 75%)',horizontalalignment='left',verticalalignment='center',fontsize=14)
+
+
+
+#add fig6
+plt.subplot(2,3,6)
+plt.grid(True)
+runtime = 240
+#data_GFAST=groupMw_boxinp(sav_Mw,sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+data_GFAST = groupMw_boxinp(y1[:,int(runtime/5-1),0],sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+#data_LSTM=groupMw_boxinp(y1[EQId,int(runtime/5-1) ],predictions[EQId,int(runtime/5-1)],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
+data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
+#data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
+#use matplotlib boxplot instead of sns
+sav_GFAST_boxes = [] #save lists of prediction in each Mw group
+for g in Gp:
+    tmpGP = np.array([float(i) for i in data_GFAST['GpMw']])
+    tmpidx = np.where(tmpGP==g)[0]
+    sav_GFAST_boxes.append(data_GFAST['PredMw'][tmpidx])
+
+sav_MLARGE_boxes = [] #save lists of prediction in each Mw group
+for g in Gp:
+    tmpGP = np.array([float(i) for i in data_LSTM['GpMw']])
+    tmpidx = np.where(tmpGP==g)[0]
+    sav_MLARGE_boxes.append(data_LSTM['PredMw'][tmpidx])
+
+wd = 0.1
+out_dots = dict(markerfacecolor=[0.,0.0,0.0],markeredgecolor=[1.,1.0,1.0],mew=0.1, marker='d',markersize=5)
+bp=plt.boxplot(sav_GFAST_boxes,positions=Gp-wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+for patch in bp['boxes']:
+    patch.set_facecolor([0.2,0.50588,0.867,0.7])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0,0,0])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0,0,0])
+    cap.set_linewidth(1.5)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+bp=plt.boxplot(sav_MLARGE_boxes,positions=Gp+wd*0.5,widths=wd,patch_artist=True,flierprops=out_dots)
+for patch in bp['boxes']:
+    patch.set_facecolor([1,0,0,0.7])
+    patch.set_edgecolor([0,0.,0])
+    patch.set_linewidth(0.5)
+
+for whisker in bp['whiskers']:
+    whisker.set_color([0,0,0])
+    whisker.set_linewidth(1.)
+
+for cap in bp['caps']:
+    cap.set_color([0,0,0])
+    cap.set_linewidth(1.5)
+
+for medn in bp['medians']:
+    medn.set_color([0,0,0])
+
+
+plt.ylim([7.5,9.8])
+plt.xlim([7.35,9.4])
+
+ax1 = plt.gca()
+#add text for seconds
+min_axx,max_axx=ax1.get_xlim() #Know the min-max of x
+min_axy,max_axy=ax1.get_ylim() #Know the min-max of y
+plt.text(min_axx+(max_axx-min_axx)*0.8,min_axy+(max_axy-min_axy)*0.08,'%d s'%(runtime),fontsize=15,bbox=props)
+ax1.tick_params(pad=0)
+
+plt.minorticks_on()
+plt.grid(b=True,which='minor',axis='y',color=[1,1,1],linewidth=0.8,alpha=0.7)
+plt.grid(b=True,which='major',axis='x',color=[1,1,1],linewidth=0.8,alpha=0.7)
+
+ax1.yaxis.grid(True) # horizontal lines
+ax1.xaxis.grid(False) # vertical lines
+
+plt.xticks(Gp,Gp,fontsize=14,rotation=30)
+plt.yticks(fontsize=14, rotation=0)
+plt.xlabel('True M$_w$',fontsize=14)
+plt.xticks(rotation=30)
+ax1 = plt.gca()
+ax1.tick_params(pad=0.0)
+ax1.tick_params(axis='y',labelleft=False)
+#plt.ylabel('Predicted M$_w$',fontsize=14)
+#plt.plot([7.5,8.0],[8.0,9.1],'r')
+
+#add 1:1 line
+plt.plot(ratio_linex,ratio_liney,'g--',linewidth=1)
+acc_EQ,acc_noise=get_accuracy(predictions[:,int(runtime/5-1),0],y1[:,int(runtime/5-1),0],0.3)
+plt.text(7.5,9.5,'M-LARGE (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
+acc_EQ,acc_noise=get_accuracy(sav_Pred_Mw[runtime],y1[:,int(runtime/5-1),0],0.3)
+plt.text(7.5,9.3,'GFAST (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
+#plt.text(7.5,9.5,'M-LARGE (Acc. = 99%)',horizontalalignment='left',verticalalignment='center',fontsize=14)
+#plt.text(7.5,9.3,'GFAST (Acc. = 88%)',horizontalalignment='left',verticalalignment='center',fontsize=14)
+
+
+
+plt.subplots_adjust(left=0.08, bottom=0.15, right=0.95, top=0.92, wspace=0.06, hspace=0.12)
+
+plt.savefig('Fig2_GFAST_MLARGE_Test81.png',dpi=450)
+
+#========================manually plot the Fig.2 END========================
+
 
 
 
@@ -548,8 +1072,8 @@ c_map_gp=plt.cm.jet(plt.Normalize(7.5,9.5)(np.arange(7.5,9.7,0.3)))
 for i,stf in enumerate(gp_STF):
     plt.plot(STF_T,stf,color=c_map_gp[i],linewidth=3)
 
-plt.xlabel('Time (sec)',fontsize=16)
-plt.ylabel('$\dot \mathrm{M}$ (N-m/sec)',fontsize=16,labelpad=-5) #moment rate
+plt.xlabel('Time (s)',fontsize=16)
+plt.ylabel('$\dot \mathrm{M}$ (N-m/s)',fontsize=16,labelpad=-5) #moment rate
 plt.xlim([-5,515])
 plt.grid(True)
 plt.xticks(fontsize=15)
@@ -583,16 +1107,16 @@ for i,stf in enumerate(gp_STF):
 ax1.yaxis.tick_right()
 ax1.yaxis.label_position='right'
 plt.xlim(0,50)
-plt.xlabel('Time (sec)',fontsize=14,labelpad=0)
+plt.xlabel('Time (s)',fontsize=14,labelpad=0)
 #plt.tick_params(axis='y', which='right', labelleft=False, labelright=True)
-plt.ylabel('$\dot \mathrm{M}$ (N-m/sec)',fontsize=15,labelpad=25) #moment rate
+plt.ylabel('$\dot \mathrm{M}$ (N-m/s)',fontsize=15,labelpad=25) #moment rate
 ax1=plt.gca()
 ax1.tick_params(pad=0.5)
 plt.xticks([0,20,40],fontsize=14)
 #plt.yticks([0e21,0.5e21,1e21],fontsize=14)
 plt.yticks(fontsize=14)
 plt.ylim([0,y_max])
-plt.savefig('STF_gpSTF.png',dpi=300)
+plt.savefig('STF_gpSTF_s.png',dpi=300) #make all the time unit as s
 #plt.savefig('STF_gpSTF.pdf',dpi=300)
 plt.show()
 #-----------plot STF and grouped STF for all the 27200 scenarios END----------------------#
@@ -1136,7 +1660,7 @@ for medn in bp['medians']:
 plt.ylim([0,800])
 plt.yticks([0,200,400,600,800],fontsize=14)
 plt.xlim([7.3,9.8])
-plt.ylabel('Time (sec)',fontsize=16,labelpad=0)
+plt.ylabel('Time (s)',fontsize=16,labelpad=0)
 tmpax=plt.gca()
 tmpax.tick_params(axis='y',pad=0)
 plt.xticks([7.5,7.8,8.1,8.4,8.7,9.0,9.3,9.6],[7.5,7.8,8.1,8.4,8.7,9.0,9.3,9.6],fontsize=15)
@@ -1315,7 +1839,7 @@ plt.xticks([])
 plt.yticks([])
 
 plt.show()
-plt.savefig('tau_ratio_misfit0.3_100percent_new.png',dpi=450)
+plt.savefig('tau_ratio_misfit0.3_100percent_new_s.png',dpi=450)
 #plt.savefig('tau_100percent.png',dpi=300)
 
 #bp=plt.boxplot([tmpy+3.4],positions=[7.45],widths=wd,patch_artist=True,flierprops=out_dots)
@@ -1672,6 +2196,53 @@ sav_X_data_orig=sav_X_data.copy()
 
 print('-------------Now, scale the X by log10(X)-----------------')
 sav_X_data=scale_X(sav_X_data,half=True)
+
+
+'''
+    plot anam
+'''
+import seaborn as sns
+sns.set()
+AA=np.load('/Users/timlin/Documents/Project/MLARGE/data/STF_realEQs/'+'Maule.mr.npy')
+props = dict(boxstyle='round', facecolor='white', alpha=1)
+for epo in range(102):
+    #epo += 20
+    plt.subplot(1,2,1)
+    plt.plot(AA[:epo,0],sav_X_data_orig[2,:epo,:121])
+    plt.xlim([0,510])
+    plt.ylim([0,6.1])
+    plt.title('Maule 2010 (M$_w$8.8)')
+    plt.xlabel('Time (s)',labelpad=1)
+    plt.ylabel('PGD (m)',labelpad=1)
+    ax1=plt.gca()
+    ax1.tick_params(pad=0)
+    plt.text(60,5.5,'%d s'%(epo*5+5),bbox=props)
+    #plot prediction
+    plt.subplot(1,2,2)
+    plt.plot(AA[:epo,0],predictions_real[2,:epo,0],'b')
+    plt.plot([0,510],[8.9,8.9],'r')
+    plt.plot([0,510],[8.9-0.3,8.9-0.3],'r--',linewidth=1)
+    plt.plot([0,510],[8.9+0.3,8.9+0.3],'r--',linewidth=1)
+    plt.text(250,9.0,'Final M$_w$')
+    plt.xlim([0,510])
+    plt.ylim([5,9.6])
+    plt.ylabel('Pred. Mw',labelpad=1)
+    plt.xlabel('Time (s)',labelpad=1)
+    ax1=plt.gca()
+    ax1.tick_params(pad=0)
+    plt.savefig('./Figs_EQPredAnim/sec%03d.png'%(epo*5+5))
+    plt.close()
+#plt.show()
+
+files = glob.glob('./Figs_EQPredAnim/sec*.png')
+files.sort()
+images = []
+for filename in files:
+    images.append(imageio.imread(filename))
+imageio.mimsave('./Figs_EQPredAnim/movie.gif', images)
+
+
+
 
 
 ########Prediction on the REAL data###########
