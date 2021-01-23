@@ -981,7 +981,7 @@ def train(files,train_params):
 
 
 
-def train_multi(files,train_params,Nstan=121,output_params=1):
+def train_multi(files,train_params,Nstan=121):
     STAinfo={}
     STAinfo['sta_loc_file']=files['GFlist']
     STAinfo['station_order_file']=files['Sta_ordering']
@@ -1083,14 +1083,22 @@ def train_multi(files,train_params,Nstan=121,output_params=1):
     logdir = "logs/scalars/Test"+Testnum+'_'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
+    Nchan = 4 #number of channel (i.e. E,N,Z,code -> Nchan=4)
+    #get output_params implying from number of y_files
+    if y_file is 'flat':
+        output_params = 1
+    elif type(y_file) is list:
+        output_params = len(y_file)
+    else:
+        output_params = 1 #y_file is just a file path input
     #MLARGE structure
     network = models.Sequential()
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(102,Nstan*4,)))
+    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(102,Nstan*Nchan,)))
     network.add(layers.LeakyReLU(alpha=0.1))
     network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[1])))
     network.add(layers.LeakyReLU(alpha=0.1))
     network.add(layers.Dropout(Drops[0]))
-    network.add(layers.LSTM(HP[2],return_sequences=True,input_shape=(102,Nstan*4,),dropout=0.2, recurrent_dropout=0.2))
+    network.add(layers.LSTM(HP[2],return_sequences=True,input_shape=(102,Nstan*Nchan,),dropout=0.2, recurrent_dropout=0.2))
     network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[3])))
     network.add(layers.LeakyReLU(alpha=0.1))
     network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[4])))
