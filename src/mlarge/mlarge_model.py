@@ -1115,7 +1115,11 @@ def train_multi(files,train_params,Nstan=121):
     logdir = "logs/scalars/Test"+Testnum+'_'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
-    Nchan = 4 #number of channel (i.e. E,N,Z,code -> Nchan=4)
+    #what channels are you using?
+    if train_params['Use_data_type']=='merge':
+        Nchan = 2 #number of channel (i.e. PGD,code -> Nchan=2)
+    elif train_params['Use_data_type']=='sepa':
+        Nchan = len(train_params['Use_data']) + 1 #(i.e. E/N/Z, code)
 
     #get output_params implying from number of y_files
     if y_file is 'flat':
