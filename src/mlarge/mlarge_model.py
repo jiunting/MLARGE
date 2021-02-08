@@ -404,29 +404,30 @@ class feature_gen_multi(keras.utils.Sequence):
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
-                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',Xout='PGD', Xscale=lambda x:x, yscale=lambda x:x,shuffle=True):
-        self.Dpath=Dpath #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
-        self.E_path=E_path #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
-        self.N_path=N_path
-        self.Z_path=Z_path
-        self.y_path=y_path   # file name of y_path, string or list with multie string.
-        self.EQinfo=EQinfo   #EQinfo file with the same number of lines of X,y list
-        self.STAinfo=STAinfo #Stainfo files
-        self.Nstan=Nstan
-        self.add_code=add_code
-        self.add_noise=add_noise
-        self.noise_p=noise_p
-        self.rmN=rmN
-        self.Noise_level=Noise_level  
-        self.Min_stan_dist=Min_stan_dist #e.g. [4,3]=minimum 4 stations within 3 degree
-        self.scale=scale
-        self.BatchSize=BatchSize
-        self.Mwfilter=Mwfilter #Threshold magnitude for generated events, or False means everything
-        self.save_ID=save_ID #save the original eqid with this name (e.g. sav_pickedID_73_2_valid.npy)
-        self.Xout=Xout  #define the output feature X: a string of 'PGD' or 'ENZ'.
-        self.Xscale=Xscale #scaling function for X (one scaling function apply to PGD or E,N,Z)
-        self.yscale=yscale #scaling function for y (multiple functions apply to each parameter)
-        self.shuffle=shuffle  #shuffle always True (shuffle station and eqs?)
+                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy', Xin=['E','N','Z'],Xout='merge', Xscale=lambda x:x, yscale=lambda x:x,shuffle=True):
+        self.Dpath = Dpath #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
+        self.E_path = E_path #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
+        self.N_path = N_path
+        self.Z_path = Z_path
+        self.y_path = y_path   # file name of y_path, string or list with multie string.
+        self.EQinfo = EQinfo   #EQinfo file with the same number of lines of X,y list
+        self.STAinfo = STAinfo #Stainfo files
+        self.Nstan = Nstan
+        self.add_code = add_code
+        self.add_noise = add_noise
+        self.noise_p = noise_p
+        self.rmN = rmN
+        self.Noise_level = Noise_level
+        self.Min_stan_dist = Min_stan_dist #e.g. [4,3]=minimum 4 stations within 3 degree
+        self.scale = scale
+        self.BatchSize = BatchSize
+        self.Mwfilter = Mwfilter #Threshold magnitude for generated events, or False means everything
+        self.save_ID = save_ID #save the original eqid with this name (e.g. sav_pickedID_73_2_valid.npy)
+        self.Xin = Xin #define what channels are you using should be list of 'E' 'N' or 'Z'
+        self.Xout = Xout  #define the output feature X: a string of 'merge' or 'sepa'.
+        self.Xscale = Xscale #scaling function for X (one scaling function apply to PGD or E,N,Z)
+        self.yscale = yscale #scaling function for y (multiple functions apply to each parameter)
+        self.shuffle = shuffle  #shuffle always True (shuffle station and eqs?)
         #self.__check_shape__()
     def __len__(self):
         #length
@@ -545,8 +546,8 @@ class feature_gen_multi(keras.utils.Sequence):
         scale: scale the added noise (if any) to the same scale as Normalization (i.e. PGD_mean,PGD_var), if not scale, simply set scale=(0,1)
         index is useless here since I want every batches to be different
         '''
-        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,Xout,Xscale,yscale,shuffle= \
-        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.Xout,self.Xscale,self.yscale,self.shuffle)
+        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,Xin,Xout,Xscale,yscale,shuffle= \
+        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.Xin,self.Xout,self.Xscale,self.yscale,self.shuffle)
         #Get station information and ordering in X
         sta_loc_file=STAinfo['sta_loc_file']
         station_order_file=STAinfo['station_order_file']
@@ -561,70 +562,96 @@ class feature_gen_multi(keras.utils.Sequence):
         #while True:
         #    print('Num of generator=%d'%(ngen))
         #    print('bs=    %d'%(BatchSize))
-        rndEQidx=np.arange(len(E)) #To randomly pick an earthquake
-        rndSTAidx=np.arange(Nstan) #Total of 121 stations to be removed
-        X_batch=[]
-        y_batch=[]
+        
+        #generate index rndEQidx to be randomly picked later
+        #if Xin[0]=='E':
+        #    rndEQidx = np.arange(len(E)) #generate from list E, if E is given
+        #elif Xin[0]=='N':
+        #    rndEQidx = np.arange(len(N))
+        #else:
+        #    rndEQidx = np.arange(len(Z))
+        rndEQidx = np.arange(len(eval(Xin[0]))) #eval(Xin[0]) is either, E, N or Z
+        
+        rndSTAidx = np.arange(Nstan) #Total of 121 stations to be removed
+        
+        #create list X,y to be return
+        X_batch = []
+        y_batch = []
+        
         #save picked EQ name
         sav_picked_EQ=[]
-        nb=0 #number of batch generated
-        #for nb in range(BatchSize):
+        nb=0 # number of batch generated currently
         EQ_flag=0 #force it to be an earthquake if EQ_flag=1
         while nb<BatchSize:
             #print('Num of batch=',nb)
             if Dpath==None:
-                #E,N,Z are already a muge matrix (not recommended!)
+                #E,N,Z are already a huge matrix (not recommended!)
                 #Station existence code, generally doesn't matter but you want the value close to features
                 #Data=np.ones([E[0].shape[0],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
-                if Xout=='PGD':
-                    Data=0.5*np.ones([E[0].shape[0],int(Nstan*(1+1))]) #filling the data matrix, set the status code as zero when remove station
-                elif Xout=='ENZ':
-                    Data=0.5*np.ones([E[0].shape[0],int(Nstan*(3+1))]) #filling the data matrix, set the status code as zero when remove station
+                if Xout=='merge':
+                    Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(1+1))]) #filling the data matrix later, set the status code as zero when remove station
+                elif Xout=='sepa':
+                    Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(len(Xin)+1))]) #filling the data matrix later, set the status code as zero when remove station
             else:
                 #read the data from Directory, now the E/N/Z should be EQids (e.g. '002356')
                 #Dpath=/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_ENZ   Chile_full.002709.Z.npy
                 #test_read=glob.glob(Dpath+'/'+'Chile_full.'+E[0]+'.Z.npy')
                 #test_read=np.load(test_read[0])
-                test_read=np.load(E[0])  #shape=[Nsta,Timesteps]
-                if Xout=='PGD':
-                    Data=0.5*np.ones([test_read.shape[1],int(Nstan*(1+1))]) #filling the data matrix, set the status code as zero when remove station
-                elif Xout=='ENZ':
-                    Data=0.5*np.ones([test_read.shape[1],int(Nstan*(3+1))])
+                #test read the data from path
+                #if Xin[0]=='E':
+                #    test_read = np.load(E[0])  #Note that shape=[Nsta,Timesteps], different from the convention!
+                #elif Xin[0]=='N':
+                #    test_read = np.load(N[0])
+                #else:
+                #    test_read = np.load(Z[0])
+                test_read = np.load(eval(Xin[0])[0])
+
+                if Xout=='merge':
+                    Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(1+1))]) #filling the data matrix, set the status code as zero when remove station
+                elif Xout=='sepa':
+                    Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(len(Xin)+1))]) #Xin could be any combination of 'E','N','Z' in list e.g. ['E','N']
             if EQ_flag==0:
-                EQ_or_noise=np.random.rand() #EQ or noise?
+                EQ_or_noise = np.random.rand() #EQ or noise?
             else:
-                EQ_or_noise=1 #EQ_flag==1, last round was EQ but remove too many stations, so try again with EQ
+                EQ_or_noise = 1 #EQ_flag==1, last round was EQ but remove too many stations, so try again with EQ
             if EQ_or_noise>=noise_p:
                 #this is data (+noise? if add_noise=True)
                 while True:
                     #randomly pull out an event (its Mw should larger than Mwfilter, otherwise, repeat)
                     np.random.shuffle(rndEQidx) #shuffle the index
                     #####Get the path of log file#####
-                    #from: /projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_ENZ/Chile_full.002709.Z.npy to 
-                    real_EQid=E[int(rndEQidx[0])].split('/')[-1].split('.')[1] #this will be, for example '002709'
-                    pre_pend=E[int(rndEQidx[0])].split('/')[-1].split('.')[0] #This will be, for example 'Chile_full' or Chile_small
+                    #from: /projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_ENZ/Chile_full.002709.Z.npy to
+                    #if Xin[0]=='E':
+                    #    real_EQid = E[int(rndEQidx[0])].split('/')[-1].split('.')[1] #this will be, for example '002709'
+                    #    #pre_pend = E[int(rndEQidx[0])].split('/')[-1].split('.')[0] #This will be, for example 'Chile_full' or Chile_small. no longer needed 2021/01/23
+                    #elif Xin[0]=='N':
+                    #    real_EQid = N[int(rndEQidx[0])].split('/')[-1].split('.')[1]
+                    #else:
+                    #    real_EQid = Z[int(rndEQidx[0])].split('/')[-1].split('.')[1]
+                    real_EQid = eval(Xin[0])[int(rndEQidx[0])].split('/')[-1].split('.')[1]  #for example '002709'
+                
                     #logfile='/projects/tlalollin/jiunting/Fakequakes/'+pre_pend+'/output/ruptures/subduction.'+real_EQid+'.log'
                     if not Mwfilter:
                         break
                     #checkMw=get_mw(logfile) #check Mw from .log file
-                    checkMw=EQinfo[int(rndEQidx[0])][1]   #or simply check Mw from EQinf file
+                    checkMw = EQinfo[int(rndEQidx[0])][1]   #or simply check Mw from EQinf file
                     #print('checkMw,Mwfiter',checkMw,Mwfilter)
                     if checkMw>=Mwfilter:
                         break
                 if Dpath==None:
-                    tmp_E=E[int(rndEQidx[0])].copy() #Ok, use this Eq
-                    tmp_N=N[int(rndEQidx[0])].copy()
-                    tmp_Z=Z[int(rndEQidx[0])].copy()
+                    tmp_E = E[int(rndEQidx[0])].copy() #Ok, use this Eq
+                    tmp_N = N[int(rndEQidx[0])].copy()
+                    tmp_Z = Z[int(rndEQidx[0])].copy()
                     #y_batch.append(y[int(rndEQidx[0])].reshape(-1,1)) #and its label
                 else:
                     #print('# %d EQ selected:'%(nb),E[int(rndEQidx[0])])
                     #tmp_E=glob.glob(Dpath+'/'+'Chile_full.'+E[int(rndEQidx[0])]+'.E.npy') #Note E[int(rndEQidx[0])]==N[int(rndEQidx[0])]==Z[int(rndEQidx[0])]
-                    tmp_E=np.load(E[int(rndEQidx[0])]) #shape=[Nsta,Timesteps]
-                    tmp_N=np.load(N[int(rndEQidx[0])])
-                    tmp_Z=np.load(Z[int(rndEQidx[0])])
-                    tmp_E=tmp_E.T  #shape=[Timesteps,Nsta]
-                    tmp_N=tmp_N.T
-                    tmp_Z=tmp_Z.T
+                    tmp_E = np.load(E[int(rndEQidx[0])]) #shape=[Nsta,Timesteps]
+                    tmp_N = np.load(N[int(rndEQidx[0])])
+                    tmp_Z = np.load(Z[int(rndEQidx[0])])
+                    tmp_E = tmp_E.T  #shape=[Timesteps,Nsta]
+                    tmp_N = tmp_N.T
+                    tmp_Z = tmp_Z.T
                     #y_batch.append(y[int(rndEQidx[0])].reshape(-1,1)) #and its label
 
                 #beore started, should I add noise?
@@ -632,12 +659,12 @@ class feature_gen_multi(keras.utils.Sequence):
                     #add noise in every stations
                     for n in range(Nstan):
                         np.random.shuffle(level) #randomly pick from the level list 
-                        f,Epsd,Npsd,Zpsd=gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False) 
-                        Noise_add_E,Noise_add_N,Noise_add_Z=make_noise(tmp_E.shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
+                        f,Epsd,Npsd,Zpsd = gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False)
+                        Noise_add_E,Noise_add_N,Noise_add_Z = make_noise(tmp_E.shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
                         tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
                         tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
                         tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
-                rm_Nstan=np.random.randint(rmN[0],rmN[1]+1) #remove a random number of stations. Can remove zero station (not remove)
+                rm_Nstan = np.random.randint(rmN[0],rmN[1]+1) #remove a random number of stations. Can remove zero station (not remove)
                 np.random.shuffle(rndSTAidx) #shuffle the index of stations, pick the first ":rm_Nsta" to be removed
                 #dealing with missing stations
                 for rmidx in rndSTAidx[:rm_Nstan]:
@@ -646,22 +673,27 @@ class feature_gen_multi(keras.utils.Sequence):
                     tmp_N[:,rmidx]=np.zeros(tmp_N.shape[0])
                     tmp_Z[:,rmidx]=np.zeros(tmp_Z.shape[0])
                     #Also set the "status code" to 0,Nstan means skip station columns and go to status code
-                    if Xout=='PGD':
+                    if Xout=='merge':
                         Data[:,Nstan+rmidx]=np.zeros(tmp_E.shape[0])
-                    elif Xout=='ENZ':
-                        Data[:,Nstan*3+rmidx]=np.zeros(tmp_E.shape[0])
-                if Xout=='PGD':
+                    elif Xout=='sepa':
+                        Data[:,Nstan*len(Xin)+rmidx]=np.zeros(tmp_E.shape[0])
+                if Xout=='merge':
                     PGD=D2PGD((tmp_E**2+tmp_N**2+tmp_Z**2)**0.5)
                     #PGD=(PGD-scale[0])/scale[1]
                     #scale the feature by Xcale function
                     PGD=Xscale(PGD)
                     Data[:,:Nstan]=PGD.copy()
-                elif Xout=='ENZ':
-                    ENZ_Data=np.hstack([tmp_E,tmp_N,tmp_Z])
+                elif Xout=='sepa':
+                    sepa_Data = []
+                    #select components you want
+                    for x_comp in Xin:
+                        sepa_Data = np.hstack([sepa_data,eval('tmp_'+x_comp)])
+                    
+                    #ENZ_Data=np.hstack([tmp_E,tmp_N,tmp_Z]) #old method use all ENZ
                     #ENZ_Data=(ENZ_Data-scale[0])/scale[1]
                     #scale the feature by Xscale function
-                    ENZ_Data=Xscale(ENZ_Data)
-                    Data[:,:Nstan*3]=ENZ_Data.copy()
+                    sepa_Data=Xscale(sepa_Data)
+                    Data[:,:Nstan*len(Xin)]=sepa_Data.copy()
 
                 #--------check if the removed Data is meaningful---------------
                 ##############get hypocenter of the eq###################
@@ -713,15 +745,15 @@ class feature_gen_multi(keras.utils.Sequence):
                 if add_code:
                     X_batch.append(Data)
                 else:
-                    if Xout=='PGD':
+                    if Xout=='merge':
                         X_batch.append(Data[:,:Nstan])
-                    elif Xout=='ENZ':
-                        X_batch.append(Data[:,:Nstan*3])
+                    elif Xout=='sepa':
+                        X_batch.append(Data[:,:Nstan*len(Xin)])
                 EQ_flag=0
             else:
-                #this is just noise
+                #this is just noise (this whole part is no longer supported!, please consider generating noise event through input file)
                 if Dpath==None:
-                    1
+                    pass
                     #y_batch.append(np.zeros([E[0].shape[0],1])) #Mw=0 label from 0~n epochs
                 else:
                     #test_read=glob.glob(Dpath+'/'+'Chile_full.'+E[0]+'.Z.npy')
@@ -737,10 +769,10 @@ class feature_gen_multi(keras.utils.Sequence):
                             #removed data
                             #Data[:,n]=np.zeros(E[0].shape[0])# but not just zero, this should be SCALED!!!
                             #Data[:,n]=(np.zeros(E[0].shape[0])-scale[0])/scale[1] # but not just zero, this should be SCALED!!! in order to keep consistent to EQ part. (Xnew[:,:,:121]*10)+5=original
-                            if Xout=='PGD':
+                            if Xout=='merge':
                                 Data[:,n]=np.zeros(E[0].shape)
                                 Data[:,Nstan+n]=np.zeros(E[0].shape[0]) #remove code
-                            elif Xour=='ENZ':
+                            elif Xour=='sepa':
                                 Data[:,n]=np.zeros([E[0].shape])
                                 Data[:,n+Nstan]=np.zeros([E[0].shape])
                                 Data[:,n+2*Nstan]=np.zeros([E[0].shape])
@@ -752,10 +784,10 @@ class feature_gen_multi(keras.utils.Sequence):
                             #removed data
                             #Data[:,n]=np.zeros(test_read.shape[1])
                             #Data[:,n]=(np.zeros(test_read.shape[1])-scale[0])/scale[1] #but not just zero! this should be SCALED!!!
-                            if Xout=='PGD':
+                            if Xout=='merge':
                                 Data[:,n]=np.zeros(test_read.shape[1])
                                 Data[:,Nstan+n]=np.zeros(test_read.shape[1]) #remove code
-                            elif Xout=='ENZ':
+                            elif Xout=='sepa':
                                 Data[:,n]=np.zeros([test_read.shape[1]])
                                 Data[:,n+Nstan]=np.zeros([test_read.shape[1]])
                                 Data[:,n+2*Nstan]=np.zeros([test_read.shape[1]])
@@ -1084,6 +1116,7 @@ def train_multi(files,train_params,Nstan=121):
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
     Nchan = 4 #number of channel (i.e. E,N,Z,code -> Nchan=4)
+
     #get output_params implying from number of y_files
     if y_file is 'flat':
         output_params = 1
@@ -1091,6 +1124,7 @@ def train_multi(files,train_params,Nstan=121):
         output_params = len(y_file)
     else:
         output_params = 1 #y_file is just a file path input
+
     #MLARGE structure
     network = models.Sequential()
     network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(102,Nstan*Nchan,)))

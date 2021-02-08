@@ -145,7 +145,7 @@ for i_epoch in range(102):
 
 plt.figure()
 print(sav_accEQ_1)
-plt.plot(np.arange(105)*5+5,sav_accEQ_3,'bo-')
+plt.plot(np.arange(102)*5+5,sav_accEQ_3,'bo-')
 plt.plot(np.arange(102)*5+5,sav_accEQ_2,'yo-')
 plt.plot(np.arange(102)*5+5,sav_accEQ_1,'ro-')
 plt.xlabel('Time (sec)',fontsize=14)
@@ -292,6 +292,14 @@ def Tr(Mw):
     #Half duration from Zacharie Duputel (EPSL 2013)
     M0=10**((Mw+10.7)*(3/2))  #[unit in dyne-cm]. From Mw=(2/3)*np.log10(M0)-10.7
     return(1.2*10**-8*M0**(1/3))
+
+def M02Mw(M0):
+    Mw=(2.0/3)*np.log10(M0*1e7)-10.7 #Mudpy input is N-M, convert to dyne-cm by 1e7,
+    return(Mw)
+
+def Mw2M0(Mw):
+    M0=10**((Mw+10.7)*(3/2))*1e-7 #make the unit to be N-M
+    return(M0)
 
 ###Accuracy function(Time,Mw)
 sns.set()
@@ -481,6 +489,7 @@ def groupMw_boxinp(y_real,y_pred,G,minMw=7.2,rng_mw=0.2):
 
 
 plt.figure(figsize=(14,10))
+props = dict(boxstyle='round', facecolor='white', alpha=0.7) 
 err_range = 0.3
 plt.subplot(2,3,1)
 plt.grid(True)
@@ -614,7 +623,9 @@ Gp=np.arange(7.5,9.5,0.25)
 #Make input for boxplot
 runtime = 60
 #data_GFAST=groupMw_boxinp(sav_Mw,sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
-data_GFAST = groupMw_boxinp(y1[:,int(runtime/5-1),0],sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+idx_GFAST_nonzero = np.where(np.array(sav_Pred_Mw[runtime])!=0)[0] # only take the Non-zero result for GFAST
+#data_GFAST = groupMw_boxinp(y1[:,int(runtime/5-1),0],sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST everything
+data_GFAST = groupMw_boxinp(y1[idx_GFAST_nonzero,int(runtime/5-1),0],np.array(sav_Pred_Mw[runtime])[idx_GFAST_nonzero],Gp,minMw=0.0,rng_mw=0.125) #GFAST
 #data_LSTM=groupMw_boxinp(y1[EQId,int(runtime/5-1) ],predictions[EQId,int(runtime/5-1)],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
 data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
 #data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
@@ -756,7 +767,8 @@ for medn in bp['medians']:
 plt.text(7.55,9.68,'Method',fontsize=14)
 acc_EQ,acc_noise=get_accuracy(predictions[:,int(runtime/5-1),0],y1[:,int(runtime/5-1),0],0.3)
 plt.text(7.6,9.5,'M-LARGE (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
-acc_EQ,acc_noise=get_accuracy(sav_Pred_Mw[runtime],y1[:,int(runtime/5-1),0],0.3)
+#acc_EQ,acc_noise=get_accuracy(sav_Pred_Mw[runtime],y1[:,int(runtime/5-1),0],0.3) #GFAST everything
+acc_EQ,acc_noise=get_accuracy(np.array(sav_Pred_Mw[runtime])[idx_GFAST_nonzero],y1[idx_GFAST_nonzero,int(runtime/5-1),0],0.3) #only consider non-zero
 plt.text(7.6,9.15,'GFAST (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
 
 plt.xticks(Gp,Gp,fontsize=14,rotation=30)
@@ -771,7 +783,9 @@ plt.subplot(2,3,5)
 plt.grid(True)
 runtime = 120
 #data_GFAST=groupMw_boxinp(sav_Mw,sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
-data_GFAST = groupMw_boxinp(y1[:,int(runtime/5-1),0],sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+idx_GFAST_nonzero = np.where(np.array(sav_Pred_Mw[runtime])!=0)[0] # only take the Non-zero result for GFAST
+data_GFAST = groupMw_boxinp(y1[idx_GFAST_nonzero,int(runtime/5-1),0],np.array(sav_Pred_Mw[runtime])[idx_GFAST_nonzero],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+#data_GFAST = groupMw_boxinp(y1[:,int(runtime/5-1),0],sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST everything
 #data_LSTM=groupMw_boxinp(y1[EQId,int(runtime/5-1) ],predictions[EQId,int(runtime/5-1)],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
 data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
 #data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
@@ -857,7 +871,8 @@ plt.plot(ratio_linex,ratio_liney,'g--',linewidth=1)
 
 acc_EQ,acc_noise=get_accuracy(predictions[:,int(runtime/5-1),0],y1[:,int(runtime/5-1),0],0.3)
 plt.text(7.5,9.5,'M-LARGE (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
-acc_EQ,acc_noise=get_accuracy(sav_Pred_Mw[runtime],y1[:,int(runtime/5-1),0],0.3)
+#acc_EQ,acc_noise=get_accuracy(sav_Pred_Mw[runtime],y1[:,int(runtime/5-1),0],0.3)
+acc_EQ,acc_noise=get_accuracy(np.array(sav_Pred_Mw[runtime])[idx_GFAST_nonzero],y1[idx_GFAST_nonzero,int(runtime/5-1),0],0.3) #only consider non-zero
 plt.text(7.5,9.3,'GFAST (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
 #plt.text(7.5,9.5,'M-LARGE (Acc. = 99%)',horizontalalignment='left',verticalalignment='center',fontsize=14)
 #plt.text(7.5,9.3,'GFAST (Acc. = 75%)',horizontalalignment='left',verticalalignment='center',fontsize=14)
@@ -869,7 +884,9 @@ plt.subplot(2,3,6)
 plt.grid(True)
 runtime = 240
 #data_GFAST=groupMw_boxinp(sav_Mw,sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
-data_GFAST = groupMw_boxinp(y1[:,int(runtime/5-1),0],sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST
+#data_GFAST = groupMw_boxinp(y1[:,int(runtime/5-1),0],sav_Pred_Mw[runtime],Gp,minMw=0.0,rng_mw=0.125) #GFAST everything
+idx_GFAST_nonzero = np.where(np.array(sav_Pred_Mw[runtime])!=0)[0] # only take the Non-zero result for GFAST
+data_GFAST = groupMw_boxinp(y1[idx_GFAST_nonzero,int(runtime/5-1),0],np.array(sav_Pred_Mw[runtime])[idx_GFAST_nonzero],Gp,minMw=0.0,rng_mw=0.125) #GFAST
 #data_LSTM=groupMw_boxinp(y1[EQId,int(runtime/5-1) ],predictions[EQId,int(runtime/5-1)],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
 data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
 #data_LSTM = groupMw_boxinp(y1[:,int(runtime/5-1),0],predictions[:,int(runtime/5-1),0],Gp,minMw=0.0,rng_mw=0.125) #M-LARGE
@@ -954,7 +971,8 @@ ax1.tick_params(axis='y',labelleft=False)
 plt.plot(ratio_linex,ratio_liney,'g--',linewidth=1)
 acc_EQ,acc_noise=get_accuracy(predictions[:,int(runtime/5-1),0],y1[:,int(runtime/5-1),0],0.3)
 plt.text(7.5,9.5,'M-LARGE (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
-acc_EQ,acc_noise=get_accuracy(sav_Pred_Mw[runtime],y1[:,int(runtime/5-1),0],0.3)
+#acc_EQ,acc_noise=get_accuracy(sav_Pred_Mw[runtime],y1[:,int(runtime/5-1),0],0.3)
+acc_EQ,acc_noise=get_accuracy(np.array(sav_Pred_Mw[runtime])[idx_GFAST_nonzero],y1[idx_GFAST_nonzero,int(runtime/5-1),0],0.3) #only consider non-zero
 plt.text(7.5,9.3,'GFAST (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='left',verticalalignment='center',fontsize=14)
 #plt.text(7.5,9.5,'M-LARGE (Acc. = 99%)',horizontalalignment='left',verticalalignment='center',fontsize=14)
 #plt.text(7.5,9.3,'GFAST (Acc. = 88%)',horizontalalignment='left',verticalalignment='center',fontsize=14)
@@ -963,10 +981,33 @@ plt.text(7.5,9.3,'GFAST (Acc. = %d%%)'%np.round(acc_EQ),horizontalalignment='lef
 
 plt.subplots_adjust(left=0.08, bottom=0.15, right=0.95, top=0.92, wspace=0.06, hspace=0.12)
 
-plt.savefig('Fig2_GFAST_MLARGE_Test81.png',dpi=450)
+plt.savefig('Fig2_GFAST_MLARGE_Test81_WONan.png',dpi=450)
 
 #========================manually plot the Fig.2 END========================
 
+#MLARGE and GFAST accuracy plot
+sav_acc_GFAST=[]
+sav_acc_MLARGE=[]
+sav_time = []
+for epo in range(102):
+    #GFAST accuracy
+    runtime = int(epo*5+5)
+    if runtime<10:
+        continue
+    sav_time.append(runtime)
+    idx_GFAST_nonzero = np.where(np.array(sav_Pred_Mw[runtime])!=0)[0] # only take the Non-zero result for GFAST
+    acc_GFAST,acc_noise=get_accuracy(np.array(sav_Pred_Mw[runtime])[idx_GFAST_nonzero],y1[idx_GFAST_nonzero,int(runtime/5-1),0],0.3) #only consider non-zero
+    sav_acc_GFAST.append(acc_GFAST)
+    acc_MLARGE,acc_noise=get_accuracy(predictions[:,int(runtime/5-1),0],y1[:,int(runtime/5-1),0],0.3)
+    sav_acc_MLARGE.append(acc_MLARGE)
+
+plt.plot(sav_time,sav_acc_GFAST,'b.-')
+plt.plot(sav_time,sav_acc_MLARGE,'r.-')
+plt.grid(True)
+plt.show()
+acc_MLARGE = np.array(acc_MLARGE)
+sav_acc_GFAST = np.array(sav_acc_GFAST)
+acc_Ratio = acc_MLARGE/sav_acc_GFAST
 
 
 
