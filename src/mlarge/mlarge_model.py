@@ -686,8 +686,11 @@ class feature_gen_multi(keras.utils.Sequence):
                 elif Xout=='sepa':
                     sepa_Data = []
                     #select components you want
-                    for x_comp in Xin:
-                        sepa_Data = np.hstack([sepa_Data,eval('tmp_'+x_comp)])
+                    for i_comp,x_comp in enumerate(Xin):
+                        if i_comp==0:
+                            sepa_Data = eval('tmp_'+x_comp).copy()
+                        else:
+                            sepa_Data = np.hstack([sepa_Data,eval('tmp_'+x_comp)])
                     
                     #ENZ_Data=np.hstack([tmp_E,tmp_N,tmp_Z]) #old method use all ENZ
                     #ENZ_Data=(ENZ_Data-scale[0])/scale[1]
