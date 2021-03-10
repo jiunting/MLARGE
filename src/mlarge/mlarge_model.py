@@ -705,7 +705,7 @@ class feature_gen_multi(keras.utils.Sequence):
                     #not always 3-components, new version allows any combination of ENZ
                     merge_comps = 0
                     for x_comp in Xin:
-                         merge_comps += eval('tmp_'+xcomp)**2
+                         merge_comps += eval('tmp_'+x_comp)**2
                     PGD=D2PGD(merge_comps**0.5)
                     #PGD=(PGD-scale[0])/scale[1]
                     #scale the feature by Xcale function
