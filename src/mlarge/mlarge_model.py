@@ -649,24 +649,14 @@ class feature_gen_multi(keras.utils.Sequence):
                     tmp_E = np.load(E[int(rndEQidx[0])]) #shape=[Nsta,Timesteps]
                     tmp_N = np.load(N[int(rndEQidx[0])])
                     tmp_Z = np.load(Z[int(rndEQidx[0])])
-                    tmp_E = tmp_E.T  #shape=[Timesteps,Nsta]
+                    tmp_E = tmp_E.T  #shape becomes [Timesteps,Nsta]
                     tmp_N = tmp_N.T
                     tmp_Z = tmp_Z.T
                     #y_batch.append(y[int(rndEQidx[0])].reshape(-1,1)) #and its label
 
-                #beore started, should I add noise?
-                if add_noise:
-                    #add noise in every stations
-                    for n in range(Nstan):
-                        np.random.shuffle(level) #randomly pick from the level list 
-                        f,Epsd,Npsd,Zpsd = gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False)
-                        Noise_add_E,Noise_add_N,Noise_add_Z = make_noise(tmp_E.shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
-                        tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
-                        tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
-                        tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
+                #dealing with missing stations
                 rm_Nstan = np.random.randint(rmN[0],rmN[1]+1) #remove a random number of stations. Can remove zero station (not remove)
                 np.random.shuffle(rndSTAidx) #shuffle the index of stations, pick the first ":rm_Nsta" to be removed
-                #dealing with missing stations
                 for rmidx in rndSTAidx[:rm_Nstan]:
                     #remove the data part
                     tmp_E[:,rmidx]=np.zeros(tmp_E.shape[0])
@@ -677,6 +667,39 @@ class feature_gen_multi(keras.utils.Sequence):
                         Data[:,Nstan+rmidx]=np.zeros(tmp_E.shape[0])
                     elif Xout=='sepa':
                         Data[:,Nstan*len(Xin)+rmidx]=np.zeros(tmp_E.shape[0])
+                            
+                #check if the removel is meaningful
+                #--------check if the removed Data is meaningful---------------
+                ##############get hypocenter of the eq###################
+                #logfile='/projects/tlalollin/jiunting/Fakequakes/Chile_full/output/ruptures/subduction.'+E[int(rndEQidx[0])]+'.log'
+                eqinfo=EQinfo[int(rndEQidx[0])]
+                eqlon=eqinfo[2]
+                eqlat=eqinfo[3]
+                #eqlon,eqlat=get_hypo(logfile)
+                #print('Input E,y:',E,y)
+                #print('rndEQIDX=%s,ID=%s, ID_from_EQinfo=%s eqlon,eqlat=%f %f'%(int(rndEQidx[0]),E[int(rndEQidx[0])],eqinfo[0],eqlon,eqlat))
+                #########################################################
+                #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=3.0,min_Nsta=4)==False: #This is for Test#72 (Even the Melinka has 5 stations within 3deg),#73,#75
+                #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=10)==False: #This is for Test#74
+                if not check_PGDs_hypoInfo(Data,STA,Nstan,hypo=[eqlon,eqlat],dist_thres=Min_stan_dist[1],min_Nsta=Min_stan_dist[0]):
+                    #print('Not enough near field stations......try again! at nb=%d'%(nb)) #but not just try again, make sure next one should be an earthquake, not noise.
+                    EQ_flag=1 #remove too many near-field station, run again in "EQ" case (not noise) so the possibility of EQ/noise states the same
+                    continue #skip this generation, try again......
+                
+                #add noise for every station?
+                if add_noise:
+                    #add noise in every stations
+                    for n in range(Nstan):
+                        if n in rndSTAidx[:rm_Nstan]:
+                            continue
+                        np.random.shuffle(level) #randomly pick from the level list
+                        f,Epsd,Npsd,Zpsd = gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False)
+                        Noise_add_E,Noise_add_N,Noise_add_Z = make_noise(tmp_E.shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
+                        tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
+                        tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
+                        tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
+                        
+                #save the resulting data
                 if Xout=='merge':
                     PGD=D2PGD((tmp_E**2+tmp_N**2+tmp_Z**2)**0.5)
                     #PGD=(PGD-scale[0])/scale[1]
@@ -698,23 +721,6 @@ class feature_gen_multi(keras.utils.Sequence):
                     sepa_Data=Xscale(sepa_Data)
                     Data[:,:Nstan*len(Xin)]=sepa_Data.copy()
 
-                #--------check if the removed Data is meaningful---------------
-                ##############get hypocenter of the eq###################
-                #logfile='/projects/tlalollin/jiunting/Fakequakes/Chile_full/output/ruptures/subduction.'+E[int(rndEQidx[0])]+'.log'
-                eqinfo=EQinfo[int(rndEQidx[0])]
-                eqlon=eqinfo[2]
-                eqlat=eqinfo[3]
-                #eqlon,eqlat=get_hypo(logfile)
-                #print('Input E,y:',E,y)
-                #print('rndEQIDX=%s,ID=%s, ID_from_EQinfo=%s eqlon,eqlat=%f %f'%(int(rndEQidx[0]),E[int(rndEQidx[0])],eqinfo[0],eqlon,eqlat))
-                #########################################################
-                #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=3.0,min_Nsta=4)==False: #This is for Test#72 (Even the Melinka has 5 stations within 3deg),#73,#75
-                #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=10)==False: #This is for Test#74 
-                if check_PGDs_hypoInfo(Data,STA,Nstan,hypo=[eqlon,eqlat],dist_thres=Min_stan_dist[1],min_Nsta=Min_stan_dist[0])==False:
-                    #print('Not enough near field stations......try again! at nb=%d'%(nb)) #but not just try again, make sure next one should be an earthquake, not noise.
-                    EQ_flag=1 #remove too many near-field station, run again in "EQ" case (not noise) so the possibility of EQ/noise states the same
-                    continue #skip this generation, try again......
-                nb=nb+1 #the generated Data is okay, save it
                 ##########save the picked EQ name#############
                 sav_picked_EQ.append(real_EQid)
                 #-----What labeling do you want to use??-----
@@ -752,6 +758,8 @@ class feature_gen_multi(keras.utils.Sequence):
                         X_batch.append(Data[:,:Nstan])
                     elif Xout=='sepa':
                         X_batch.append(Data[:,:Nstan*len(Xin)])
+
+                nb=nb+1 #the generated Data is okay, save it
                 EQ_flag=0
             else:
                 #this is just noise (this whole part is no longer supported!, please consider generating noise event through input file)
