@@ -704,7 +704,7 @@ class feature_gen_multi(keras.utils.Sequence):
                     #PGD=D2PGD((tmp_E**2+tmp_N**2+tmp_Z**2)**0.5) #the old version always 3 comps
                     #not always 3-components, new version allows any combination of ENZ
                     merge_comps = 0
-                    for i_comp,x_comp in enumerate(Xin):
+                    for x_comp in Xin:
                          merge_comps += eval('tmp_'+xcomp)**2
                     PGD=D2PGD(merge_comps**0.5)
                     #PGD=(PGD-scale[0])/scale[1]
