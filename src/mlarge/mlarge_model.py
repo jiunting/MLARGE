@@ -1267,6 +1267,8 @@ class Model():
     def accuracy(self,i_src=0,tolerance=0.3,current=True):
         #2021-03-12 added ith soruce parameter option
         #y.shape = [batch_size, time_epoch, i_source_parameters]
+        #if tolerance is a string number, it use the "percentage" of the true label range
+        #for example if true Mw spans from 7.5-9.5, tolerance="10", that means the tolerance is (9.5-7.5)*10% = 0.2
         import numpy as np
         def get_accuracy(pred_Mw,real_Mw,tolorance=0.3,NoiseMw=False,tolorance_noise=False):
             #Make accuracy calculation
@@ -1289,8 +1291,12 @@ class Model():
                 return (len(n_success_EQ)/len(pred_Mw))*100, (len(n_success_Noise)/len(Noiseidx))*100
         predictions=self.predictions
         y1=self.real
+        # deal with tolerance input
+        if type(tolerance) is str:
+            #convert percentile tolerance to real tolerance
+            tolerance = (y1[:,i_epoch,i_src].max()-y1[:,i_epoch,i_src].min())*(float(tolerance)/100)
         if predictions is None:
-            print('Please make prediction first by .prediction() method')
+            print('Please make prediction first by .predict() method')
             return
         else: 
             sav_acc=[]
