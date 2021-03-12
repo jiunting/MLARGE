@@ -1242,6 +1242,7 @@ class Model():
         import tensorflow as tf
         import tensorflow.keras as keras
         import matplotlib.pyplot as plt
+        import copy
         Model_path,X,y,scale_X,back_scale_X,scale_y,back_scale_y=(self.Model_path,self.X,self.y,self.scale_X,self.back_scale_X,
                                                                   self.scale_y,self.back_scale_y)
         if Model_path=='Lin2020':
@@ -1253,10 +1254,11 @@ class Model():
         self.model=model_loaded
         X1=scale_X(X)
         predictions=model_loaded.predict(X1)
+        y1 = copy.deepcopy(y)
         #scale the labels back to the real sense
         for i,fcn in enumerate(back_scale_y):
             predictions[:,:,i] = fcn(predictions[:,:,i])
-            y1[:,:,i] = fcn(y[:,:,i])
+            y1[:,:,i] = fcn(y1[:,:,i])
         #predictions=back_scale_y(predictions)
         #y1=back_scale_y(y)
         self.predictions=predictions
