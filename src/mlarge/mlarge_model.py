@@ -1264,7 +1264,9 @@ class Model():
         self.predictions=predictions
         self.real=y1
 
-    def accuracy(self,tolerance=0.3,current=True):
+    def accuracy(self,i_src=0,tolerance=0.3,current=True):
+        #2021-03-12 added ith soruce parameter option
+        #y.shape = [batch_size, time_epoch, i_source_parameters]
         import numpy as np
         def get_accuracy(pred_Mw,real_Mw,tolorance=0.3,NoiseMw=False,tolorance_noise=False):
             #Make accuracy calculation
@@ -1294,11 +1296,11 @@ class Model():
             sav_acc=[]
             if current:
                 for i_epoch in range(predictions.shape[1]):
-                    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,i_epoch],tolerance)
+                    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch,i_src],y1[:,i_epoch,i_src],tolerance)
                     sav_acc.append(acc_EQ)
             else:
                 for i_epoch in range(predictions.shape[1]):
-                    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch],y1[:,-1],tolerance)
+                    acc_EQ,acc_noise=get_accuracy(predictions[:,i_epoch,i_src],y1[:,-1,i_src],tolerance)
                     sav_acc.append(acc_EQ)
         sav_acc=np.array(sav_acc)
         self.sav_acc=sav_acc
