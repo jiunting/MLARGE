@@ -1294,7 +1294,7 @@ class Model():
         # deal with tolerance input
         if type(tolerance) is str:
             #convert percentile tolerance to real tolerance
-            tolerance = (y1[:,i_epoch,i_src].max()-y1[:,i_epoch,i_src].min())*(float(tolerance)/100)
+            tolerance = (y1[:,:,i_src].max()-y1[:,:,i_src].min())*(float(tolerance)/100)
         if predictions is None:
             print('Please make prediction first by .predict() method')
             return
