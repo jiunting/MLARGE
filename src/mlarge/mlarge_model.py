@@ -1256,7 +1256,7 @@ class Model():
         #scale the labels back to the real sense
         for i,fcn in enumerate(back_scale_y):
             predictions[:,:,i] = fcn(predictions[:,:,i])
-            y1[:,:,i] = fcn(y1[:,:,i])
+            y1[:,:,i] = fcn(y[:,:,i])
         #predictions=back_scale_y(predictions)
         #y1=back_scale_y(y)
         self.predictions=predictions
