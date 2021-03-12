@@ -1222,8 +1222,8 @@ class Model():
         self.Model_path = Model_path
         self.X = X
         self.y = y
-        self.scale_X = scale_X
-        self.back_scale_X = back_scale_X
+        self.scale_X = scale_X               # Additional scale function for X input, if X input already scaled, use a dummy lambda function
+        self.back_scale_X = back_scale_X     # A function makes the X back to normal sense
         self.scale_y = scale_y
         self.back_scale_y = back_scale_y
         self.model=None
@@ -1243,7 +1243,7 @@ class Model():
         import tensorflow.keras as keras
         import matplotlib.pyplot as plt
         Model_path,X,y,scale_X,back_scale_X,scale_y,back_scale_y=(self.Model_path,self.X,self.y,self.scale_X,self.back_scale_X,
-        self.scale_y,self.back_scale_y)
+                                                                  self.scale_y,self.back_scale_y)
         if Model_path=='Lin2020':
             import mlarge
             model_loaded=tf.keras.models.load_model(mlarge.__path__[0].replace('src/mlarge','models/Test81_weights.49475-0.000131.hdf5'),compile=False)
@@ -1254,9 +1254,12 @@ class Model():
         X1=scale_X(X)
         predictions=model_loaded.predict(X1)
         #scale the labels back to the real sense
-        predictions=back_scale_y(predictions)
+        for i,fcn in enumerate(back_scale_y):
+            predictions[:,:,i] = fcn(predictions[:,:,i])
+            y1[:,:,i] = fcn(y1[:,:,i])
+        #predictions=back_scale_y(predictions)
+        #y1=back_scale_y(y)
         self.predictions=predictions
-        y1=back_scale_y(y)
         self.real=y1
 
     def accuracy(self,tolerance=0.3,current=True):
