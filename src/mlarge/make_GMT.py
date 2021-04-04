@@ -25,7 +25,7 @@ def make_tcs(home,project_name,run_name,GF_list,ID,T,outName):
     #project_name='Chile_full_new'
     #run_name='subduction'
     staloc = np.genfromtxt(home+project_name+'/data/station_info/'+GF_list) #station file (not include name)
-    #staloc_name = np.genfromtxt(home+'/data/'+GF_list,'S')
+    staloc_name = np.genfromtxt(home+'/data/'+GF_list,'S')
     staloc_name_idx = {i[0].decode():ii for ii,i in enumerate(staloc_name)}
     # find all time series sac files
     D_E = glob.glob(home+project_name+'/output/waveforms/'+run_name+'.'+ID+'/*.LYE.sac')
