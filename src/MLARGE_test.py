@@ -2160,6 +2160,7 @@ for ieq,eq in enumerate(EQs):
                 print('Found station:%s not in the training dataset'%(sta))
     print('Closest station of %s is %s'%(EQs[ieq],closest_STA))
     all_save_hypodist.append(save_hypodist)
+    '''
     #P-wave travel time to the cloest station
     model = TauPyModel(model="ak135")
     P=model.get_travel_times(source_depth_in_km=EQloc[ieq][2], distance_in_degree=closest_dist, phase_list=('P','p'), receiver_depth_in_km=0)
@@ -2174,6 +2175,7 @@ for ieq,eq in enumerate(EQs):
         print('Before:',EQt[ieq])
         EQt[ieq]=EQt[ieq]+datetime.timedelta(seconds=Pt) #move the event origin time later, means shift PGD earlier
         print('After:',EQt[ieq])
+    '''
     #find 3-component of the data and calculate PGD
     for sta in stanames:
         comps3=glob.glob(data_path+'/'+eq+'/GPS/'+sta+'*.sac')
