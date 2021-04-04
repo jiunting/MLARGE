@@ -37,7 +37,7 @@ def make_tcs(home,project_name,run_name,GF_list,ID,T,outName):
     D_N.sort()
     D_Z.sort()
     outNameID = outName+'.'+ID+'.txt'
-    OUT1 = open(outName,'w')
+    OUT1 = open(outNameID,'w')
     OUT1.write('#lon lat name time E N Z\n')
     for d_E,d_N,d_Z in zip(D_E,D_N,D_Z):
         assert d_E.split('/')[-1].split('.')[0]==d_N.split('/')[-1].split('.')[0]==d_Z.split('/')[-1].split('.')[0],"station name inconsistent"
