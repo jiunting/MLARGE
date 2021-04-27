@@ -188,11 +188,11 @@ def gen_multi_Xydata_list(X_dirs,y_dirs,y_type=['STF','Lon','Lat','Dep','Length'
 
 
     
-def get_EQinfo(home,project_name,run_name,outname='EQinfo'):
+def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
     import glob
     import numpy as np
-    
-    def get_source_Info(logfile):
+    # fmt: short or long
+    def get_source_Info(logfile,fmt='short'):
         #Input log file path from the rupture directory
         #output hypo lon,lat
         IN1=open(logfile,'r')
@@ -200,12 +200,21 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo'):
             #if 'Target magnitude' in line:
             #    Tmw.append(float(line.split()[3]))
             #    continue
+            if 'Lmax' in line:
+                L = float(line.split()[3])
+                continue
+            if 'Wmax' in line:
+                W = float(line.split()[3])
+                continue
+            if 'Target magnitude' in line:
+                tar_Mw = float(line.split()[3])
+                continue
             if 'Actual magnitude' in line:
-                Mw=float(line.split()[3])
+                Mw = float(line.split()[3])
                 #mw.append(float(line.split()[3]))
                 continue
             if 'Hypocenter (lon,lat,z[km])' in line:
-                Hypo_xyz=line.split(':')[-1].replace('(','').replace(')','').strip().split(',')
+                Hypo_xyz = line.split(':')[-1].replace('(','').replace(')','').strip().split(',')
                 #print Hypo_xyz
                 #Hypo.append([ float(Hypo_xyz[0]),float(Hypo_xyz[1]),float(Hypo_xyz[2]) ])
                 continue
@@ -215,9 +224,12 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo'):
                 #Cent.append([ float(Cent_xyz[0]),float(Cent_xyz[1]),float(Cent_xyz[2]) ])
                 break
         IN1.close()
-        return Mw,float(Hypo_xyz[0]),float(Hypo_xyz[1]),float(Hypo_xyz[2]),float(Cent_xyz[0]),float(Cent_xyz[1]),float(Cent_xyz[2])
+        if fmt=='short':
+            return Mw,float(Hypo_xyz[0]),float(Hypo_xyz[1]),float(Hypo_xyz[2]),float(Cent_xyz[0]),float(Cent_xyz[1]),float(Cent_xyz[2])
+        elif fmt=='long':
+            return Mw,float(Hypo_xyz[0]),float(Hypo_xyz[1]),float(Hypo_xyz[2]),float(Cent_xyz[0]),float(Cent_xyz[1]),float(Cent_xyz[2]), tar_Mw, L, W
     
-    def get_hyposlip(rupt_file,eqlon,eqlat):
+    def get_slip_Info(rupt_file,eqlon,eqlat,fmt='short'):
         A=np.genfromtxt(rupt_file)
         lon=A[:,1]
         lat=A[:,2]
@@ -236,12 +248,22 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo'):
     rupts.sort()
     for n,logfile in enumerate(logs):
         if n==0:
-            OUT1.write('#Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip\n')
+            if fmt=='short':
+                OUT1.write('#Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip\n')
+            elif fmt=='long':
+                OUT1.write('#Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip\n')
+            else:
+                print('undefined fmt=%s [short/long]'%(fmt))
+                return
+
         ID='%06d'%(n)
-        Mw,eqlon,eqlat,eqdep,cenlon,cenlat,cendep=get_source_Info(logfile)
-        hypo_slip,max_slip=get_hyposlip(rupts[n],eqlon,eqlat)
-        OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
+        Mw,eqlon,eqlat,eqdep,cenlon,cenlat,cendep = get_source_Info(logfile)
+        hypo_slip,max_slip = get_slip_Info(rupts[n],eqlon,eqlat)
+        if fmt=='short':
+            OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
                                                                         cenlat,cendep,hypo_slip,max_slip))
+        else:
+            # get additional info
     OUT1.close()
         
 

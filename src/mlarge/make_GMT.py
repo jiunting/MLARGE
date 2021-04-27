@@ -29,7 +29,6 @@ def make_tcs(home,project_name,run_name,GF_list,ID,T,outName):
     staloc_name_idx = {i[0].decode():ii for ii,i in enumerate(staloc_name)}
     # find all time series sac files
     D_E = glob.glob(home+project_name+'/output/waveforms/'+run_name+'.'+ID+'/*.LYE.sac')
-    print('dir=',home+project_name+'/output/waveforms/'+run_name+'.'+ID+'/*.LYE.sac')
     D_N = glob.glob(home+project_name+'/output/waveforms/'+run_name+'.'+ID+'/*.LYN.sac')
     D_Z = glob.glob(home+project_name+'/output/waveforms/'+run_name+'.'+ID+'/*.LYZ.sac')
     assert len(D_E)==len(D_N)==len(D_Z), "missing component"
