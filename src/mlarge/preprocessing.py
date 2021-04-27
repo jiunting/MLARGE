@@ -268,8 +268,8 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
                 return
 
         ID='%06d'%(n)
-        Mw, eqlon, eqlat, eqdep, cenlon, cenlat, cendep, tar_Mw, L, W = get_source_Info(logfile,fmt='long')
-        hypo_slip, max_slip, mean_slip, std_slip, max_rise, mean_rise, std_rise = get_slip_Info(rupts[n],eqlon,eqlat,fmt='long')
+        Mw, eqlon, eqlat, eqdep, cenlon, cenlat, cendep, tar_Mw, L, W = get_source_Info(logfile,fmt=fmt)
+        hypo_slip, max_slip, mean_slip, std_slip, max_rise, mean_rise, std_rise = get_slip_Info(rupts[n],eqlon,eqlat,fmt=fmt)
         if fmt=='short':
             OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
                                                                         cenlat,cendep,hypo_slip,max_slip))
