@@ -260,9 +260,9 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
     for n,logfile in enumerate(logs):
         if n==0:
             if fmt=='short':
-                OUT1.write('#Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip\n')
+                OUT1.write('#ID Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip\n')
             elif fmt=='long':
-                OUT1.write('#Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip mean_slip std_slip max_rise mean_rise std_rise\n')
+                OUT1.write('#ID[0] Mw[1] Hypo_lon[2] Hypo_lat[3] Hypo_dep[4] Cen_lon[5] Cen_lat[6] Cen_dep[7] hypo_slip[8] max_slip[9] mean_slip[10] std_slip[11] max_rise[12] mean_rise[13] std_rise[14] tarMw[15] Len[16] Wid[17]\n')
             else:
                 print('undefined fmt=%s [short/long]'%(fmt))
                 return
@@ -274,8 +274,8 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
             OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
                                                                         cenlat,cendep,hypo_slip,max_slip))
         elif fmt=='long':
-            OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f %f %f %f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
-                                                                            cenlat,cendep,hypo_slip,max_slip, mean_slip, std_slip, max_rise, mean_rise, std_rise))
+            OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f %f %f %f %f %f %.4f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
+                                                                            cenlat,cendep,hypo_slip,max_slip, mean_slip, std_slip, max_rise, mean_rise, std_rise, tar_Mw, L, W))
         else:
             print('undefined fmt=%s [short/long]'%(fmt))
             return
