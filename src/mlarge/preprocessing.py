@@ -228,18 +228,29 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
             return Mw,float(Hypo_xyz[0]),float(Hypo_xyz[1]),float(Hypo_xyz[2]),float(Cent_xyz[0]),float(Cent_xyz[1]),float(Cent_xyz[2])
         elif fmt=='long':
             return Mw,float(Hypo_xyz[0]),float(Hypo_xyz[1]),float(Hypo_xyz[2]),float(Cent_xyz[0]),float(Cent_xyz[1]),float(Cent_xyz[2]), tar_Mw, L, W
+        else:
+            print('undefined fmt=%s [short/long]'%(fmt))
+            return
     
     def get_slip_Info(rupt_file,eqlon,eqlat,fmt='short'):
-        A=np.genfromtxt(rupt_file)
-        lon=A[:,1]
-        lat=A[:,2]
-        SS=A[:,8]
-        DS=A[:,9]
-        Slip=(SS**2.0+DS**2.0)**0.5
+        A = np.genfromtxt(rupt_file)
+        lon = A[:,1]
+        lat = A[:,2]
+        SS = A[:,8]
+        DS = A[:,9]
+        Rise = A[:,7]
+        Slip = (SS**2.0+DS**2.0)**0.5
+        idx_slip = np.where(Slip!=0)[0] #index of slip (some subfaults are zero slip)
         hypo_misft=np.abs(lon-eqlon)**2.0+np.abs(lat-eqlat)**2.0
         hypoidx=np.where(hypo_misft==np.min(hypo_misft))[0][0]
         hyposlip=Slip[hypoidx]
-        return hyposlip, Slip.max()
+        if fmt=='short':
+            return hyposlip, Slip.max()
+        elif fmt=='long':
+            return hyposlip, Slip.max(), Slip[idx_slip].mean(), Slip[idx_slip].std(), Rise[idx_slip].max(), Rise[idx_slip].mean(), Rise[idx_slip].std()
+        else:
+            print('undefined fmt=%s [short/long]'%(fmt))
+            return
     
     OUT1=open(outname+'.EQinfo','w')
     logs=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*log')
@@ -251,19 +262,24 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
             if fmt=='short':
                 OUT1.write('#Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip\n')
             elif fmt=='long':
-                OUT1.write('#Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip\n')
+                OUT1.write('#Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip mean_slip std_slip max_rise mean_rise std_rise\n')
             else:
                 print('undefined fmt=%s [short/long]'%(fmt))
                 return
 
         ID='%06d'%(n)
-        Mw,eqlon,eqlat,eqdep,cenlon,cenlat,cendep = get_source_Info(logfile)
-        hypo_slip,max_slip = get_slip_Info(rupts[n],eqlon,eqlat)
+        Mw, eqlon, eqlat, eqdep, cenlon, cenlat, cendep, tar_Mw, L, W = get_source_Info(logfile,fmt='long')
+        hypo_slip, max_slip, mean_slip, std_slip, max_rise, mean_rise, std_rise = get_slip_Info(rupts[n],eqlon,eqlat,fmt='long')
         if fmt=='short':
             OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
                                                                         cenlat,cendep,hypo_slip,max_slip))
+        elif fmt=='long':
+            OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f %f %f %f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
+                                                                            cenlat,cendep,hypo_slip,max_slip, mean_slip, std_slip, max_rise, mean_rise, std_rise))
         else:
-            # get additional info
+            print('undefined fmt=%s [short/long]'%(fmt))
+            return
+
     OUT1.close()
         
 
