@@ -44,7 +44,7 @@ if gen_list:
     preprocessing.gen_Xydata_list(outdir_X,outdir_y,outname=out_list)
 
 if gen_EQinfo:
-    preprocessing.get_EQinfo(home,project_name,run_name,outname=out_EQinfo)
+    preprocessing.get_EQinfo(home,project_name,run_name,outname=out_EQinfo,fmt='long')
 
 
 files={
