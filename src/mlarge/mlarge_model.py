@@ -292,7 +292,8 @@ class feature_gen(keras.utils.Sequence):
                     continue #skip this generation, try again......
                 nb=nb+1 #the generated Data is okay, save it
                 ##########save the picked EQ name#############
-                sav_picked_EQ.append(real_EQid)
+                #sav_picked_EQ.append(real_EQid)
+                sav_picked_EQ.append(pre_pend+'_'+real_EQid)
                 #-----What labeling do you want to use??-----
                 if y is 'flat':
                     #1.use the "flat" label (assuming strong determinism)
