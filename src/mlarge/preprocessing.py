@@ -93,7 +93,7 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
     for rupt in ruptures:
         T,sumMw=get_accM0(ruptfile=rupt,T=tcs_samples)
         eqid=rupt.split('/')[-1].split('.')[1]
-        np.save(outdir+'/'+project_name+'.'+eqid+'.STF.npy',sumMw * 0.1) #scale the Mw = 0.1Mw
+        np.save(outdir+'/'+project_name+'.'+eqid+'.STF.npy',sumMw )# * 0.1) #do not scale the Mw = 0.1Mw.later during training generator
         
 
 def gen_Xydata_list(X_dirs,y_dirs,outname='Datalist'):
