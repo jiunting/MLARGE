@@ -70,6 +70,7 @@ train_params={
         'BS_test':8192, #batch size for testing
         'scales':[0,1], #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
         'Testnum':'00',
+        'Mwfilter':7.0,
         'FlatY':False, #using flat labeling?
         'NoiseP':0.0, #possibility of noise event
         'Noise_level':[1,10,20,30,40,50,60,70,80,90], #GNSS noise level

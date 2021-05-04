@@ -961,6 +961,7 @@ def train(files,train_params):
     BS_test=train_params['BS_test'] #batch size for testing
     scales=train_params['scales'] #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
     Testnum=train_params['Testnum']
+    Mwfilter=train_params['Mwfilter']
     #FlatY=False #just change y='flat' in the y input
     NoiseP=train_params['NoiseP'] #possibility of noise event
     Noise_level=train_params['Noise_level']
@@ -997,9 +998,9 @@ def train(files,train_params):
     Dpath='Path_defined_in_file'
     #print('Training_X inp:',X_train_E)
     #print('Training_y inp:',y_train)
-    gtrain=feature_gen(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=7.0,save_ID=False,shuffle=True) #Use the "flat y"
-    gvalid=feature_gen(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=7.0,save_ID='Run%s_valid_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
-    gtest=feature_gen(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=7.0,save_ID='Run%s_test_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
+    gtrain=feature_gen(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=Mwfilter,save_ID=False,shuffle=True) #Use the "flat y"
+    gvalid=feature_gen(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=Mwfilter,save_ID='Run%s_valid_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
+    gtest=feature_gen(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=Mwfilter,save_ID='Run%s_test_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
 
     #check file/dir exist,otherwise mkdir
     if not(os.path.exists('./Test'+Testnum)):
@@ -1117,6 +1118,7 @@ def train_multi(files,train_params,Nstan=121):
     BS_test=train_params['BS_test'] #batch size for testing
     scales=train_params['scales'] #(x-scaels[0])/scales[1] #Not scale here, but scale in the function by log10(X)
     Testnum=train_params['Testnum']
+    Mwfilter=train_params['Mwfilter']
     #FlatY=False #just change y='flat' in the y input
     NoiseP=train_params['NoiseP'] #possibility of noise event
     Noise_level=train_params['Noise_level']
@@ -1172,9 +1174,9 @@ def train_multi(files,train_params,Nstan=121):
     Dpath='Path_defined_in_file'
     #print('Training_X inp:',X_train_E)
     #print('Training_y inp:',y_train)
-    gtrain=feature_gen_multi(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=7.0,save_ID=False,Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
-    gvalid=feature_gen_multi(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=7.0,save_ID='Run%s_valid_EQID.npy'%(Testnum),Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
-    gtest=feature_gen_multi(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=7.0,save_ID='Run%s_test_EQID.npy'%(Testnum),Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
+    gtrain=feature_gen_multi(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=Mwfilter,save_ID=False,Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
+    gvalid=feature_gen_multi(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=Mwfilter,save_ID='Run%s_valid_EQID.npy'%(Testnum),Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
+    gtest=feature_gen_multi(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=Mwfilter,save_ID='Run%s_test_EQID.npy'%(Testnum),Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
     #check file/dir exist,otherwise mkdir
     if not(os.path.exists('./Test'+Testnum)):
         os.makedirs('./Test'+Testnum)
