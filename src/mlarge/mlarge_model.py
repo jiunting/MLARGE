@@ -1353,8 +1353,8 @@ class Model():
                     plt.plot([y.min(),y.max()],[y.min()-err_range,y.max()-err_range],'k--',linewidth=0.5)
                     plt.plot([y.min(),y.max()],[y.min()+err_range,y.max()+err_range],'k--',linewidth=0.5)
                     plt.fill_between([y.min(),y.max()],[y.min()-err_range,y.max()-err_range],[y.min()+err_range,y.max()+err_range],facecolor='k',alpha=0.25)
-                    plt.xlim([7.4,9.52])
-                    plt.ylim([7.4,9.52])
+                    plt.xlim([7.2,9.55])
+                    plt.ylim([7.2,9.55])
                     Xlim=plt.xlim()
                     Ylim=plt.ylim()
                     Xpos=(Xlim[1]-Xlim[0])*0.06+Xlim[0]

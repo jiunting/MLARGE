@@ -115,7 +115,7 @@ if test_model:
     M.accuracy(i_src=0,tolerance=0.3,current=True)
     print('Mean model accuracy is {}'.format(M.sav_acc.mean())) #model accuracy 
     #plot the accuracy as a function of time
-    M.plot_acc(T=np.arange(102)*5+5,show=True)
+    M.plot_acc(T=np.arange(102)*5+5,save_fig="Model_acc")
 
 
 '''
