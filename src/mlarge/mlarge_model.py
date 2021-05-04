@@ -1312,7 +1312,7 @@ class Model():
         sav_acc=np.array(sav_acc)
         self.sav_acc=sav_acc
 
-    def plot_acc(self,T,show=True):
+    def plot_acc(self,T,save_fig=None):
         if self.sav_acc is None:
             print('Please make prediction first by .accuracy() method')
             return
@@ -1323,10 +1323,12 @@ class Model():
             plt.ylabel('Accuracy(%)',fontsize=16)
             plt.xlim([10,510])
             plt.grid(True)
-            if show:
+            if save_fig:
+                plt.savefig(save_fig+'.png',dpi=300)
+            else:
                 plt.show()
 
-    def plot_snap(self,T=[60,120,240],err_range=0.3):
+    def plot_snap(self,T=[60,120,240],err_range=0.3,save_fig=None):
         import matplotlib.pyplot as plt
         import numpy as np
         #plot prediction snap shot
@@ -1363,7 +1365,10 @@ class Model():
                     ax1=plt.gca()
                     ax1.tick_params(pad=0.3)
                 plt.subplots_adjust(left=0.08,top=0.88,right=0.97,bottom=0.1,wspace=0.07)
-                plt.show()
+                if save_fig:
+                    plt.savefig(save_fig+'.png',dpi=300)
+                else:
+                    plt.show()
             else:
                 #plot and save all figures need to be done
                 pass

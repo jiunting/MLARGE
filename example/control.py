@@ -96,7 +96,7 @@ if test_model:
     print(M.predictions) # predicted Mw time series
     print(M.real) #the real Mw
     #calculate model accuracy with 0.3 threshold
-    M.accuracy(0.3,True)
+    M.accuracy(i_src=0,tolerance=0.3,current=True)
     print('Mean model accuracy is {}'.format(M.sav_acc.mean())) #model accuracy 
     #plot the accuracy as a function of time
     M.plot_acc(T=np.arange(102)*5+5,show=True)
