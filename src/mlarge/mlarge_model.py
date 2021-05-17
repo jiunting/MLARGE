@@ -950,8 +950,14 @@ def train(files,train_params):
     #print(X_valid_E,y_valid)
     #print('Total test data, labels=',len(X_test_E),len(y_test))
     #print(X_test_E,y_test)
-    
-    
+
+    #save EQinfo for train, ,valid, test
+    np.save('EQinfo_%s_train.npy'%(train_params['Testnum']),EQinfo_train)
+    np.save('EQinfo_%s_valid.npy'%(train_params['Testnum']),EQinfo_valid)
+    np.save('EQinfo_%s_test.npy'%(train_params['Testnum']),EQinfo_test)
+    import sys
+    sys.exit()
+
     #Build structure
     HP=train_params['Neurons']
     epochs=train_params['epochs']

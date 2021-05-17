@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def view_sources(EQinfo):
+def view_sources(EQinfo,save_fig=None):
     from matplotlib.ticker import LogLocator
     from matplotlib.ticker import MultipleLocator
     import matplotlib
@@ -49,8 +49,10 @@ def view_sources(EQinfo):
     scal_W = 10**(-1.86+0.46*Mw_synth)
 
     # create figure
-    fig = plt.figure(figsize=(18,10.5))
-    
+#    fig = plt.figure(figsize=(18,10.5))
+    fig = plt.figure(figsize=(12,6.3))
+#    fig = plt.figure()
+
     # first subplot
     ax1 = fig.add_subplot(331)
     ax1.plot(Mw, Len,'+',markersize=3,alpha=1)
@@ -77,7 +79,7 @@ def view_sources(EQinfo):
     ax1.set_ylim([tmp_yrange[min_idx],tmp_yrange[max_idx]])
     # get ylim after log scale for plotting
     log_ylim = [np.log10(tmp_yrange[min_idx]),np.log10(tmp_yrange[max_idx])]
-    ax1.text(Mw_range[0]+(Mw_range[1]-Mw_range[0])*0.4,10**(log_ylim[0]+(log_ylim[1]-log_ylim[0])*0.08),r'$\log (L)=-2.37+0.57M_w$',fontsize=12) #text plot in original scale
+    ax1.text(Mw_range[0]+(Mw_range[1]-Mw_range[0])*0.3,10**(log_ylim[0]+(log_ylim[1]-log_ylim[0])*0.08),r'$\log (L)=-2.37+0.57M_w$',fontsize=12) #text plot in original scale
     ax1.set_yscale('log')
     ymajorLocator = LogLocator(base=10.0,numticks = 5)
     yminorLocator = LogLocator(base=10.0,subs = np.arange(1.0, 10.0) * 0.1, numticks = 10)
@@ -86,9 +88,9 @@ def view_sources(EQinfo):
     ax1.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
     ax1.tick_params(which='major',length=5,width=0.8)
     ax1.tick_params(which='minor',length=2.5,width=0.8)
-    ax1.set_ylabel('Fault length (km)',labelpad=-1)
+    ax1.set_ylabel('Fault length (km)',labelpad=-2,size=14)
     ax1.tick_params(axis='x',labelbottom=False)
-    ax1.tick_params(axis='y',pad=-1)
+    ax1.tick_params(axis='y',pad=-1,labelsize=12)
 
     # second subplot
     ax2 = fig.add_subplot(332)
@@ -117,7 +119,7 @@ def view_sources(EQinfo):
     ax2.set_ylim([tmp_yrange[min_idx],tmp_yrange[max_idx]])
     # get ylim after log scale for plotting
     log_ylim = [np.log10(tmp_yrange[min_idx]),np.log10(tmp_yrange[max_idx])]
-    ax2.text(Mw_range[0]+(Mw_range[1]-Mw_range[0])*0.4,10**(log_ylim[0]+(log_ylim[1]-log_ylim[0])*0.08),r'$\log (W)=-1.86+0.46M_w$',fontsize=12) #text plot in original scale
+    ax2.text(Mw_range[0]+(Mw_range[1]-Mw_range[0])*0.3,10**(log_ylim[0]+(log_ylim[1]-log_ylim[0])*0.08),r'$\log (W)=-1.86+0.46M_w$',fontsize=12) #text plot in original scale
     ax2.set_yscale('log')
     ymajorLocator = LogLocator(base=10.0,numticks = 5)
     yminorLocator = LogLocator(base=10.0,subs = np.arange(1.0, 10.0) * 0.1, numticks = 10)
@@ -126,9 +128,9 @@ def view_sources(EQinfo):
     ax2.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
     ax2.tick_params(which='major',length=5,width=0.8)
     ax2.tick_params(which='minor',length=2.5,width=0.8)
-    ax2.set_ylabel('Fault width (km)',labelpad=-1)
+    ax2.set_ylabel('Fault width (km)',labelpad=-2,size=14)
     ax2.tick_params(axis='x',labelbottom=False)
-    ax2.tick_params(axis='y',pad=-1)
+    ax2.tick_params(axis='y',pad=-1,labelsize=12)
 
     # third subplot
     ax3 = fig.add_subplot(333)
@@ -136,7 +138,7 @@ def view_sources(EQinfo):
     ax3.set_xlim(Mw_range)
     ax3.tick_params(which='major',length=5,width=0.8)
     ax3.tick_params(which='minor',length=2.5,width=0.8)
-    ax3.set_ylabel('Target Mw',labelpad=-1)
+    ax3.set_ylabel('Target Mw',labelpad=-2,size=14)
     ax3.tick_params(axis='x',labelbottom=False)
     ax3.tick_params(axis='y',pad=-1)
 
@@ -161,9 +163,9 @@ def view_sources(EQinfo):
     ax4.set_xlim(Mw_range)
     ax4.tick_params(which='major',length=5,width=0.8)
     ax4.tick_params(which='minor',length=2.5,width=0.8)
-    ax4.set_ylabel('Mean slip (m)',labelpad=-1)
+    ax4.set_ylabel('Mean slip (m)',labelpad=-2,size=14)
     ax4.tick_params(axis='x',labelbottom=False)
-    ax4.tick_params(axis='y',pad=-1)
+    ax4.tick_params(axis='y',pad=-1,labelsize=12)
 
     # 5th subplot
     ax5 = fig.add_subplot(335)
@@ -172,9 +174,9 @@ def view_sources(EQinfo):
     ax5.set_yscale('log')
     ax5.tick_params(which='major',length=5,width=0.8)
     ax5.tick_params(which='minor',length=2.5,width=0.8)
-    ax5.set_ylabel('Max. slip (m)',labelpad=-1)
+    ax5.set_ylabel('Max. slip (m)',labelpad=-2,size=14)
     ax5.tick_params(axis='x',labelbottom=False)
-    ax5.tick_params(axis='y',pad=-1)
+    ax5.tick_params(axis='y',pad=-1,labelsize=12)
 
     # 6th subplot
     ax6 = fig.add_subplot(336)
@@ -185,61 +187,68 @@ def view_sources(EQinfo):
     ax6.set_yscale('log')
     ax6.tick_params(which='major',length=5,width=0.8)
     ax6.tick_params(which='minor',length=2.5,width=0.8)
-    ax6.set_ylabel('Slip std. dev. (m)',labelpad=-1)
+    ax6.set_ylabel('Slip std. dev. (m)',labelpad=-2,size=14)
     ax6.tick_params(axis='x',labelbottom=False)
-    ax6.tick_params(axis='y',pad=-1)
+    ax6.tick_params(axis='y',pad=-1,labelsize=12)
 
 
     # 7th subplot
     ax7 = fig.add_subplot(337)
     ax7.plot(Mw, mean_rise,'+',markersize=3,alpha=0.9)
     ax7.set_xlim(Mw_range)
+    ax7.set_xticks(np.arange(7.0,9.5+0.5,0.5))
     ax7.set_yscale('log')
+    ax7.tick_params(which='major',length=5,width=0.8)
+    ax7.tick_params(which='minor',length=2.5,width=0.8)
     if mean_rise.max()<10:
         ymajorLocator = LogLocator(base=2,numticks = 5)
         yminorLocator = LogLocator(base=2,subs = np.arange(1.0, 10.0) * 0.1, numticks = 10)
     else:
         ymajorLocator = LogLocator(base=10,numticks = 5)
         yminorLocator = LogLocator(base=10,subs = np.arange(1.0, 10.0) * 0.1, numticks = 10)
-    
     ax7.yaxis.set_major_locator(ymajorLocator)
     ax7.yaxis.set_minor_locator(yminorLocator)
     ax7.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-    ax7.tick_params(which='major',length=5,width=0.8)
-    ax7.tick_params(which='minor',length=2.5,width=0.8)
-    ax7.set_ylabel('Mean rise time (s)',labelpad=-1)
-    ax7.tick_params(axis='y',pad=-1)
-    ax7.set_xlabel('Actual Mw',labelpad=0)
-    ax7.tick_params(axis='x',pad=0)
+    ax7.set_ylabel('Mean rise time (s)',labelpad=-2,size=14)
+    ax7.tick_params(axis='y',pad=-1,labelsize=12)
+    ax7.set_xlabel('Actual Mw',labelpad=0,size=14)
+    ax7.tick_params(axis='x',pad=0,labelsize=12)
     
     # 8th subplot
     ax8 = fig.add_subplot(338)
     ax8.plot(Mw, max_rise,'+',markersize=3,alpha=0.9)
     ax8.set_xlim(Mw_range)
+    ax8.set_xticks(np.arange(7.0,9.5+0.5,0.5))
     ax8.set_yscale('log')
     ax8.tick_params(which='major',length=5,width=0.8)
     ax8.tick_params(which='minor',length=2.5,width=0.8)
-    ax8.set_ylabel('Max. rise time (s)',labelpad=-1)
-    ax8.tick_params(axis='y',pad=-1)
-    ax8.set_xlabel('Actual Mw',labelpad=0)
-    ax8.tick_params(axis='x',pad=0)
+    ax8.set_ylabel('Max. rise time (s)',labelpad=-2,size=14)
+    ax8.tick_params(axis='y',pad=-1,labelsize=12)
+    ax8.set_xlabel('Actual Mw',labelpad=0,size=14)
+    ax8.tick_params(axis='x',pad=0,labelsize=12)
 
     # 9th subplot
     ax9 = fig.add_subplot(339)
     ax9.plot(Mw, std_rise,'+',markersize=3,alpha=0.9)
     ax9.set_xlim(Mw_range)
+    ax9.set_xticks(np.arange(7.0,9.5+0.5,0.5))
     ax9.set_ylim([0.2,np.max(std_rise)])
     ax9.set_yscale('log')
     ax9.tick_params(which='major',length=5,width=0.8)
     ax9.tick_params(which='minor',length=2.5,width=0.8)
-    ax9.set_ylabel('Rise time std. dev. (s)',labelpad=-1)
-    ax9.tick_params(axis='y',pad=-1)
-    ax9.set_xlabel('Actual Mw',labelpad=0)
-    ax9.tick_params(axis='x',pad=0)
+    ax9.set_ylabel('Rise time std. dev. (s)',labelpad=-2,size=14)
+    ax9.tick_params(axis='y',pad=-1,labelsize=12)
+    ax9.set_xlabel('Actual Mw',labelpad=0,size=14)
+    ax9.tick_params(axis='x',pad=0,labelsize=12)
     
     # final adjustment
-    plt.subplots_adjust(left=0.08,top=0.88,right=0.97,bottom=0.1,wspace=0.15,hspace=0.06)
-    plt.show()
+    plt.subplots_adjust(left=0.05,top=0.97,right=0.97,bottom=0.08,wspace=0.2,hspace=0.1)
+
+    if save_fig:
+        fig.savefig(save_fig)
+        fig.show()
+    else:
+        fig.show()
 
 
     

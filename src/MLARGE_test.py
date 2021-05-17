@@ -22,9 +22,11 @@ from eew_data_engine_synthetic import data_engine_pgd
 #parameters for analyzing result
 home='/Users/timlin/Documents/Project/MLARGE'         #Home directory
 #model_name='Test80_weights.49160-0.000127.hdf5'
-model_name='Test81_weights.49475-0.000131.hdf5'
+#model_name='Test81_weights.49475-0.000131.hdf5'
+model_name='Test05_weights.49195-0.000152.hdf5' #new result trained with Mw7.5+
 #model_name='Test73_weights.37255-0.000129.hdf5'
-run_name='Test81'
+#run_name='Test81'
+run_name='Test05'
 
 
 #Model path
