@@ -955,8 +955,6 @@ def train(files,train_params):
     np.save('EQinfo_%s_train.npy'%(train_params['Testnum']),EQinfo_train)
     np.save('EQinfo_%s_valid.npy'%(train_params['Testnum']),EQinfo_valid)
     np.save('EQinfo_%s_test.npy'%(train_params['Testnum']),EQinfo_test)
-    import sys
-    sys.exit()
 
     #Build structure
     HP=train_params['Neurons']
