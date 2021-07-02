@@ -197,6 +197,7 @@ class feature_gen(keras.utils.Sequence):
         nb=0 #number of batch generated
         #for nb in range(BatchSize):
         EQ_flag=0 #force it to be an earthquake if EQ_flag=1
+        #test_Ninvalid = 0 #number of invalid station removal due to not enough near-field stations
         while nb<BatchSize:
             #print('Num of batch=',nb)
             if Dpath==None:
@@ -247,7 +248,8 @@ class feature_gen(keras.utils.Sequence):
                     tmp_N=tmp_N.T
                     tmp_Z=tmp_Z.T
                     #y_batch.append(y[int(rndEQidx[0])].reshape(-1,1)) #and its label
-
+                '''
+                #not all the station need to add noise, wait until removal and when its a valid event (enough near-field stations)
                 #beore started, should I add noise?
                 if add_noise:
                     #add noise in every stations
@@ -258,9 +260,10 @@ class feature_gen(keras.utils.Sequence):
                         tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
                         tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
                         tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
+                '''
+                #dealing with missing stations
                 rm_Nstan=np.random.randint(rmN[0],rmN[1]+1) #remove a random number of stations. Can remove zero station (not remove)
                 np.random.shuffle(rndSTAidx) #shuffle the index of stations, pick the first ":rm_Nsta" to be removed
-                #dealing with missing stations
                 for rmidx in rndSTAidx[:rm_Nstan]:
                     #remove the data part
                     tmp_E[:,rmidx]=np.zeros(tmp_E.shape[0])
@@ -286,10 +289,25 @@ class feature_gen(keras.utils.Sequence):
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=3)==False: #This is for Test#48, and Test#49, #63
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=3.0,min_Nsta=4)==False: #This is for Test#72 (Even the Melinka has 5 stations within 3deg),#73,#75
                 #if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=5.0,min_Nsta=10)==False: #This is for Test#74 
-                if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=Min_stan_dist[1],min_Nsta=Min_stan_dist[0])==False: 
+                if check_PGDs_hypoInfo(Data,STA,hypo=[eqlon,eqlat],dist_thres=Min_stan_dist[1],min_Nsta=Min_stan_dist[0])==False:
+                    #test_Ninvalid += 1 #this is just to check how many outputs are invalid
                     #print('Not enough near field stations......try again! at nb=%d'%(nb)) #but not just try again, make sure next one should be an earthquake, not noise.
                     EQ_flag=1 #remove too many near-field station, run again in "EQ" case (not noise) so the possibility of EQ/noise states the same
                     continue #skip this generation, try again......
+                
+                #add noise for every station?
+                if add_noise:
+                    #add noise in every stations
+                    for n in range(Nstan):
+                        if n in rndSTAidx[:rm_Nstan]:
+                            continue
+                        np.random.shuffle(level) #randomly pick from the level list
+                        f,Epsd,Npsd,Zpsd = gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False)
+                        Noise_add_E,Noise_add_N,Noise_add_Z = make_noise(tmp_E.shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
+                        tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
+                        tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
+                        tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
+                
                 nb=nb+1 #the generated Data is okay, save it
                 ##########save the picked EQ name#############
                 #sav_picked_EQ.append(real_EQid)
@@ -1025,7 +1043,9 @@ def train(files,train_params):
     
     
     #start training
-    model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
+    #model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
+    model_hist=network.fit_generator(gtrain,gvalid,use_multiprocessing=True,workers=40,validation_steps=len(X_valid_E)//BS_valid,steps_per_epoch=len(X_train_E)//BS,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
+
 
     #save training result and training curve
     tf.keras.models.save_model(network,'./Test'+Testnum+'.h5py')
@@ -1206,7 +1226,10 @@ def train_multi(files,train_params,Nstan=121):
 
 
     #start training
-    model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
+    #model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
+    model_hist=network.fit_generator(gtrain,gvalid,use_multiprocessing=True,workers=40,validation_steps=len(X_valid_E)//BS_valid,steps_per_epoch=len(X_train_E)//BS,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
+
+
 
     #save training result and training curve
     tf.keras.models.save_model(network,'./Test'+Testnum+'.h5py')
