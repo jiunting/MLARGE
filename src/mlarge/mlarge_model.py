@@ -54,7 +54,7 @@ class feature_gen(keras.utils.Sequence):
         self.Mwfilter=Mwfilter #Threshold magnitude for generated events, or False means everything
         self.save_ID=save_ID #save the original eqid with this name (e.g. sav_pickedID_73_2_valid.npy)
         self.shuffle=shuffle  #shuffle always True (shuffle station and eqs?)
-        sefl.test_write=test_write #testing if the model really generate random training/validation samples, delete later!!
+        self.test_write=test_write #testing if the model really generate random training/validation samples, delete later!!
         #self.__check_shape__()
     def __len__(self):
         #length
