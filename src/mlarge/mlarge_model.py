@@ -416,8 +416,6 @@ class feature_gen(keras.utils.Sequence):
         X_batch[:,:,:121]=np.where(X_batch[:,:,:121]>=0.01,X_batch[:,:,:121],0.01) #this mean if X>=0.01, return X, otherwise(i.e. <0.01), return 0.01
         X_batch[:,:,:121]=np.log10(X_batch[:,:,:121]) #take the log10(x), starting from #67
         
-        OUT_test.close()
-        
         return X_batch,y_batch
 
 
