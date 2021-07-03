@@ -1044,7 +1044,7 @@ def train(files,train_params):
     
     #start training
     #model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
-    model_hist=network.fit_generator(gtrain,gvalid,steps_per_epoch=len(X_train_E)//BS,use_multiprocessing=True,workers=40,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
+    model_hist=network.fit_generator(gtrain,steps_per_epoch=len(X_train_E)//BS,validation_data=gvalid,validation_steps=len(X_valid_E)//BS_valid,use_multiprocessing=True,workers=40,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
 
 
     #save training result and training curve
