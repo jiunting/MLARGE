@@ -34,7 +34,7 @@ class feature_gen(keras.utils.Sequence):
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
-                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',shuffle=True,test_write='train'):
+                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy',shuffle=True):
         self.Dpath=Dpath #The path of the individual [E/N/U].npy data (should be a list or a numpy array)
         self.E_path=E_path #The path of the individual [E/N/U].npy data (should be a list or a numpy array)
         self.N_path=N_path
@@ -54,7 +54,6 @@ class feature_gen(keras.utils.Sequence):
         self.Mwfilter=Mwfilter #Threshold magnitude for generated events, or False means everything
         self.save_ID=save_ID #save the original eqid with this name (e.g. sav_pickedID_73_2_valid.npy)
         self.shuffle=shuffle  #shuffle always True (shuffle station and eqs?)
-        self.test_write=test_write #testing if the model really generate random training/validation samples, delete later!!
         #self.__check_shape__()
     def __len__(self):
         #length
@@ -173,8 +172,8 @@ class feature_gen(keras.utils.Sequence):
         scale: scale the added noise (if any) to the same scale as Normalization (i.e. PGD_mean,PGD_var), if not scale, simply set scale=(0,1)
         index is useless here since I want every batches to be different
         '''
-        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,shuffle,test_write= \
-        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.shuffle,self.test_write)
+        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,shuffle \
+        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.shuffle)
         #Get station information and ordering in X
         sta_loc_file=STAinfo['sta_loc_file']
         station_order_file=STAinfo['station_order_file']
@@ -199,9 +198,6 @@ class feature_gen(keras.utils.Sequence):
         #for nb in range(BatchSize):
         EQ_flag=0 #force it to be an earthquake if EQ_flag=1
         #test_Ninvalid = 0 #number of invalid station removal due to not enough near-field stations
-        import time
-        OUT_test = open(test_write+'_'+str(time.time())+'.txt','w')
-        sav_id = []
         while nb<BatchSize:
             #print('Num of batch=',nb)
             if Dpath==None:
@@ -311,8 +307,6 @@ class feature_gen(keras.utils.Sequence):
                         tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
                         tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
                         tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
-            
-                OUT_test.write('%s\n'%(pre_pend+'_'+real_EQid))
             
                 nb=nb+1 #the generated Data is okay, save it
                 ##########save the picked EQ name#############
@@ -978,10 +972,15 @@ def train(files,train_params):
     #print('Total test data, labels=',len(X_test_E),len(y_test))
     #print(X_test_E,y_test)
 
-    #save EQinfo for train, ,valid, test
+    #save EQinfo for train, valid, test
     np.save('EQinfo_%s_train.npy'%(train_params['Testnum']),EQinfo_train)
     np.save('EQinfo_%s_valid.npy'%(train_params['Testnum']),EQinfo_valid)
     np.save('EQinfo_%s_test.npy'%(train_params['Testnum']),EQinfo_test)
+    # save index only
+    np.save('Run%s_train_EQID_all.npy'%(train_params['Testnum']),train_idx)
+    np.save('Run%s_valid_EQID_all.npy'%(train_params['Testnum']),valid_idx)
+    np.save('Run%s_test_EQID_all.npy'%(train_params['Testnum']),test_idx)
+
 
     #Build structure
     HP=train_params['Neurons']
@@ -1029,9 +1028,9 @@ def train(files,train_params):
     Dpath='Path_defined_in_file'
     #print('Training_X inp:',X_train_E)
     #print('Training_y inp:',y_train)
-    gtrain=feature_gen(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=Mwfilter,save_ID=False,shuffle=True,test_write='training') #Use the "flat y"
-    gvalid=feature_gen(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=Mwfilter,save_ID='Run%s_valid_EQID.npy'%(Testnum),shuffle=True,test_write='validation') #Use the "flat y"
-    gtest=feature_gen(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=Mwfilter,save_ID='Run%s_test_EQID.npy'%(Testnum),shuffle=True,test_write='testing') #Use the "flat y"
+    gtrain=feature_gen(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=Mwfilter,save_ID=False,shuffle=True) #Use the "flat y"
+    gvalid=feature_gen(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=Mwfilter,save_ID='Run%s_valid_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
+    gtest=feature_gen(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=Mwfilter,save_ID='Run%s_test_EQID.npy'%(Testnum),shuffle=True) #Use the "flat y"
 
     #check file/dir exist,otherwise mkdir
     if not(os.path.exists('./Test'+Testnum)):
@@ -1053,8 +1052,7 @@ def train(files,train_params):
     
     #start training
     #model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
-    #model_hist=network.fit_generator(gtrain,steps_per_epoch=len(X_train_E)//BS,validation_data=gvalid,validation_steps=len(X_valid_E)//BS_valid,use_multiprocessing=True,workers=40,epochs=epochs,callbacks=[CB,tensorboard_callback])
-    model_hist=network.fit_generator(gtrain,steps_per_epoch=30,validation_data=gvalid,validation_steps=len(X_valid_E)//BS_valid,use_multiprocessing=True,workers=40,epochs=epochs,callbacks=[CB,tensorboard_callback])
+    model_hist=network.fit_generator(gtrain,steps_per_epoch=len(X_train_E)//BS,validation_data=gvalid,validation_steps=len(X_valid_E)//BS_valid,use_multiprocessing=True,workers=40,epochs=epochs,callbacks=[CB,tensorboard_callback])
 
 
     #save training result and training curve
@@ -1141,7 +1139,15 @@ def train_multi(files,train_params,Nstan=121):
     #print(X_valid_E,y_valid)
     #print('Total test data, labels=',len(X_test_E),len(y_test))
     #print(X_test_E,y_test)
-    
+
+    #save EQinfo for train, valid, test
+    np.save('EQinfo_%s_train_all.npy'%(train_params['Testnum']),EQinfo_train)
+    np.save('EQinfo_%s_valid_all.npy'%(train_params['Testnum']),EQinfo_valid)
+    np.save('EQinfo_%s_test_all.npy'%(train_params['Testnum']),EQinfo_test)
+    # save index only
+    np.save('Run%s_train_EQID_all.npy'%(train_params['Testnum']),train_idx)
+    np.save('Run%s_valid_EQID_all.npy'%(train_params['Testnum']),valid_idx)
+    np.save('Run%s_test_EQID_all.npy'%(train_params['Testnum']),test_idx)
     
     #Build structure
     HP=train_params['Neurons']
