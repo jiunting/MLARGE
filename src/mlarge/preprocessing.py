@@ -392,12 +392,12 @@ def get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=
         cen_lon=np.array(cen_lon)
         cen_lat=np.array(cen_lat)
         cen_dep=np.array(cen_dep)
-        #save the result individually
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Width.npy',rupt_W * 0.01)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Length.npy',rupt_L * 0.01)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Lon.npy',cen_lon * -0.1)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Lat.npy',cen_lat * -0.1)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Dep.npy',cen_dep * 0.1)
+        #save the result individually, do not scale here
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Width.npy',rupt_W)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Length.npy',rupt_L)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Lon.npy',cen_lon)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Lat.npy',cen_lat)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.Dep.npy',cen_dep)
 
     
     
