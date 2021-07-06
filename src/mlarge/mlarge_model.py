@@ -1219,7 +1219,7 @@ def train_multi(files,train_params,Nstan=121):
     if not(os.path.exists('./Test'+Testnum)):
         os.makedirs('./Test'+Testnum)
     #Add callback
-    CB=keras.callbacks.ModelCheckpoint(filepath='./Test'+Testnum+'/weights.{epoch:04d}-{val_loss:.6f}.hdf5',monitor='val_loss',save_best_only=True,mode='min',period=5)
+    CB=keras.callbacks.ModelCheckpoint(filepath='./Test'+Testnum+'/weights.{epoch:04d}-{val_loss:.6f}.hdf5',monitor='val_loss',save_best_only=True,mode='min',period=1)
     
     #print('Start generating validation data')
     X_valid_out,y_valid_out=gvalid.__getitem__(1)
