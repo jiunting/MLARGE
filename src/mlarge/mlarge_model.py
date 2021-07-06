@@ -1040,13 +1040,16 @@ def train(files,train_params):
     X_valid_out,y_valid_out=gvalid.__getitem__(1)
     np.save('Xvalid'+Testnum+'.npy',X_valid_out)
     np.save('yvalid'+Testnum+'.npy',y_valid_out)
+    X_valid_out = None
+    y_valid_out = None
 
     #Also save the testing data 
     #print('Start generating testing data')
     X_test_out,y_test_out=gtest.__getitem__(1)
     np.save('Xtest'+Testnum+'.npy',X_test_out)
     np.save('ytest'+Testnum+'.npy',y_test_out)
-    
+    X_test_out = None
+    y_test_out = None
     
     #start training
     #model_hist=network.fit_generator(gtrain,validation_data=(X_valid_out,y_valid_out),use_multiprocessing=True,workers=40,validation_steps=1,steps_per_epoch=1,epochs=epochs,callbacks=[CB,tensorboard_callback]) #so that total steps=1+7=8
@@ -1225,12 +1228,16 @@ def train_multi(files,train_params,Nstan=121):
     X_valid_out,y_valid_out=gvalid.__getitem__(1)
     np.save('Xvalid'+Testnum+'.npy',X_valid_out)
     np.save('yvalid'+Testnum+'.npy',y_valid_out)
+    X_valid_out = None
+    y_valid_out = None
 
     #Also save the testing data 
     #print('Start generating testing data')
     X_test_out,y_test_out=gtest.__getitem__(1)
     np.save('Xtest'+Testnum+'.npy',X_test_out)
     np.save('ytest'+Testnum+'.npy',y_test_out)
+    X_test_out = None
+    y_test_out = None
 
     #save training parameters
     save_train_params = train_params.copy()
