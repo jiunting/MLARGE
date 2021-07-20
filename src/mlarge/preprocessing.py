@@ -290,8 +290,16 @@ def get_fault_LW_cent(rupt_file,dist_strike,dist_dip,center_fault,tcs_samples=np
     #dist_strike : path of distance matrix for strike
     #center_fault :index for the center subfault
     #plot fault and check where is the center(only needs to be done once)
-    dip=np.load(dist_dip)
-    strike=np.load(dist_strike)
+    if type(dist_dip)==str:
+        dip=np.load(dist_dip)
+    else:
+        dip = dist_dip
+
+    if type(dist_strike)==str:
+        strike=np.load(dist_strike)
+    else:
+        strike = dist_strike
+
     new_x=dip[:,center_fault]
     new_y=strike[:,center_fault]
     rupt=np.genfromtxt(rupt_file)
@@ -320,12 +328,12 @@ def get_fault_LW_cent(rupt_file,dist_strike,dist_dip,center_fault,tcs_samples=np
         plt.figure()
         plt.subplot(1,2,1)
         plt.scatter(rupt[:,1],rupt[:,2])
-        for nf in range(len(rupt)):
-            plt.text(rupt[nf,1],rupt[nf,2],rupt[nf,0])
+        #for nf in range(len(rupt)):
+        #    plt.text(rupt[nf,1],rupt[nf,2],rupt[nf,0])
         plt.subplot(1,2,2)
         plt.scatter(order_x,order_y,c=np.arange(len(order_x)),cmap=plt.cm.jet)
-        for k in range(len(order_x)):
-            plt.text(order_x[k],order_y[k],int(rupt[k,0]),fontsize=6)
+        #for k in range(len(order_x)):
+        #    plt.text(order_x[k],order_y[k],int(rupt[k,0]),fontsize=6)
         plt.plot(order_x[cent_idx],order_y[cent_idx],'r^')
         plt.show()
     ##start calculate L/W/cent
