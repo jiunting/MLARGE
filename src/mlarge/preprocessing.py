@@ -263,7 +263,7 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
             if fmt=='short':
                 OUT1.write('#ID Mw Hypo_lon Hypo_lat Hypo_dep Cen_lon Cen_lat Cen_dep hypo_slip max_slip\n')
             elif fmt=='long':
-                OUT1.write('#ID[0] Mw[1] Hypo_lon[2] Hypo_lat[3] Hypo_dep[4] Cen_lon[5] Cen_lat[6] Cen_dep[7] hypo_slip[8] max_slip[9] mean_slip[10] std_slip[11] max_rise[12] mean_rise[13] std_rise[14] tarMw[15] Len[16] Wid[17]\n')
+                OUT1.write('#ID[0] Mw[1] Hypo_lon[2] Hypo_lat[3] Hypo_dep[4] Cen_lon[5] Cen_lat[6] Cen_dep[7] hypo_slip[8] max_slip[9] mean_slip[10] std_slip[11] max_rise[12] mean_rise[13] std_rise[14] tarMw[15] Len[16] Wid[17] Rupt[18]\n')
             else:
                 print('undefined fmt=%s [short/long]'%(fmt))
                 return
