@@ -257,6 +257,7 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
     logs.sort()
     rupts=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*rupt')
     rupts.sort()
+    assert len(logs)==len(rupts), "length of logs and rupts not the same!"
     for n,logfile in enumerate(logs):
         if n==0:
             if fmt=='short':
@@ -274,8 +275,8 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
             OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
                                                                         cenlat,cendep,hypo_slip,max_slip))
         elif fmt=='long':
-            OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f %f %f %f %f %f %.4f %f %f\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
-                                                                            cenlat,cendep,hypo_slip,max_slip, mean_slip, std_slip, max_rise, mean_rise, std_rise, tar_Mw, L, W))
+            OUT1.write('%s  %.4f  %.6f %.6f %.2f   %.6f %.6f %.2f %f %f %f %f %f %f %f %.4f %f %f %s\n'%(ID,Mw,eqlon,eqlat,eqdep,cenlon,
+                                                                            cenlat,cendep,hypo_slip,max_slip, mean_slip, std_slip, max_rise, mean_rise, std_rise, tar_Mw, L, W, rupts[n]))
         else:
             print('undefined fmt=%s [short/long]'%(fmt))
             return
