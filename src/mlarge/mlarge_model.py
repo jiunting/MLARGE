@@ -277,9 +277,10 @@ class feature_gen(keras.utils.Sequence):
                 #--------check if the removed Data is meaningful---------------
                 ##############get hypocenter of the eq###################
                 #logfile='/projects/tlalollin/jiunting/Fakequakes/Chile_full/output/ruptures/subduction.'+E[int(rndEQidx[0])]+'.log'
-                eqinfo=EQinfo[int(rndEQidx[0])]
-                eqlon=eqinfo[2]
-                eqlat=eqinfo[3]
+                eqinfo = EQinfo[int(rndEQidx[0])]
+                eqlon = eqinfo[2]
+                eqlat = eqinfo[3]
+                rupture_f = eqinfo[18]
                 #eqlon,eqlat=get_hypo(logfile)
                 #print('Input E,y:',E,y)
                 #print('rndEQIDX=%s,ID=%s, ID_from_EQinfo=%s eqlon,eqlat=%f %f'%(int(rndEQidx[0]),E[int(rndEQidx[0])],eqinfo[0],eqlon,eqlat))
@@ -692,9 +693,10 @@ class feature_gen_multi(keras.utils.Sequence):
                 #--------check if the removed Data is meaningful---------------
                 ##############get hypocenter of the eq###################
                 #logfile='/projects/tlalollin/jiunting/Fakequakes/Chile_full/output/ruptures/subduction.'+E[int(rndEQidx[0])]+'.log'
-                eqinfo=EQinfo[int(rndEQidx[0])]
-                eqlon=eqinfo[2]
-                eqlat=eqinfo[3]
+                eqinfo = EQinfo[int(rndEQidx[0])]
+                eqlon = eqinfo[2]
+                eqlat = eqinfo[3]
+                rupture_f = eqinfo[18]
                 #eqlon,eqlat=get_hypo(logfile)
                 #print('Input E,y:',E,y)
                 #print('rndEQIDX=%s,ID=%s, ID_from_EQinfo=%s eqlon,eqlat=%f %f'%(int(rndEQidx[0]),E[int(rndEQidx[0])],eqinfo[0],eqlon,eqlat))
@@ -921,7 +923,8 @@ def train(files,train_params):
     ###If more than 1 output, y.shape is [Nparams X Samples] (i.e. Mw, Lon, Lat, Depth, Length, Width. -> Nparams=6)
     
     #load EQinfo file into array
-    EQinfo=np.genfromtxt(EQinfo_file)
+    #EQinfo = np.genfromtxt('EQinfo_file')
+    EQinfo = np.genfromtxt(EQinfo_file,dtype=None,encoding='UTF-8')
     
     
     #train-test split
@@ -1092,8 +1095,8 @@ def train_multi(files,train_params,Nstan=121):
     ###If more than 1 output, y.shape is [Nparams X Samples] (i.e. Mw, Lon, Lat, Depth, Length, Width. -> Nparams=6)
     
     #load EQinfo file into array
-    EQinfo=np.genfromtxt(EQinfo_file)
-    
+    #EQinfo = np.genfromtxt(EQinfo_file)
+    EQinfo = np.genfromtxt(EQinfo_file,dtype=None,encoding='UTF-8')
     
     #train-test split
     train_idx,valid_and_test_idx=train_test_split(np.arange(0,len(E)),test_size=0.3, random_state=16)
@@ -1457,7 +1460,8 @@ def train_cont(files,train_params,Model_path,):
     y=np.array([i.decode() for i in y])
     
     #load EQinfo file into array
-    EQinfo=np.genfromtxt(EQinfo_file)
+    #EQinfo=np.genfromtxt(EQinfo_file)
+    EQinfo=np.genfromtxt(EQinfo_file,dtype=None,encoding='UTF-8')
     
     
     #train-test split
