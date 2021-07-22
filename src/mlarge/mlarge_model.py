@@ -650,6 +650,7 @@ class feature_gen_multi(keras.utils.Sequence):
                     #else:
                     #    real_EQid = Z[int(rndEQidx[0])].split('/')[-1].split('.')[1]
                     real_EQid = eval(Xin[0])[int(rndEQidx[0])].split('/')[-1].split('.')[1]  #for example '002709'
+                    pre_pend = eval(Xin[0])[int(rndEQidx[0])].split('/').split('.')[0] #This will be, for example 'Chile_full' or Chile_small
                 
                     #logfile='/projects/tlalollin/jiunting/Fakequakes/'+pre_pend+'/output/ruptures/subduction.'+real_EQid+'.log'
                     if not Mwfilter:
@@ -749,7 +750,8 @@ class feature_gen_multi(keras.utils.Sequence):
                     Data[:,:Nstan*len(Xin)]=sepa_Data.copy()
 
                 ##########save the picked EQ name#############
-                sav_picked_EQ.append(real_EQid)
+                #sav_picked_EQ.append(real_EQid)
+                sav_picked_EQ.append(pre_pend+'_'+real_EQid)
                 #-----What labeling do you want to use??-----
                 if y is 'flat':
                     #1.use the "flat" label (assuming strong determinism)
