@@ -981,8 +981,10 @@ def train(files,train_params):
     np.save('EQinfo_%s_test.npy'%(train_params['Testnum']),EQinfo_test)
     # save index only
     np.save('Run%s_train_EQID_all.npy'%(train_params['Testnum']),train_idx)
-    np.save('Run%s_valid_EQID_all.npy'%(train_params['Testnum']),valid_idx)
-    np.save('Run%s_test_EQID_all.npy'%(train_params['Testnum']),test_idx)
+#    np.save('Run%s_valid_EQID_all.npy'%(train_params['Testnum']),valid_idx)
+#    np.save('Run%s_test_EQID_all.npy'%(train_params['Testnum']),test_idx)
+    np.save('Run%s_valid_EQID_all.npy'%(train_params['Testnum']),valid_and_test_idx[valid_idx])
+    np.save('Run%s_test_EQID_all.npy'%(train_params['Testnum']),valid_and_test_idx[test_idx])
 
 
     #Build structure
@@ -1152,8 +1154,10 @@ def train_multi(files,train_params,Nstan=121):
     np.save('EQinfo_%s_test_all.npy'%(train_params['Testnum']),EQinfo_test)
     # save index only
     np.save('Run%s_train_EQID_all.npy'%(train_params['Testnum']),train_idx)
-    np.save('Run%s_valid_EQID_all.npy'%(train_params['Testnum']),valid_idx)
-    np.save('Run%s_test_EQID_all.npy'%(train_params['Testnum']),test_idx)
+#    np.save('Run%s_valid_EQID_all.npy'%(train_params['Testnum']),valid_idx)
+#    np.save('Run%s_test_EQID_all.npy'%(train_params['Testnum']),test_idx)
+    np.save('Run%s_valid_EQID_all.npy'%(train_params['Testnum']),valid_and_test_idx[valid_idx])
+    np.save('Run%s_test_EQID_all.npy'%(train_params['Testnum']),valid_and_test_idx[test_idx])
     
     #Build structure
     HP=train_params['Neurons']
