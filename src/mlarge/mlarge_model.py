@@ -650,7 +650,7 @@ class feature_gen_multi(keras.utils.Sequence):
                     #else:
                     #    real_EQid = Z[int(rndEQidx[0])].split('/')[-1].split('.')[1]
                     real_EQid = eval(Xin[0])[int(rndEQidx[0])].split('/')[-1].split('.')[1]  #for example '002709'
-                    pre_pend = eval(Xin[0])[int(rndEQidx[0])].split('/').split('.')[0] #This will be, for example 'Chile_full' or Chile_small
+                    pre_pend = eval(Xin[0])[int(rndEQidx[0])].split('/')[-1].split('.')[0] #This will be, for example 'Chile_full' or Chile_small
                 
                     #logfile='/projects/tlalollin/jiunting/Fakequakes/'+pre_pend+'/output/ruptures/subduction.'+real_EQid+'.log'
                     if not Mwfilter:
