@@ -976,9 +976,9 @@ def train(files,train_params):
     #print(X_test_E,y_test)
 
     #save EQinfo for train, valid, test
-    np.save('EQinfo_%s_train.npy'%(train_params['Testnum']),EQinfo_train)
-    np.save('EQinfo_%s_valid.npy'%(train_params['Testnum']),EQinfo_valid)
-    np.save('EQinfo_%s_test.npy'%(train_params['Testnum']),EQinfo_test)
+    np.save('EQinfo_%s_train_all.npy'%(train_params['Testnum']),EQinfo_train)
+    np.save('EQinfo_%s_valid_all.npy'%(train_params['Testnum']),EQinfo_valid)
+    np.save('EQinfo_%s_test_all.npy'%(train_params['Testnum']),EQinfo_test)
     # save index only
     np.save('Run%s_train_EQID_all.npy'%(train_params['Testnum']),train_idx)
 #    np.save('Run%s_valid_EQID_all.npy'%(train_params['Testnum']),valid_idx)
