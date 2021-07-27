@@ -49,7 +49,7 @@ def find_sta_hypo(Data,STA,nsta,hypo,dist_thres):
 
 
 
-def dist_sta_fault(Data,STA,nsta,rupt_file):
+def dist_sta_fault(Data,STA,nsta,rupt_file,weight=False):
     '''
         return all distances (from subfaults to stations)
         this metric reveals if rupture grows to an area without any staion around
@@ -79,7 +79,10 @@ def dist_sta_fault(Data,STA,nsta,rupt_file):
         sav_dist.append(min_fault_sta)
 
     sav_dist = np.array(sav_dist)
-    return sav_dist
+    if weight:
+        return slip[idx_rupt] * (1.0/sav_dist)**2 # slip propragate to station follows 1/r (or 1/r^2)
+    else:
+        return sav_dist
 
 
 
