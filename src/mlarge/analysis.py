@@ -51,7 +51,7 @@ def find_sta_hypo(Data,STA,nsta,hypo,dist_thres):
 
 def dist_sta_fault(Data,STA,nsta,rupt_file):
     '''
-        return max (subfaults to stations) distance
+        return all distances (from subfaults to stations)
         this metric reveals if rupture grows to an area without any staion around
     '''
     # find all available station index
