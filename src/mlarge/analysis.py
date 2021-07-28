@@ -79,7 +79,7 @@ def dist_sta_fault(Data,STA,nsta,rupt_file):
         sav_dist.append(min_fault_sta)
 
     sav_dist = np.array(sav_dist)
-    return sav_dist, slip, idx_rupt
+    return sav_dist, slip[idx_rupt], idx_rupt
 #    if weight:
 #        return slip[idx_rupt] * (1.0/sav_dist)**2 # slip propragate to station follows 1/r (or 1/r^2)
 #    else:
