@@ -86,6 +86,8 @@ def dist_sta_fault(Data,STA,nsta,rupt_file):
 #        return sav_dist
 
 
+def SR(slip,dist,k=2):
+    return (np.sum(slip*(1.0/(1+dist))**k)/np.sum(slip))*100 # in %
 
 
 
