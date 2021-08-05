@@ -422,12 +422,6 @@ class feature_gen(keras.utils.Sequence):
 
 
 class feature_gen_multi(keras.utils.Sequence):
-    try:
-        from numba import jit
-        jit_flag = True
-    except:
-        print('numba not support')
-        jit_flag = False
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
@@ -469,6 +463,13 @@ class feature_gen_multi(keras.utils.Sequence):
             print('Inputs are eqids')
             #return False #the inputs are eqid
     def __getitem__(self,index):
+        try:
+            from numba import jit
+            jit_flag = True
+        except:
+            print('numba not support')
+            jit_flag = False
+
         def get_hypo(logfile):
             #Input log file path from the rupture directory
             #output hypo lon,lat
