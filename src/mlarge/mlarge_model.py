@@ -297,17 +297,18 @@ class feature_gen(keras.utils.Sequence):
                     continue #skip this generation, try again......
                 
                 #add noise for every station?
-                if add_noise:
-                    #add noise in every stations
-                    for n in range(Nstan):
-                        if n in rndSTAidx[:rm_Nstan]:
-                            continue
-                        np.random.shuffle(level) #randomly pick from the level list
-                        f,Epsd,Npsd,Zpsd = gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False)
-                        Noise_add_E,Noise_add_N,Noise_add_Z = make_noise(tmp_E.shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
-                        tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
-                        tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
-                        tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
+                if len(level)!=0:
+                    if add_noise:
+                        #add noise in every stations
+                        for n in range(Nstan):
+                            if n in rndSTAidx[:rm_Nstan]:
+                                continue
+                            np.random.shuffle(level) #randomly pick from the level list
+                            f,Epsd,Npsd,Zpsd = gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False)
+                            Noise_add_E,Noise_add_N,Noise_add_Z = make_noise(tmp_E.shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
+                            tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
+                            tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
+                            tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
             
                 nb=nb+1 #the generated Data is okay, save it
                 ##########save the picked EQ name#############
@@ -710,17 +711,18 @@ class feature_gen_multi(keras.utils.Sequence):
                     continue #skip this generation, try again......
                 
                 #add noise for every station?
-                if add_noise:
-                    #add noise in every stations
-                    for n in range(Nstan):
-                        if n in rndSTAidx[:rm_Nstan]:
-                            continue
-                        np.random.shuffle(level) #randomly pick from the level list
-                        f,Epsd,Npsd,Zpsd = gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False)
-                        Noise_add_E,Noise_add_N,Noise_add_Z = make_noise(tmp_E.shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
-                        tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
-                        tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
-                        tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
+                if len(level)!=0:
+                    if add_noise:
+                        #add noise in every stations
+                        for n in range(Nstan):
+                            if n in rndSTAidx[:rm_Nstan]:
+                                continue
+                            np.random.shuffle(level) #randomly pick from the level list
+                            f,Epsd,Npsd,Zpsd = gnss_psd(level=level[0],return_as_frequencies=True,return_as_db=False)
+                            Noise_add_E,Noise_add_N,Noise_add_Z = make_noise(tmp_E.shape[0],f,Epsd,Npsd,Zpsd,PGD=False)
+                            tmp_E[:,n] = tmp_E[:,n] + Noise_add_E
+                            tmp_N[:,n] = tmp_N[:,n] + Noise_add_N
+                            tmp_Z[:,n] = tmp_Z[:,n] + Noise_add_Z
                         
                 #save the resulting data
                 if Xout=='merge':

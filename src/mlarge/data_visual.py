@@ -330,8 +330,40 @@ def train_valid_curve(train_valid,check_point_epo=None,save_fig=None):
 
 
 
-
-
+def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat'):
+    '''
+        Data: [time,features((ncomps+(1 existence code))*nsta)]
+        ncomp: how many component do you have not included existence code
+        STA: from mlarge.gen_STA_from_file()
+        rupt: .rupt file or no file
+        sort_type: choose from 'lat','dist'(rupt!=None)
+    '''
+    if sort_type=='dist':
+        assert type(rupt)==str, "Can not find hypo info, rupt should not empty!"
+    colors = ['r','b','k']
+    sav_D = {} #data for each component
+    for n_comp in range(ncomp):
+        sav_D[n_comp] = {'data':[],'stlat':[]}
+        for i in range(nsta):
+            if np.any(Data[:,int(-1*nsta+i)]!=0): # for ith station,if any data for all time has value/or code
+                stlon,stlat = STA[i]
+                sav_D[n_comp]['data'].append(Data[:,i+n_comp*nsta])
+                sav_D[n_comp]['stlat'].append(stlat)
+        sav_D[n_comp]['data'] = np.array(sav_D[n_comp]['data'])
+        sav_D[n_comp]['stlat'] = np.array(sav_D[n_comp]['stlat'])
+    #--- plot result, scale to max=D deg---
+    D = 5.0
+    max_val = 0
+    for n_comp in range(ncomp):
+        if np.max(np.abs(sav_D[n_comp]['data']))>max_val:
+            max_val = np.max(np.abs(sav_D[n_comp]['data']))
+    mul = D/max_val
+    for n_comp in range(ncomp):
+        plt.plot(np.arange(len(sav_D[n_comp]['data'][0])),mul*sav_D[n_comp]['data'].T+sav_D[n_comp]['stlat'],color=colors[n_comp])
+    plt.plot([80,80],[sav_D[n_comp]['stlat'].min(),sav_D[n_comp]['stlat'].min()+0.5*D],'m',linewidth=2.0)
+    props = dict(boxstyle='round', facecolor='white', alpha=1)
+    plt.text(80,sav_D[n_comp]['stlat'].min()+0.25*D,'%f(m)'%((0.5*D)/mul),bbox=props)
+    plt.show()
 
 
 
