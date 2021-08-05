@@ -1200,7 +1200,10 @@ def train_multi(files,train_params,Nstan=121):
 
     # load existing model or create new model
     if train_params['train_count']:
-        network = tf.keras.models.load_model(train_params['train_count'],compile=False)
+        # the only difference of the restored model and the last model is the optimizer e.g. learning-rate/momentums
+        # compile has nothing to do with the weights, but defines loss and optimizer,
+        #see details HERE:https://stackoverflow.com/questions/47995324/does-model-compile-initialize-all-the-weights-and-biases-in-keras-tensorflow
+        network = tf.keras.models.load_model(train_params['train_count'],compile=True)
         network.summary()
     else:
         #New model, create MLARGE structure
