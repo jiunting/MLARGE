@@ -1198,27 +1198,32 @@ def train_multi(files,train_params,Nstan=121):
     else:
         output_params = 1 #y_file is just a file path input
 
-    #MLARGE structure
-    network = models.Sequential()
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(102,Nstan*Nchan,)))
-    network.add(layers.LeakyReLU(alpha=0.1))
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[1])))
-    network.add(layers.LeakyReLU(alpha=0.1))
-    network.add(layers.Dropout(Drops[0]))
-    network.add(layers.LSTM(HP[2],return_sequences=True,input_shape=(102,Nstan*Nchan,),dropout=0.2, recurrent_dropout=0.2))
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[3])))
-    network.add(layers.LeakyReLU(alpha=0.1))
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[4])))
-    network.add(layers.LeakyReLU(alpha=0.1))
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[5])))
-    network.add(layers.LeakyReLU(alpha=0.1))
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[6])))
-    network.add(layers.LeakyReLU(alpha=0.1))
-    network.add(layers.Dropout(Drops[1]))
-    #network.add(tf.keras.layers.TimeDistributed(layers.Dense(output_params,activation='relu')))
-    network.add(tf.keras.layers.TimeDistributed(layers.Dense(output_params))) #remove relu for only positive value
-    network.summary()
-    network.compile(loss=Loss_func,optimizer='adam')
+    # load existing model or create new model
+    if train_params['train_count']:
+        network = tf.keras.models.load_model(train_params['train_count'],compile=False)
+        network.summary()
+    else:
+        #New model, create MLARGE structure
+        network = models.Sequential()
+        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(102,Nstan*Nchan,)))
+        network.add(layers.LeakyReLU(alpha=0.1))
+        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[1])))
+        network.add(layers.LeakyReLU(alpha=0.1))
+        network.add(layers.Dropout(Drops[0]))
+        network.add(layers.LSTM(HP[2],return_sequences=True,input_shape=(102,Nstan*Nchan,),dropout=0.2, recurrent_dropout=0.2))
+        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[3])))
+        network.add(layers.LeakyReLU(alpha=0.1))
+        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[4])))
+        network.add(layers.LeakyReLU(alpha=0.1))
+        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[5])))
+        network.add(layers.LeakyReLU(alpha=0.1))
+        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[6])))
+        network.add(layers.LeakyReLU(alpha=0.1))
+        network.add(layers.Dropout(Drops[1]))
+        #network.add(tf.keras.layers.TimeDistributed(layers.Dense(output_params,activation='relu')))
+        network.add(tf.keras.layers.TimeDistributed(layers.Dense(output_params))) #remove relu for only positive value
+        network.summary()
+        network.compile(loss=Loss_func,optimizer='adam')
 
     #build generator
     Dpath='Path_defined_in_file'
@@ -1447,6 +1452,7 @@ class Model():
 
 
 def train_cont(files,train_params,Model_path,):
+    ### This function is no longer needed and will be removed in the future. Please use train_count in train() and train_multi() instead.
     STAinfo={}
     STAinfo['sta_loc_file']=files['GFlist']
     STAinfo['station_order_file']=files['Sta_ordering']
