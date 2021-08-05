@@ -481,30 +481,47 @@ class feature_gen_multi(keras.utils.Sequence):
             return float(Hypo_xyz[0]),float(Hypo_xyz[1])
         if jit_flag:
             @jit(nopython=True)
-        def check_PGDs_hypoInfo(Data,STA,nsta,hypo,dist_thres,min_Nsta):
-            #Given the hypocenter, check if after the removal, the PGDs are still meaningful
-            '''
-                Data: the PGD data [steps,features]
-                STA: dictionary of station sorted by the 'ALL_staname_order.txt' file
-                e.g. STA[37]=[-70.131718, -20.273540] because the STA[37]='IQQE' (check the location of IQQE)
-                hypo: hypocenter of the rupture
-                dist_thres:a distance from hypo
-                min_Nsta: at least min_Nsta stations closer than the above dist_thres
-            '''
-            rec_idx=np.where(Data[-1,:nsta]!=0.0)[0] #the last PGD is not zero, means the station is not removed
-            #print('number of non-removed=',len(rec_idx))
-            if len(rec_idx)<min_Nsta:
-                #oops, you removed all the near and far field stations
-                return False
-            Nclose=0
-            for n_idx in rec_idx:
-                stlon,stlat=STA[n_idx]
-                dist=obspy.geodetics.locations2degrees(lat1=hypo[1],long1=hypo[0],lat2=stlat,long2=stlon)
-                if dist<=dist_thres:
-                    Nclose=Nclose+1
-                if Nclose>=min_Nsta: #actually it stops at Nclose==min_Nsta 
-                    return True
-            return False #run through all the stations, Nclose still smaller than min_Nsta
+            def check_PGDs_hypoInfo(Data,STA,nsta,hypo,dist_thres,min_Nsta):
+                #Given the hypocenter, check if after the removal, the PGDs are still meaningful
+                '''
+                    Data: the PGD data [steps,features]
+                    STA: dictionary of station sorted by the 'ALL_staname_order.txt' file
+                    e.g. STA[37]=[-70.131718, -20.273540] because the STA[37]='IQQE' (check the location of IQQE)
+                    hypo: hypocenter of the rupture
+                    dist_thres:a distance from hypo
+                    min_Nsta: at least min_Nsta stations closer than the above dist_thres
+                '''
+                rec_idx=np.where(Data[-1,:nsta]!=0.0)[0] #the last PGD is not zero, means the station is not removed
+                #print('number of non-removed=',len(rec_idx))
+                if len(rec_idx)<min_Nsta:
+                    #oops, you removed all the near and far field stations
+                    return False
+                Nclose=0
+                for n_idx in rec_idx:
+                    stlon,stlat=STA[n_idx]
+                    dist=obspy.geodetics.locations2degrees(lat1=hypo[1],long1=hypo[0],lat2=stlat,long2=stlon)
+                    if dist<=dist_thres:
+                        Nclose=Nclose+1
+                    if Nclose>=min_Nsta: #actually it stops at Nclose==min_Nsta
+                        return True
+                return False #run through all the stations, Nclose still smaller than min_Nsta
+        else:
+            def check_PGDs_hypoInfo(Data,STA,nsta,hypo,dist_thres,min_Nsta):
+                #Given the hypocenter, check if after the removal, the PGDs are still meaningful
+                rec_idx=np.where(Data[-1,:nsta]!=0.0)[0] #the last PGD is not zero, means the station is not removed
+                #print('number of non-removed=',len(rec_idx))
+                if len(rec_idx)<min_Nsta:
+                    #oops, you removed all the near and far field stations
+                    return False
+                Nclose=0
+                for n_idx in rec_idx:
+                    stlon,stlat=STA[n_idx]
+                    dist=obspy.geodetics.locations2degrees(lat1=hypo[1],long1=hypo[0],lat2=stlat,long2=stlon)
+                    if dist<=dist_thres:
+                        Nclose=Nclose+1
+                    if Nclose>=min_Nsta: #actually it stops at Nclose==min_Nsta
+                        return True
+                return False #run through all the stations, Nclose still smaller than min_Nsta
 
         def D2PGD(data):
             #displacement to peak ground displacement 
@@ -519,39 +536,62 @@ class feature_gen_multi(keras.utils.Sequence):
             return(PGD)
         if jit_flag:
             @jit(nopython=True)
-        def make_noise(n_steps,f,Epsd,Npsd,Zpsd,PGD=False):
-            #define sample rate
-            dt=1.0 #make this 1 so that the length of PGD can be controlled by duration
-            #noise model
-            #level='median'  #this can be low, median, or high
-            #duration of time series
-            duration=n_steps
-            # get white noise
-            E_noise=windowed_gaussian(duration,dt,window_type=None)
-            N_noise=windowed_gaussian(duration,dt,window_type=None)
-            Z_noise=windowed_gaussian(duration,dt,window_type=None)
-            noise=windowed_gaussian(duration,dt,window_type=None)
-            #get PSDs
-            #f,Epsd,Npsd,Zpsd=gnss_psd(level=level,return_as_frequencies=True,return_as_db=False)
-            #control the noise level
-            #scale=np.abs(np.random.randn()) #normal distribution
-            #Epsd=Epsd*scale
-            #Npsd=Npsd*scale
-            #Npsd=Npsd*scale
-            #Covnert PSDs to amplitude spectrum
-            Epsd = Epsd**0.5
-            Npsd = Npsd**0.5
-            Zpsd = Zpsd**0.5
-            #apply the spectrum
-            E_noise=apply_spectrum(E_noise,Epsd,f,dt,is_gnss=True)[:n_steps]
-            N_noise=apply_spectrum(N_noise,Npsd,f,dt,is_gnss=True)[:n_steps]
-            Z_noise=apply_spectrum(Z_noise,Zpsd,f,dt,is_gnss=True)[:n_steps]
-            if PGD:
-                GD=(np.real(E_noise)**2.0+np.real(N_noise)**2.0+np.real(Z_noise)**2.0)**0.5
-                PGD=D2PGD(GD)
-                return PGD
-            else:
-                return np.real(E_noise),np.real(N_noise),np.real(Z_noise)        
+            def make_noise(n_steps,f,Epsd,Npsd,Zpsd,PGD=False):
+                #define sample rate
+                dt=1.0 #make this 1 so that the length of PGD can be controlled by duration
+                #noise model
+                #level='median'  #this can be low, median, or high
+                #duration of time series
+                duration=n_steps
+                # get white noise
+                E_noise=windowed_gaussian(duration,dt,window_type=None)
+                N_noise=windowed_gaussian(duration,dt,window_type=None)
+                Z_noise=windowed_gaussian(duration,dt,window_type=None)
+                noise=windowed_gaussian(duration,dt,window_type=None)
+                #get PSDs
+                #f,Epsd,Npsd,Zpsd=gnss_psd(level=level,return_as_frequencies=True,return_as_db=False)
+                #control the noise level
+                #scale=np.abs(np.random.randn()) #normal distribution
+                #Epsd=Epsd*scale
+                #Npsd=Npsd*scale
+                #Npsd=Npsd*scale
+                #Covnert PSDs to amplitude spectrum
+                Epsd = Epsd**0.5
+                Npsd = Npsd**0.5
+                Zpsd = Zpsd**0.5
+                #apply the spectrum
+                E_noise=apply_spectrum(E_noise,Epsd,f,dt,is_gnss=True)[:n_steps]
+                N_noise=apply_spectrum(N_noise,Npsd,f,dt,is_gnss=True)[:n_steps]
+                Z_noise=apply_spectrum(Z_noise,Zpsd,f,dt,is_gnss=True)[:n_steps]
+                if PGD:
+                    GD=(np.real(E_noise)**2.0+np.real(N_noise)**2.0+np.real(Z_noise)**2.0)**0.5
+                    PGD=D2PGD(GD)
+                    return PGD
+                else:
+                    return np.real(E_noise),np.real(N_noise),np.real(Z_noise)
+        else:
+            def make_noise(n_steps,f,Epsd,Npsd,Zpsd,PGD=False):
+                dt=1.0 #make this 1 so that the length of PGD can be controlled by duration
+                duration=n_steps
+                # get white noise
+                E_noise=windowed_gaussian(duration,dt,window_type=None)
+                N_noise=windowed_gaussian(duration,dt,window_type=None)
+                Z_noise=windowed_gaussian(duration,dt,window_type=None)
+                noise=windowed_gaussian(duration,dt,window_type=None)
+                #Covnert PSDs to amplitude spectrum
+                Epsd = Epsd**0.5
+                Npsd = Npsd**0.5
+                Zpsd = Zpsd**0.5
+                #apply the spectrum
+                E_noise=apply_spectrum(E_noise,Epsd,f,dt,is_gnss=True)[:n_steps]
+                N_noise=apply_spectrum(N_noise,Npsd,f,dt,is_gnss=True)[:n_steps]
+                Z_noise=apply_spectrum(Z_noise,Zpsd,f,dt,is_gnss=True)[:n_steps]
+                if PGD:
+                    GD=(np.real(E_noise)**2.0+np.real(N_noise)**2.0+np.real(Z_noise)**2.0)**0.5
+                    PGD=D2PGD(GD)
+                    return PGD
+                else:
+                    return np.real(E_noise),np.real(N_noise),np.real(Z_noise)
 
         def get_mw(logfile):
             #Input log file path from the rupture directory
