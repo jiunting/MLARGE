@@ -422,6 +422,12 @@ class feature_gen(keras.utils.Sequence):
 
 
 class feature_gen_multi(keras.utils.Sequence):
+    try:
+        from numba import jit
+        jit_flag = True
+    except:
+        print('numba not support')
+        jit_flag = False
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
@@ -473,7 +479,8 @@ class feature_gen_multi(keras.utils.Sequence):
                     break
             IN1.close()
             return float(Hypo_xyz[0]),float(Hypo_xyz[1])
-        
+        if jit_flag:
+            @jit(nopython=True)
         def check_PGDs_hypoInfo(Data,STA,nsta,hypo,dist_thres,min_Nsta):
             #Given the hypocenter, check if after the removal, the PGDs are still meaningful
             '''
@@ -510,7 +517,8 @@ class feature_gen_multi(keras.utils.Sequence):
                     PGD.append(np.max(data[:i+1]))
             PGD=np.array(PGD)
             return(PGD)
-
+        if jit_flag:
+            @jit(nopython=True)
         def make_noise(n_steps,f,Epsd,Npsd,Zpsd,PGD=False):
             #define sample rate
             dt=1.0 #make this 1 so that the length of PGD can be controlled by duration
@@ -1208,7 +1216,7 @@ def train_multi(files,train_params,Nstan=121):
     else:
         #New model, create MLARGE structure
         network = models.Sequential()
-        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(102,Nstan*Nchan,)))
+        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(102,Nstan*Nchan,))) # 102 can be None 
         network.add(layers.LeakyReLU(alpha=0.1))
         network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[1])))
         network.add(layers.LeakyReLU(alpha=0.1))
