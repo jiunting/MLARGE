@@ -257,9 +257,12 @@ def make_hist(train,valid,test,save_fig=None):
     import matplotlib.pyplot as plt
     import seaborn as sns
 
-    train = np.load('EQinfo_05_1_train.npy')
-    valid = np.load('EQinfo_05_1_valid.npy')
-    test = np.load('EQinfo_05_1_test.npy')
+#    train = np.load('EQinfo_05_1_train.npy')
+#    valid = np.load('EQinfo_05_1_valid.npy')
+#    test = np.load('EQinfo_05_1_test.npy')
+    train = np.load(train)
+    valid = np.load(valid)
+    test = np.load(test)
 
     sns.set()
     sns.set_context("poster")
@@ -333,36 +336,151 @@ def train_valid_curve(train_valid,check_point_epo=None,save_fig=None):
 def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat'):
     '''
         Data: [time,features((ncomps+(1 existence code))*nsta)]
-        ncomp: how many component do you have not included existence code
-        STA: from mlarge.gen_STA_from_file()
+        ncomp: how many component do you have (not included existence code)
+        STA: from mlarge.analysis.gen_STA_from_file()
         rupt: .rupt file or no file
         sort_type: choose from 'lat','dist'(rupt!=None)
     '''
+    BMap_flag = False #basemap
+    if rupt:
+        try:
+            from mpl_toolkits.basemap import Basemap
+            BMap_flag = True
+        except:
+            print('cannot import Basemap!')
     if sort_type=='dist':
         assert type(rupt)==str, "Can not find hypo info, rupt should not empty!"
-    colors = ['r','b','k']
+    colors = ['k','r','b']
     sav_D = {} #data for each component
     for n_comp in range(ncomp):
-        sav_D[n_comp] = {'data':[],'stlat':[]}
+        sav_D[n_comp] = {'data':[],'stlat':[],'stlon':[]}
         for i in range(nsta):
             if np.any(Data[:,int(-1*nsta+i)]!=0): # for ith station,if any data for all time has value/or code
                 stlon,stlat = STA[i]
                 sav_D[n_comp]['data'].append(Data[:,i+n_comp*nsta])
                 sav_D[n_comp]['stlat'].append(stlat)
+                sav_D[n_comp]['stlon'].append(stlon)
         sav_D[n_comp]['data'] = np.array(sav_D[n_comp]['data'])
         sav_D[n_comp]['stlat'] = np.array(sav_D[n_comp]['stlat'])
+        sav_D[n_comp]['stlon'] = np.array(sav_D[n_comp]['stlon'])
     #--- plot result, scale to max=D deg---
-    D = 5.0
-    max_val = 0
+#    LON = [-77,-66]
+#    LAT = [-45,-17]
+#    tmpLAT = [max([LAT[0],sav_D[0]['stlat'].min()]),min([LAT[1],sav_D[0]['stlat'].max()])]
+#    if BMap_flag:
+#        plt.subplot(1,2,1)
+#        # get the map boundary
+#        map = Basemap(projection='cyl',resolution='f',llcrnrlon=LON[0],llcrnrlat=tmpLAT[0],urcrnrlon=LON[1],urcrnrlat=tmpLAT[1])
+#        map.arcgisimage(service='ESRI_Imagery_World_2D', xpixels = 2000, verbose= True)
+#        map.drawstates()
+#        map.drawcountries(linewidth=0.1)
+#        map.drawcoastlines(linewidth=0.1)
+#        #Lon,Lat lines
+#        lats = map.drawparallels(np.arange(-90,90,2),labels=[1,0,0,1],color='w',linewidth=0.5)
+#        lons = map.drawmeridians(np.arange(-180,180,2),labels=[1,0,0,1],color='w',linewidth=0.5)
+#        # continue to tcs data plot
+#        plt.subplot(1,2,2) # for data plot
+    if BMap_flag:
+        plt.subplot(1,2,1)
+        plt.subplot(1,2,2)
+    D = 2.0 # let the maximum data(PGD or E,N,Z) to be this value on plot
+    max_val = 0 # max val for all the component
     for n_comp in range(ncomp):
         if np.max(np.abs(sav_D[n_comp]['data']))>max_val:
             max_val = np.max(np.abs(sav_D[n_comp]['data']))
     mul = D/max_val
+    maxY_tcs = float("-inf")
+    minY_tcs = float("inf")
+    T = np.arange(102)*5 + 5
+    T = np.hstack([0,T]) # have time starts from 0 sec
     for n_comp in range(ncomp):
-        plt.plot(np.arange(len(sav_D[n_comp]['data'][0])),mul*sav_D[n_comp]['data'].T+sav_D[n_comp]['stlat'],color=colors[n_comp])
-    plt.plot([80,80],[sav_D[n_comp]['stlat'].min(),sav_D[n_comp]['stlat'].min()+0.5*D],'m',linewidth=2.0)
-    props = dict(boxstyle='round', facecolor='white', alpha=1)
-    plt.text(80,sav_D[n_comp]['stlat'].min()+0.25*D,'%f(m)'%((0.5*D)/mul),bbox=props)
+        tcs = mul*sav_D[n_comp]['data'].T+sav_D[n_comp]['stlat'] #shape=(102*nstans)
+        # add zeros at 0 sec for all tcs
+        tcs = np.vstack([np.ones(tcs.shape[1])*sav_D[n_comp]['stlat'],tcs])
+        plt.plot(T,tcs,color=colors[n_comp])
+        maxY_tcs = max([maxY_tcs,np.max(mul*sav_D[n_comp]['data'].T+sav_D[n_comp]['stlat'])])
+        minY_tcs = min([minY_tcs,np.min(mul*sav_D[n_comp]['data'].T+sav_D[n_comp]['stlat'])])
+
+    d_Y_tcs = maxY_tcs-minY_tcs
+    #plt.plot([420,420],[sav_D[n_comp]['stlat'].min(),sav_D[n_comp]['stlat'].min()+0.5*D],'m',linewidth=2.0)
+    # scale = (X_scal * D)/mul), find a best X so that scale can be 1,1.5,2,...
+    match = np.array([0.5,1,2,3,5,10,15]) # or define your own scale
+    #grid search X_scal
+    idx = np.where(np.abs(max_val-match)==np.min(np.abs(max_val-match)))[0][0]
+    X_scal = match[idx]*mul/D
+
+    #plt.plot([420,420],[minY_tcs+0.1*d_Y_tcs,minY_tcs+0.1*d_Y_tcs+0.5*D],'m',linewidth=2.0)
+    if not BMap_flag:
+        plt.plot([420,420],[minY_tcs+0.05*d_Y_tcs,minY_tcs+0.05*d_Y_tcs+X_scal*D],'m',linewidth=2.0)
+        props = dict(boxstyle='round', facecolor='white', alpha=0.8)
+        if ((X_scal*D)/mul).is_integer():
+            plt.text(435,minY_tcs+0.05*d_Y_tcs+X_scal*D*0.5,'%d (m)'%((X_scal*D)/mul),bbox=props)
+        else:
+            plt.text(435,minY_tcs+0.05*d_Y_tcs+X_scal*D*0.5,'%.1f (m)'%((X_scal*D)/mul),bbox=props)
+#    if ((0.5*D)/mul).is_integer():
+#        plt.text(430,sav_D[n_comp]['stlat'].min()+0.2*D,'%d (m)'%((0.5*D)/mul),bbox=props)
+#    else:
+#        plt.text(430,sav_D[n_comp]['stlat'].min()+0.2*D,'%.2f (m)'%((0.5*D)/mul),bbox=props)
+    plt.xlim([0,510])
+#plt.ylim([sav_D[0]['stlat'].min()-0.5,sav_D[0]['stlat'].max()+0.5])
+    #plt.ylim(tmpLAT)
+    minY_tcs = minY_tcs-0.05*d_Y_tcs
+    maxY_tcs = maxY_tcs+0.05*d_Y_tcs
+    plt.ylim([minY_tcs,maxY_tcs])
+    plt.xlabel('Time (s)',fontsize=14)
+    plt.ylabel('Lat.',fontsize=14)
+
+    #=====plot map=====
+    if BMap_flag:
+        LON = [-78,-67]
+        LAT = [-45,-16.5] #do not plot outside of this range
+        # re-adjust tcs's ylim to match the map
+        minY_tcs = max([minY_tcs,LAT[0]])
+        maxY_tcs = min([maxY_tcs,LAT[1]])
+        plt.ylim([minY_tcs,maxY_tcs])
+        #tmpLAT = [max([LAT[0],sav_D[0]['stlat'].min()]),min([LAT[1],sav_D[0]['stlat'].max()])]
+        #-------plotting map------------
+        plt.subplot(1,2,1)
+        # get the map boundary
+        #print("LAT:",minY_tcs,maxY_tcs)
+        #map = Basemap(projection='cyl',resolution='f',llcrnrlon=LON[0],llcrnrlat=tmpLAT[0],urcrnrlon=LON[1],urcrnrlat=tmpLAT[1])
+        map = Basemap(projection='cyl',resolution='f',llcrnrlon=LON[0],llcrnrlat=minY_tcs,urcrnrlon=LON[1],urcrnrlat=maxY_tcs,fix_aspect=False)
+        fig = map.arcgisimage(service='ESRI_Imagery_World_2D', xpixels = 2000, verbose= True)
+        fig.set_alpha(0.8)
+        map.drawstates()
+        map.drawcountries(linewidth=0.1)
+        map.drawcoastlines(linewidth=0.5)
+        dLON = LON[1]-LON[0]
+        dLAT = maxY_tcs-minY_tcs
+        #map.drawmapscale(LON[0]+0.1*dLON,minY_tcs+0.05*dLAT,np.mean(LON),np.mean([maxY_tcs,minY_tcs]),500) #500km
+        #Lon,Lat lines
+        if maxY_tcs-minY_tcs<5:
+            dn = 1
+        elif 5<=maxY_tcs-minY_tcs<10:
+            dn = 2
+        else:
+            dn = 5
+        lats = map.drawparallels(np.arange(-90,90,dn),labels=[1,0,0,1],color='w',linewidth=0.5)
+        lons = map.drawmeridians(np.arange(-180,180,5),labels=[1,0,0,1],color='w',linewidth=0.5)
+        #plot stations on map
+        plt.plot(sav_D[0]['stlon'],sav_D[0]['stlat'],'r^',markeredgecolor='k')
+        # tcs data plot, remove ylabel and ticks
+        plt.subplot(1,2,2) # for data plot
+        plt.plot([390,390],[minY_tcs+0.05*d_Y_tcs,minY_tcs+0.05*d_Y_tcs+X_scal*D],'m',linewidth=2.0)
+        props = dict(boxstyle='round', facecolor='white', alpha=0.8)
+        if ((X_scal*D)/mul).is_integer():
+            plt.text(410,minY_tcs+0.05*d_Y_tcs+X_scal*D*0.5,'%d (m)'%((X_scal*D)/mul),bbox=props)
+        else:
+            plt.text(410,minY_tcs+0.05*d_Y_tcs+X_scal*D*0.5,'%.1f (m)'%((X_scal*D)/mul),bbox=props)
+        ax=plt.gca()
+        ax.tick_params(labelleft=False)
+        plt.ylabel('')
+        plt.subplots_adjust(left=0.08,top=0.95,right=0.97,bottom=0.12,wspace=0.05)
+
+
+
+
+
     plt.show()
 
 
