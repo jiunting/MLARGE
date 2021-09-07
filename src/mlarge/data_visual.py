@@ -479,10 +479,11 @@ def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat',save_fig=None):
 
 
     if save_fig:
-        fig.savefig(save_fig)
-        fig.show()
+        plt.savefig(save_fig)
+        plt.show()
+        plt.close()
     else:
-        fig.show()
+        plt.show()
 
 
 
