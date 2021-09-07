@@ -333,7 +333,7 @@ def train_valid_curve(train_valid,check_point_epo=None,save_fig=None):
 
 
 
-def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat'):
+def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat',save_fig=None):
     '''
         Data: [time,features((ncomps+(1 existence code))*nsta)]
         ncomp: how many component do you have (not included existence code)
@@ -478,10 +478,11 @@ def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat'):
         plt.subplots_adjust(left=0.08,top=0.95,right=0.97,bottom=0.12,wspace=0.05)
 
 
-
-
-
-    plt.show()
+    if save_fig:
+        fig.savefig(save_fig)
+        fig.show()
+    else:
+        fig.show()
 
 
 
