@@ -505,6 +505,8 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
     if save_fig==None:
         matplotlib.use('pdf')
     import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set()
 
     # load the model
     model_loaded = tf.keras.models.load_model(Model_path,compile=False)
