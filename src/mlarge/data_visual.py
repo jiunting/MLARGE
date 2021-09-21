@@ -513,7 +513,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
     y_pred = model_loaded.predict(X)
 
     # how many output params
-    N_p = y.shape()[2]
+    N_p = y.shape[2]
     assert N_p == len(r_yscale), "size of y and r_yscale does not match!"
 
     # convert y, y_pred to original unit
