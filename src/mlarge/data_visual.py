@@ -488,5 +488,142 @@ def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat',save_fig=None):
 
 
 
+def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
+    '''
+    scatter plot of y v.s. p_pred at every epoch
+    Input:
+        Model_path:     path of the preferred model
+        X:              feature input [N,epoch,features]
+        y:              true labels [N,epoch,1 or multiple outputs]
+        r_yscale:       a list of function(s) which reverts y to the original sense
+        save_fig:       directory to save the plots
+    Output:
+        Save figures or show on screen if save_fig==None
+    '''
+    import tensorflow as tf
+    import matplotlib
+    if save_fig==None:
+        matplotlib.use('pdf')
+    import matplotlib.pyplot as plt
+
+    # load the model
+    model_loaded = tf.keras.models.load_model(Model_path,compile=False)
+
+    # make predictions
+    y_pred = model_loaded.predict(X)
+
+    # how many output params
+    N_p = y.shape()[2]
+    assert N_p == len(r_yscale), "size of y and r_yscale does not match!"
+
+    # convert y, y_pred to original unit
+    import copy
+    y_pred_rscale = copy.deepcopy(y_pred)
+    y_rscale = copy.deepcopy(y)
+    for ip in range(N_p):
+        y_pred_rscale[:,:,ip] = r_yscale[ip](y_pred[:,:,ip])
+        y_rscale[:,:,ip] = r_yscale[ip](y[:,:,ip])
+
+    #====== start plotting ======
+    # color-coded by Mw
+    cm = plt.cm.magma(  plt.Normalize(7.4,9.6)(y[:,-1,0]) )
+    norm = matplotlib.colors.Normalize(vmin=7.4, vmax=9.6)
+    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='magma')
+    cmap.set_array([])
+
+    idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
+    for epo in range(102):
+        plt.figure(figsize=(9.5,5.5))
+        #epo = 30
+        #=============
+        plt.subplot(2,3,1)
+        #plt.plot(sav_mft[(0,epo)],sav_c,'k.')
+        plt.scatter(y[idx,epo,0],y_pred[idx,epo,0],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        #plt.scatter(sav_mft[(0,epo)][idx]/R[0],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.ylabel('Prediction',fontsize=14,labelpad=0)
+        ax1=plt.gca()
+        ax1.tick_params(pad=0,labelsize=12)
+        ax1.annotate('Mw',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #ax1.set_yscale('log')
+        # add colorbar
+        #These two lines mean put the bar inside the plot
+        fig = plt.gcf()
+        cbaxes = fig.add_axes([0.278, 0.82, 0.068, 0.012 ])
+        clb = plt.colorbar(cmap,cax=cbaxes,ticks=[7.5, 8.5, 9.5], orientation='horizontal',label='Mw')
+        clb.set_label('Mw', rotation=0,labelpad=-2,size=12)
+        ax1=plt.gca()
+        ax1.tick_params(pad=0)
+        #plt.legend(['Mw'],frameon=True)
+        #=============
+        plt.subplot(2,3,2)
+        plt.title('%d s'%(epo*5+5))
+        #plt.plot(sav_mft[(1,epo)],sav_c,'k.')
+        plt.scatter(y[idx,epo,1],y_pred[idx,epo,1],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        #plt.scatter(sav_mft[(1,epo)][idx]/R[1],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        ax1=plt.gca()
+        ax1.tick_params(pad=0,labelsize=12,labelleft=False)
+        #ax1.set_yscale('log')
+        ax1.annotate('Lon${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #=============
+        plt.subplot(2,3,3)
+        #plt.plot(sav_mft[(2,epo)],sav_c,'k.')
+        plt.scatter(y[idx,epo,2],y_pred[idx,epo,2],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        #plt.scatter(sav_mft[(2,epo)][idx]/R[2],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        ax1=plt.gca()
+        ax1.tick_params(pad=0,labelsize=12,labelleft=False)
+        #ax1.set_yscale('log')
+        ax1.annotate('Lat${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #=============
+        plt.subplot(2,3,4)
+        #plt.plot(sav_mft[(3,epo)],sav_c,'k.')
+        plt.scatter(y[idx,epo,3],y_pred[idx,epo,3],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        #plt.scatter(sav_mft[(3,epo)][idx]/R[3],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        #plt.ylabel('Avg. SNR',fontsize=14,labelpad=0)
+        #plt.xlabel('|| y$_{pred}$ - y ||',fontsize=14,labelpad=0)
+        plt.ylabel('Prediction',fontsize=14,labelpad=0)
+        plt.xlabel('True',fontsize=14,labelpad=0)
+        #plt.xlabel('%',fontsize=14,labelpad=0)
+        ax1=plt.gca()
+        ax1.tick_params(pad=0,labelsize=12)
+        #ax1.set_yscale('log')
+        ax1.annotate('Depth (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #=============
+        plt.subplot(2,3,5)
+        #plt.plot(sav_mft[(4,epo)],sav_c,'k.')
+        plt.scatter(y[idx,epo,4],y_pred[idx,epo,4],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        #plt.scatter(sav_mft[(4,epo)][idx]/R[4],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.xlabel('True',fontsize=14,labelpad=0)
+        #plt.xlabel('%',fontsize=14,labelpad=0)
+        ax1=plt.gca()
+        ax1.tick_params(pad=0,labelsize=12,labelleft=False)
+        #ax1.set_yscale('log')
+        ax1.annotate('Length (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #=============
+        plt.subplot(2,3,6)
+        #plt.plot(sav_mft[(5,epo)],sav_c,'k.')
+        plt.scatter(y[idx,epo,5],y_pred[idx,epo,5],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        #plt.scatter(sav_mft[(5,epo)][idx]/R[5],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.xlabel('True',fontsize=14,labelpad=0)
+        #plt.xlabel('%',fontsize=14,labelpad=0)
+        ax1=plt.gca()
+        ax1.tick_params(pad=0,labelsize=12,labelleft=False)
+        #ax1.set_yscale('log')
+        ax1.annotate('Width (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #adjust subplots width/length
+        plt.subplots_adjust(left=0.08,top=0.92,right=0.97,bottom=0.1,wspace=0.07,hspace=0.11)
+        #plt.show()
+        #break
+        if save_fig:
+            plt.savefig(save_fig+'/fig_%03d.png'%(epo))
+            plt.close()
+        else:
+            plt.show()
+        #plt.savefig('./misfit_meanSNR_figs/fig_%03d.png'%(epo))
+        #plt.close()
+
+
+
+
+
 
 

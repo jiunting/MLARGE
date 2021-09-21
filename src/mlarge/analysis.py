@@ -53,6 +53,15 @@ def dist_sta_fault(Data,STA,nsta,rupt_file):
     '''
         return all distances (from subfaults to stations), slip, and indexes that slip
         this metric reveals if rupture grows to an area without any staion around
+        Input:
+            Data:         single data with shape [time_points, features].
+            STA:          STA format from analysis.gen_STA_from_file
+            nsta:         number of stations
+            rupt_file:    rupture file (.rupt) from Mudpy/Fakequake
+        Output:
+            sav_dist:     distance array from each subfault to the closest station
+            slip:         slip array sqrt(SS^2+DS^2) for the subfault that slips
+            idx_rupt:     indexes of the subfault that slips
     '''
     # find all available station index
     cent_hypo = [np.mean([STA[k][0] for k in STA.keys()]), np.mean([STA[k][1] for k in STA.keys()])]
@@ -87,6 +96,14 @@ def dist_sta_fault(Data,STA,nsta,rupt_file):
 
 
 def SR(slip,dist,k=2):
+    '''
+    Slip recovery calculation
+        Input:
+            slip:    slip array from .rupt or from the output of analysis.dist_sta_fault()
+            dist:    distance array from the output of analysis.dist_sta_fault()
+        Output:
+            SR:      slip recovery array
+    '''
     return (np.sum(slip*(1.0/(1+dist))**k)/np.sum(slip))*100 # in %
 
 
