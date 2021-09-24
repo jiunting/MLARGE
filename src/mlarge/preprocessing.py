@@ -86,6 +86,7 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
         interp_Mw=np.interp(T,t,sumMw)
         return T,interp_Mw
     
+    # save to file
     if not(os.path.exists(outdir)):
         os.makedirs(outdir)
     ruptures=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*rupt')
