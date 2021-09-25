@@ -71,12 +71,10 @@ class fault_tool:
         self.Mw = get_accMw(self.rupt_path,T=self.tcs_samples)
 
 
-    '''
-    Some work to be done for the below functions
-    '''
-    def makefault(fout,strike,dip,nstrike,dx_dip,dx_strike,epicenter,num_updip,num_downdip,rise_time):
+    def makefault(self,fout,strike,dip,num_strike,dx_dip,dx_strike,center,num_updip,num_downdip,rise_time):
         '''
-        Original function copied from Mudpy:  https://github.com/dmelgarm/MudPy
+        Function called by gen_fault
+        Function modified from Mudpy:  https://github.com/dmelgarm/MudPy
         Make a planar fault
 
         strike - Strike angle (degs)
@@ -84,11 +82,24 @@ class fault_tool:
         '''
         from numpy import arange,sin,cos,deg2rad,r_,ones,arctan,rad2deg,zeros,isnan,unique,where,argsort
         import pyproj
-
+        import numpy as np
+        '''
+        strike = self.strike
+        dip = self.dip
+        length = self.length
+        width = self.width
+        center = self.center
+        
+        dx_strike = 10 # km
+        dx_dip = 8 #km
+        num_strike = int(np.max([length//10,1]))   #minimum 1
+        num_updip = num_downdip = int((width//8)//2) #minimum can be zero
+        #rise_time = 1 # rise time doesnt matter in this case
+        '''
         proj_angle=180-strike #Angle to use for sin.cos projection (comes from strike)
-        y=arange(-nstrike/2+1,nstrike/2+1)*dx_strike
-        x=arange(-nstrike/2+1,nstrike/2+1)*dx_strike
-        z=ones(x.shape)*epicenter[2]
+        y=arange(-num_strike/2+1,num_strike/2+1)*dx_strike
+        x=arange(-num_strike/2+1,num_strike/2+1)*dx_strike
+        z=ones(x.shape)*center[2]
         y=y*cos(deg2rad(strike))
         x=x*sin(deg2rad(strike))
         #Save teh zero line
@@ -144,10 +155,10 @@ class fault_tool:
         for k in range(len(d)):
             if isnan(az[k]): #No azimuth because I'm on the epicenter
                 print('Point on epicenter')
-                lo[k]=epicenter[0]
-                la[k]=epicenter[1]
+                lo[k]=center[0]
+                la[k]=center[1]
             else:
-                lo[k],la[k],ba=g.fwd(epicenter[0],epicenter[1],az[k],d[k])
+                lo[k],la[k],ba=g.fwd(center[0],center[1],az[k],d[k])
         #Sort them from top right to left along dip
         zunique=np.unique(z)
         for k in range(len(zunique)):
@@ -174,15 +185,40 @@ class fault_tool:
             f.write(out)
         f.close()
 
-    def gen_fault(fout,Mw,center,strike,dip,length,width):
-        dx_strike = 10
-        dx_dip = 8
-        num_columns = int(np.max([length//10,1]))   #minimum 1
-        num_updip = int((width//8)//2)
-        num_downdip = num_updip
-        # call makefault function
+    #def gen_fault(self,fout,Mw,center,strike,dip,length,width):
+    def gen_fault(self,dx_strike=10,dx_dip=8):
+        import numpy as np
+        # call the makefault function to generate one or multiple fault file/data
+        Mw = self.Mw
+        strike = self.strike
+        dip = self.dip
+        length = self.length
+        width = self.width
+        center = self.center
+        fout = self.fout
+        
+        #dx_strike = 10 # km
+        #dx_dip = 8 #km
+        rise_time = 1 # rise time doesnt matter in this case
+
+        if type(strike) is not list:
+            num_strike = int(np.max([length//dx_strike,1]))   #minimum 1
+            num_updip = num_downdip = int((width//dx_dip)//2) #minimum can be zero
+            self.makefault(fout,strike,dip,num_strike,dx_dip,dx_strike,center,num_updip,num_downdip,rise_time)
+        else:
+            fout_base = fout.split('.')
+            fout_append = fout_base[-1]
+            fout_base = '.'.join(fout_base[:-1])
+            for i_eq in range(len(strike)):
+                num_strike = int(np.max([length[i_eq]//dx_strike,1]))   #minimum 1
+                num_updip = num_downdip = int((width[i_eq]//dx_dip)//2) #minimum can be zero
+                print('input:')
+                print(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
+                self.makefault(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
+
+
         #fout = 'test_finite001.txt'
         #print('fout,strike,dip,num_columns,dx_dip,dx_strike,center,num_updip,num_downdip,1.0=',fout,strike,dip,num_columns,dx_dip,dx_strike,center,num_updip,num_downdip,1.0)
-        makefault(fout,strike,dip,num_columns,dx_dip,dx_strike,center,num_updip,num_downdip,1.0)
+        #makefault(fout,strike,dip,num_strike,dx_dip,dx_strike,center,num_updip,num_downdip,rise_time)
 
 
