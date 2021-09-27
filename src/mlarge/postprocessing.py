@@ -79,6 +79,21 @@ class fault_tool:
 
         strike - Strike angle (degs)
         dip - Dip angle (degs)200/5
+        
+        Input:
+            fout:            filename of input, if None, return data in numpy array
+            strike:          strike value
+            dip:             dip value
+            num_strike:      number of along strike subfaults
+            dx_dip:          subfault length in along dip direction
+            dx_strike:       subfault length in along strike direction
+            center:          center of the fault [x,y,z]
+            num_updip:       number of subfaults upper the center point
+            num_downdip:     number of subfaults lower the center point, note that num_updip or num_downdip can both be zero
+            rist_time:       doesn't necessarily needed here
+        Output:
+            fault file if fout is a path, or return fault data if fout is None.
+            
         '''
         from numpy import arange,sin,cos,deg2rad,r_,ones,arctan,rad2deg,zeros,isnan,unique,where,argsort
         import pyproj
@@ -96,6 +111,7 @@ class fault_tool:
         num_updip = num_downdip = int((width//8)//2) #minimum can be zero
         #rise_time = 1 # rise time doesnt matter in this case
         '''
+        
         proj_angle=180-strike #Angle to use for sin.cos projection (comes from strike)
         y=arange(-num_strike/2+1,num_strike/2+1)*dx_strike
         x=arange(-num_strike/2+1,num_strike/2+1)*dx_strike
@@ -179,11 +195,15 @@ class fault_tool:
         rise=ones(loout.shape)*rise_time
         L=ones(loout.shape)*dx_strike*1000
         W=ones(loout.shape)*dx_dip*1000
-        f=open(fout,'w')
-        for k in range(len(x)):
-            out='%i\t%.6f\t%.6f\t%.3f\t%.2f\t%.2f\t%.1f\t%.1f\t%.2f\t%.2f\n' % (k+1,loout[k],laout[k],zout[k],strike[k],dip[k],tw[k],rise[k],L[k],W[k])
-            f.write(out)
-        f.close()
+        if fout != None:
+            f=open(fout,'w')
+            for k in range(len(x)):
+                out='%i\t%.6f\t%.6f\t%.3f\t%.2f\t%.2f\t%.1f\t%.1f\t%.2f\t%.2f\n' % (k+1,loout[k],laout[k],zout[k],strike[k],dip[k],tw[k],rise[k],L[k],W[k])
+                f.write(out)
+            f.close()
+        else:
+            F = np.hstack([np.arange(1,len(loout)+1).reshape(-1,1),loout.reshape(-1,1),laout.reshape(-1,1),zout.reshape(-1,1),strike.reshape(-1,1),dip.reshape(-1,1),tw.reshape(-1,1),rise.reshape(-1,1),L.reshape(-1,1),W.reshape(-1,1)])
+            self.F.append(F)
 
     #def gen_fault(self,fout,Mw,center,strike,dip,length,width):
     def gen_fault(self,dx_strike=10,dx_dip=8):
@@ -201,20 +221,33 @@ class fault_tool:
         #dx_dip = 8 #km
         rise_time = 1 # rise time doesnt matter in this case
 
+        if fout == None:
+            self.F = [] # initial list to save F
+
+        # decide whether single run or loop run
         if type(strike) is not list:
+            # only one fault to be generated
             num_strike = int(np.max([length//dx_strike,1]))   #minimum 1
             num_updip = num_downdip = int((width//dx_dip)//2) #minimum can be zero
             self.makefault(fout,strike,dip,num_strike,dx_dip,dx_strike,center,num_updip,num_downdip,rise_time)
         else:
-            fout_base = fout.split('.')
-            fout_append = fout_base[-1]
-            fout_base = '.'.join(fout_base[:-1])
+            # multiple faults to be generated
+            if fout != None:
+                fout_base = fout.split('.')
+                fout_append = fout_base[-1]
+                fout_base = '.'.join(fout_base[:-1])
+            
             for i_eq in range(len(strike)):
                 num_strike = int(np.max([length[i_eq]//dx_strike,1]))   #minimum 1
                 num_updip = num_downdip = int((width[i_eq]//dx_dip)//2) #minimum can be zero
-                print('input:')
-                print(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
-                self.makefault(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
+                if fout != None:
+                    print('input:')
+                    print(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
+                    self.makefault(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
+                else:
+                    # save to list, dont write to file
+                    self.makefault(None,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
+
 
 
         #fout = 'test_finite001.txt'
