@@ -248,10 +248,7 @@ class fault_tool:
                     # save to list, dont write to file
                     self.makefault(None,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
 
-
-
         #fout = 'test_finite001.txt'
-        #print('fout,strike,dip,num_columns,dx_dip,dx_strike,center,num_updip,num_downdip,1.0=',fout,strike,dip,num_columns,dx_dip,dx_strike,center,num_updip,num_downdip,1.0)
         #makefault(fout,strike,dip,num_strike,dx_dip,dx_strike,center,num_updip,num_downdip,rise_time)
 
 
