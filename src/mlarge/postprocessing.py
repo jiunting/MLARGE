@@ -222,7 +222,8 @@ class fault_tool:
         rise_time = 1 # rise time doesnt matter in this case
 
         if fout == None:
-            self.F = [] # initial list to save F
+            if not hasattr(self,'F'):
+                self.F = [] # initial list to save F
 
         # decide whether single run or loop run
         if type(strike) is not list:
@@ -241,8 +242,8 @@ class fault_tool:
                 num_strike = int(np.max([length[i_eq]//dx_strike,1]))   #minimum 1
                 num_updip = num_downdip = int((width[i_eq]//dx_dip)//2) #minimum can be zero
                 if fout != None:
-                    print('input:')
-                    print(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
+                    #print('input:')
+                    #print(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
                     self.makefault(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
                 else:
                     # save to list, dont write to file
