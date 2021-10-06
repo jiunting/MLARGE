@@ -502,11 +502,15 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
     '''
     import tensorflow as tf
     import matplotlib
-    if save_fig==None:
-        matplotlib.use('pdf')
     import matplotlib.pyplot as plt
     import seaborn as sns
     sns.set()
+
+    # create dir if not exist and save_fig is not None
+    if save_fig!=None:
+        import os
+        if not(os.path.exists(save_fig)):
+            os.makedirs(save_fig)
 
     # load the model
     model_loaded = tf.keras.models.load_model(Model_path,compile=False)
