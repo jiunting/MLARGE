@@ -537,6 +537,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
     cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='magma')
     cmap.set_array([])
 
+
     idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
     for epo in range(102):
         plt.figure(figsize=(9.5,5.5))
@@ -549,20 +550,20 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.ylabel('Prediction',fontsize=14,labelpad=0)
         #plt.xlim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
         #plt.ylim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
-        plt.xlim([7.5,9.6])
-        plt.ylim([7.5,9.6])
+        plt.xlim([7.4,9.6])
+        plt.ylim([7.4,9.6])
         ax1=plt.gca()
-        ax1.tick_params(pad=-1,labelsize=12)
+        ax1.tick_params(direction='out', pad=0,labelsize=12,length=0)
         ax1.annotate('Mw',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #ax1.set_yscale('log')
         # add colorbar
         #These two lines mean put the bar inside the plot
         fig = plt.gcf()
-        cbaxes = fig.add_axes([0.278, 0.82, 0.068, 0.012 ])
+        cbaxes = fig.add_axes([0.25, 0.62, 0.068, 0.012 ])
         clb = plt.colorbar(cmap,cax=cbaxes,ticks=[7.5, 8.5, 9.5], orientation='horizontal',label='Mw')
         clb.set_label('Mw', rotation=0,labelpad=-2,size=12)
         ax1=plt.gca()
-        ax1.tick_params(pad=0)
+        ax1.tick_params(pad=0,length=0.5)
         #plt.legend(['Mw'],frameon=True)
         #=============
         plt.subplot(2,3,2)
@@ -573,7 +574,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         plt.ylim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         ax1=plt.gca()
-        ax1.tick_params(pad=-1,labelsize=12)
+        ax1.tick_params(pad=0,labelsize=12,length=0)
         #ax1.set_yscale('log')
         ax1.annotate('Lon${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
@@ -584,7 +585,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         plt.ylim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         ax1=plt.gca()
-        ax1.tick_params(pad=-1,labelsize=12)
+        ax1.tick_params(pad=0,labelsize=12,length=0)
         #ax1.set_yscale('log')
         ax1.annotate('Lat${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
@@ -600,7 +601,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         ax1=plt.gca()
-        ax1.tick_params(pad=-1,labelsize=12)
+        ax1.tick_params(pad=0,labelsize=12,length=0)
         #ax1.set_yscale('log')
         ax1.annotate('Depth (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
@@ -608,12 +609,13 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         #plt.plot(sav_mft[(4,epo)],sav_c,'k.')
         plt.scatter(y_rscale[idx,epo,4],y_pred_rscale[idx,epo,4],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(4,epo)][idx]/R[4],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
-        plt.xlim([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()])
-        plt.ylim([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()])
+        plt.xlim([min(y_rscale[:,:,4].min(),-50),y_rscale[:,:,4].max()]) # this min(.min(),-100) makes better plotting
+        plt.ylim([min(y_rscale[:,:,4].min(),-50),y_rscale[:,:,4].max()])
         plt.xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         ax1=plt.gca()
-        ax1.tick_params(pad=-1,labelsize=12)
+        ax1.tick_params(pad=0,labelsize=12,length=0)
+        ax1.ticklabel_format(style='sci', axis='y',scilimits=(0,0))
         #ax1.set_yscale('log')
         ax1.annotate('Length (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
@@ -621,20 +623,21 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         #plt.plot(sav_mft[(5,epo)],sav_c,'k.')
         plt.scatter(y_rscale[idx,epo,5],y_pred_rscale[idx,epo,5],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(5,epo)][idx]/R[5],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
-        plt.xlim([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()])
-        plt.ylim([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()])
+        plt.xlim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
+        plt.ylim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
         plt.xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         ax1=plt.gca()
-        ax1.tick_params(pad=-1,labelsize=12)
+        ax1.tick_params(pad=0,labelsize=12,length=0)
+        ax1.ticklabel_format(style='sci', axis='y',scilimits=(0,0))
         #ax1.set_yscale('log')
         ax1.annotate('Width (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #adjust subplots width/length
-        plt.subplots_adjust(left=0.08,top=0.92,right=0.97,bottom=0.1,wspace=0.07,hspace=0.11)
+        plt.subplots_adjust(left=0.05,top=0.92,right=0.97,bottom=0.1,wspace=0.07,hspace=0.14)
         #plt.show()
         #break
         if save_fig:
-            plt.subplots_adjust(left=0.08,top=0.92,right=0.97,bottom=0.1,wspace=0.08)
+            plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.14,hspace=0.14)
             plt.savefig(save_fig+'/fig_%03d.png'%(epo))
             plt.close()
         else:
