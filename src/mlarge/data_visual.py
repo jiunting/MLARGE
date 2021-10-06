@@ -552,7 +552,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.xlim([7.5,9.6])
         plt.ylim([7.5,9.6])
         ax1=plt.gca()
-        ax1.tick_params(pad=0,labelsize=12)
+        ax1.tick_params(pad=-1,labelsize=12)
         ax1.annotate('Mw',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #ax1.set_yscale('log')
         # add colorbar
@@ -573,7 +573,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         plt.ylim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         ax1=plt.gca()
-        ax1.tick_params(pad=0,labelsize=12)
+        ax1.tick_params(pad=-1,labelsize=12)
         #ax1.set_yscale('log')
         ax1.annotate('Lon${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
@@ -584,7 +584,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         plt.ylim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         ax1=plt.gca()
-        ax1.tick_params(pad=0,labelsize=12)
+        ax1.tick_params(pad=-1,labelsize=12)
         #ax1.set_yscale('log')
         ax1.annotate('Lat${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
@@ -600,7 +600,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         ax1=plt.gca()
-        ax1.tick_params(pad=0,labelsize=12)
+        ax1.tick_params(pad=-1,labelsize=12)
         #ax1.set_yscale('log')
         ax1.annotate('Depth (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
@@ -613,7 +613,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         ax1=plt.gca()
-        ax1.tick_params(pad=0,labelsize=12)
+        ax1.tick_params(pad=-1,labelsize=12)
         #ax1.set_yscale('log')
         ax1.annotate('Length (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
@@ -626,7 +626,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         ax1=plt.gca()
-        ax1.tick_params(pad=0,labelsize=12)
+        ax1.tick_params(pad=-1,labelsize=12)
         #ax1.set_yscale('log')
         ax1.annotate('Width (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #adjust subplots width/length
@@ -634,6 +634,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         #plt.show()
         #break
         if save_fig:
+            plt.subplots_adjust(left=0.08,top=0.92,right=0.97,bottom=0.1,wspace=0.08)
             plt.savefig(save_fig+'/fig_%03d.png'%(epo))
             plt.close()
         else:
