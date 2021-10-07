@@ -1791,6 +1791,9 @@ class Model():
                 plt.show()
 
     def plot_snap(self,T=[60,120,240],err_range=0.3,save_fig=None):
+        '''
+            plot y-y_pred at time T. This only works for the original M-LARGE model (i.e. Mw), for multi M-LARGE use mlarge.data_visual
+        '''
         import matplotlib.pyplot as plt
         import numpy as np
         #plot prediction snap shot
