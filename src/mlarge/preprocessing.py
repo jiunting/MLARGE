@@ -411,7 +411,52 @@ def get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=
 
     
     
+def get_hypo(rupt_file):
+    '''
+        #get hypocenter from rupt_file one-by-one, can also get the info from .log, the computing time is similar though
+        #rupt_file : path of .rupt file
+    '''
+    rupt = np.genfromtxt(rupt_file)
+    rupt_time = rupt[:,-2]
+    slip = (rupt[:,8]**2 + rupt[:,9]**2)**0.5
+    idx = np.where((rupt!=0) & (rupt_time==0))[0]
+    return rupt[idx,1],rupt[idx,2],rupt[idx,3]
+
+
+
+def get_hypo_batch(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y'):
+    '''
+        #get all the hypo and save them into tcs
+    '''
+    import glob
+    import os
     
-    
-    
+    if not(os.path.exists(outdir)):
+        os.makedirs(outdir)
+
+    ruptures = glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*.rupt')
+    ruptures.sort()
+    for rupt_file in ruptures:
+        lon, lat, dep = get_hypo(rupt_file)
+        # expand the length of hypo
+        lon = np.ones_like(tcs_samples) * lon
+        lat = np.ones_like(tcs_samples) * lat
+        dep = np.ones_like(tcs_samples) * dep
+        #save the result individually, do not scale here
+        np.save(outdir+'/'+project_name+'.'+eqid+'.HypoLon.npy',lon)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.HypoLat.npy',lat)
+        np.save(outdir+'/'+project_name+'.'+eqid+'.HypoDep.npy',dep)
+
+
+
+
+
+
+
+
+
+
+
+
+
     
