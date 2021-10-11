@@ -419,7 +419,7 @@ def get_hypo(rupt_file):
     rupt = np.genfromtxt(rupt_file)
     rupt_time = rupt[:,-2]
     slip = (rupt[:,8]**2 + rupt[:,9]**2)**0.5
-    idx = np.where((rupt!=0) & (rupt_time==0))[0]
+    idx = np.where((slip!=0) & (rupt_time==0))[0][0]
     return rupt[idx,1],rupt[idx,2],rupt[idx,3]
 
 
