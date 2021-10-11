@@ -437,6 +437,7 @@ def get_hypo_batch(home,project_name,run_name,tcs_samples=np.arange(5,515,5),out
     ruptures = glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*.rupt')
     ruptures.sort()
     for rupt_file in ruptures:
+        eqid = rupt_file.split('/')[-1].split('.')[-2]
         lon, lat, dep = get_hypo(rupt_file)
         # expand the length of hypo
         lon = np.ones_like(tcs_samples) * lon
