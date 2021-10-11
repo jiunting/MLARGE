@@ -138,7 +138,7 @@ def gen_Xydata_list(X_dirs,y_dirs,outname='Datalist'):
     OUTy.close()
 
 
-def gen_multi_Xydata_list(X_dirs,y_dirs,y_type=['STF','Lon','Lat','Dep','Length','Width'],outname='Datalist'):
+def gen_multi_Xydata_list(X_dirs,y_dirs,Xy_type=['ENZ','STF','Lon','Lat','Dep','Length','Width'],outname='Datalist'):
     #make data list for MLARGE training
     #dirs can be multipath
     import glob
@@ -158,7 +158,9 @@ def gen_multi_Xydata_list(X_dirs,y_dirs,y_type=['STF','Lon','Lat','Dep','Length'
         N_files.sort()
         Z_files=glob.glob(Xdir+'/*.Z.npy')
         Z_files.sort()
-        for yt in y_type:
+        for yt in Xy_type:
+            if yt=='ENZ':
+                continue
             i_y_files=glob.glob(ydir+'/*.'+yt+'.npy')
             i_y_files.sort()
             try:
@@ -169,16 +171,17 @@ def gen_multi_Xydata_list(X_dirs,y_dirs,y_type=['STF','Lon','Lat','Dep','Length'
         EE=EE+E_files #joint files from different directories if any
         NN=NN+N_files
         ZZ=ZZ+Z_files
-    OUTE=open(outname+'_E'+'.txt','w')
-    OUTN=open(outname+'_N'+'.txt','w')
-    OUTZ=open(outname+'_Z'+'.txt','w')
-    for line in range(len(EE)):
-        OUTE.write('%s\n'%(EE[line]))
-        OUTN.write('%s\n'%(NN[line]))
-        OUTZ.write('%s\n'%(ZZ[line]))
-    OUTE.close()
-    OUTN.close()
-    OUTZ.close()
+    if 'ENZ' in Xy_type:
+        OUTE=open(outname+'_E'+'.txt','w')
+        OUTN=open(outname+'_N'+'.txt','w')
+        OUTZ=open(outname+'_Z'+'.txt','w')
+        for line in range(len(EE)):
+            OUTE.write('%s\n'%(EE[line]))
+            OUTN.write('%s\n'%(NN[line]))
+            OUTZ.write('%s\n'%(ZZ[line]))
+        OUTE.close()
+        OUTN.close()
+        OUTZ.close()
     #output y
     for ik in yy.keys():
         OUT_ik=open(outname+'_'+ik+'.txt','w')
