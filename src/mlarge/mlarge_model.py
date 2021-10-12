@@ -426,7 +426,7 @@ class feature_gen_multi(keras.utils.Sequence):
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
-                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy', Xin=['E','N','Z','Hypo'],Xout='merge', Xscale=lambda x:x, yscale=lambda x:x,shuffle=True):
+                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy', Xin=['E','N','Z','Hypo'],Xout='merge',Hypo=[[],[],[]], Xscale=lambda x:x, yscale=lambda x:x,shuffle=True):
         self.Dpath = Dpath #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.E_path = E_path #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.N_path = N_path
@@ -447,6 +447,7 @@ class feature_gen_multi(keras.utils.Sequence):
         self.save_ID = save_ID #save the original eqid with this name (e.g. sav_pickedID_73_2_valid.npy)
         self.Xin = Xin #define what channels are you using should be list of 'E' 'N' or 'Z'
         self.Xout = Xout  #define the output feature X: a string of 'merge' or 'sepa'.
+        self.Hypo = Hypo  # Hypocentral files
         self.Xscale = Xscale #scaling function for X (one scaling function apply to PGD or E,N,Z)
         self.yscale = yscale #scaling function for y (multiple functions apply to each parameter)
         self.shuffle = shuffle  #shuffle always True (shuffle station and eqs?)
