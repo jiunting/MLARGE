@@ -426,7 +426,7 @@ class feature_gen_multi(keras.utils.Sequence):
     #######Generator should inherit the "Sequence" class in order to run multi-processing of fit_generator###########
     def __init__(self,Dpath,E_path,N_path,Z_path,y_path,EQinfo,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=0.5,  
                  rmN=(10,110),Noise_level=[1,10,20,30,40,50,60,70,80,90],Min_stan_dist=[4,3],scale=(0,1), 
-                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy', Xin=['E','N','Z'],Xout='merge', Xscale=lambda x:x, yscale=lambda x:x,shuffle=True):
+                 BatchSize=128,Mwfilter=8.0,save_ID='sav_pickedID_1_valid.npy', Xin=['E','N','Z','Hypo'],Xout='merge', Xscale=lambda x:x, yscale=lambda x:x,shuffle=True):
         self.Dpath = Dpath #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.E_path = E_path #The path of the individual [E/N/Z].npy data (should be a list or a numpy array)
         self.N_path = N_path
@@ -611,9 +611,15 @@ class feature_gen_multi(keras.utils.Sequence):
                 #Station existence code, generally doesn't matter but you want the value close to features
                 #Data=np.ones([E[0].shape[0],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
                 if Xout=='merge':
-                    Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(1+1))]) #filling the data matrix later, set the status code as zero when remove station
+                    if 'Hypo' in Xin:
+                        Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(1+3+1))]) #PGD+Hypo+code
+                    else:
+                        Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(1+1))]) #filling the data matrix later, set the status code as zero when remove station
                 elif Xout=='sepa':
-                    Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(len(Xin)+1))]) #filling the data matrix later, set the status code as zero when remove station
+                    if 'Hypo' in Xin:
+                        Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(len(Xin)+2+1))]) #Hypo initially counted as 1 so add additional 2
+                    else:
+                        Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(len(Xin)+1))]) #filling the data matrix later, set the status code as zero when remove station
             else:
                 #read the data from Directory, now the E/N/Z should be EQids (e.g. '002356')
                 #Dpath=/projects/tlalollin/jiunting/Fakequakes/run/Chile_27200_ENZ   Chile_full.002709.Z.npy
@@ -627,11 +633,16 @@ class feature_gen_multi(keras.utils.Sequence):
                 #else:
                 #    test_read = np.load(Z[0])
                 test_read = np.load(eval(Xin[0])[0])
-
                 if Xout=='merge':
-                    Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(1+1))]) #filling the data matrix, set the status code as zero when remove station
+                    if 'Hypo' in Xin:
+                        Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(1+3+1))])
+                    else:
+                        Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(1+1))]) #filling the data matrix, set the status code as zero when remove station
                 elif Xout=='sepa':
-                    Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(len(Xin)+1))]) #Xin could be any combination of 'E','N','Z' in list e.g. ['E','N']
+                    if 'Hypo' in Xin:
+                        Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(len(Xin)+2+1))])
+                    else:
+                        Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(len(Xin)+1))]) #Xin could be any combination of 'E','N','Z' in list e.g. ['E','N']
             if EQ_flag==0:
                 EQ_or_noise = np.random.rand() #EQ or noise?
             else:
@@ -657,7 +668,7 @@ class feature_gen_multi(keras.utils.Sequence):
                     if not Mwfilter:
                         break
                     #checkMw=get_mw(logfile) #check Mw from .log file
-                    checkMw = EQinfo[int(rndEQidx[0])][1]   #or simply check Mw from EQinf file
+                    checkMw = EQinfo[int(rndEQidx[0])][1]   #or simply check Mw from EQinfo file
                     #print('checkMw,Mwfiter',checkMw,Mwfilter)
                     if checkMw>=Mwfilter:
                         break
@@ -687,9 +698,15 @@ class feature_gen_multi(keras.utils.Sequence):
                     tmp_Z[:,rmidx]=np.zeros(tmp_Z.shape[0])
                     #Also set the "status code" to 0,Nstan means skip station columns and go to status code
                     if Xout=='merge':
-                        Data[:,Nstan+rmidx]=np.zeros(tmp_E.shape[0])
+                        if 'Hypo' in Xin:
+                            Data[:,Nstan*4+rmidx]=np.zeros(tmp_E.shape[0])
+                        else:
+                            Data[:,Nstan+rmidx]=np.zeros(tmp_E.shape[0])
                     elif Xout=='sepa':
-                        Data[:,Nstan*len(Xin)+rmidx]=np.zeros(tmp_E.shape[0])
+                        if 'Hypo' in Xin:
+                            Data[:,Nstan*(len(Xin)+2)+rmidx]=np.zeros(tmp_E.shape[0])
+                        else:
+                            Data[:,Nstan*len(Xin)+rmidx]=np.zeros(tmp_E.shape[0])
                             
                 #check if the removel is meaningful
                 #--------check if the removed Data is meaningful---------------
@@ -726,20 +743,27 @@ class feature_gen_multi(keras.utils.Sequence):
                         
                 #save the resulting data
                 if Xout=='merge':
-                    #PGD=D2PGD((tmp_E**2+tmp_N**2+tmp_Z**2)**0.5) #the old version always 3 comps
-                    #not always 3-components, new version allows any combination of ENZ
+                    #PGD=D2PGD((tmp_E**2+tmp_N**2+tmp_Z**2)**0.5) #the old version is always 3 comps
+                    #New version allows any combination of ENZ, not always 3-components
                     merge_comps = 0
                     for x_comp in Xin:
-                         merge_comps += eval('tmp_'+x_comp)**2
+                        if x_comp not in ['E','N','Z']:
+                            continue
+                        merge_comps += eval('tmp_'+x_comp)**2
                     PGD=D2PGD(merge_comps**0.5)
                     #PGD=(PGD-scale[0])/scale[1]
-                    #scale the feature by Xcale function
-                    PGD=Xscale(PGD)
+                    #scale the feature by Xcale function, when Hypo exist, Xscale is a list
+                    if 'Hypo' in Xin:
+                        PGD= Xscale[0](PGD)
+                    else:
+                        PGD=Xscale(PGD)
                     Data[:,:Nstan]=PGD.copy()
                 elif Xout=='sepa':
                     sepa_Data = []
                     #select components you want
                     for i_comp,x_comp in enumerate(Xin):
+                        if x_comp not in ['E','N','Z']:
+                            continue
                         if i_comp==0:
                             sepa_Data = eval('tmp_'+x_comp).copy()
                         else:
@@ -748,8 +772,12 @@ class feature_gen_multi(keras.utils.Sequence):
                     #ENZ_Data=np.hstack([tmp_E,tmp_N,tmp_Z]) #old method use all ENZ
                     #ENZ_Data=(ENZ_Data-scale[0])/scale[1]
                     #scale the feature by Xscale function
-                    sepa_Data=Xscale(sepa_Data)
-                    Data[:,:Nstan*len(Xin)]=sepa_Data.copy()
+                    if 'Hypo' in Xin:
+                        sepa_Data=Xscale[0](sepa_Data)
+                        Data[:,:Nstan*(len(Xin)-1)]=sepa_Data.copy() #len(Xin) will include Hypo, so -1 here
+                    else:
+                        sepa_Data=Xscale(sepa_Data)
+                        Data[:,:Nstan*len(Xin)]=sepa_Data.copy()
 
                 ##########save the picked EQ name#############
                 #sav_picked_EQ.append(real_EQid)
@@ -786,9 +814,15 @@ class feature_gen_multi(keras.utils.Sequence):
                     X_batch.append(Data)
                 else:
                     if Xout=='merge':
-                        X_batch.append(Data[:,:Nstan])
+                        if 'Hypo' in Xin:
+                            X_batch.append(Data[:,:Nstan*(1+3)]) #PGD+3
+                        else:
+                            X_batch.append(Data[:,:Nstan])
                     elif Xout=='sepa':
-                        X_batch.append(Data[:,:Nstan*len(Xin)])
+                        if 'Hypo' in Xin:
+                            X_batch.append(Data[:,:Nstan*(len(Xin)+2)])
+                        else:
+                            X_batch.append(Data[:,:Nstan*len(Xin)])
 
                 nb=nb+1 #the generated Data is okay, save it
                 EQ_flag=0
@@ -1474,6 +1508,16 @@ def train_multi(files,train_params,Nstan=121):
     E_file=files['E']
     N_file=files['N']
     Z_file=files['Z']
+    if 'Hypo' in files:
+        Hypo_files = files['Hypo']
+        HypoLon = np.genfromtxt(Hypo_files[0],'S')
+        HypoLat = np.genfromtxt(Hypo_files[1],'S')
+        HypoDep = np.genfromtxt(Hypo_files[2],'S')
+        HypoLon = np.array([i.decode() for i in HypoLon])
+        HypoLat = np.array([i.decode() for i in HypoLat])
+        HypoDep = np.array([i.decode() for i in HypoDep])
+    else:
+        HypoLon, HypoLat, HypoDep = [],[],[]
     y_file=files['y']
     E=np.genfromtxt(E_file,'S')
     N=np.genfromtxt(N_file,'S')
@@ -1502,6 +1546,12 @@ def train_multi(files,train_params,Nstan=121):
     X_train_E=E[train_idx]
     X_train_N=N[train_idx]
     X_train_Z=Z[train_idx]
+    if 'Hypo' in files:
+        X_train_HypoLon = HypoLon[train_idx]
+        X_train_HypoLat = HypoLat[train_idx]
+        X_train_HypoDep = HypoDep[train_idx]
+    else:
+        X_train_HypoLon, X_train_HypoLat, X_train_HypoDep = HypoLon, HypoLat, HypoDep
     if y.ndim==2:
         y_train=y[:,train_idx]
     else:
@@ -1511,6 +1561,10 @@ def train_multi(files,train_params,Nstan=121):
     X_valid_test_E=E[valid_and_test_idx]
     X_valid_test_N=N[valid_and_test_idx]
     X_valid_test_Z=Z[valid_and_test_idx]
+    if 'Hypo' in files:
+        X_valid_test_HypoLon = HypoLon[valid_and_test_idx]
+        X_valid_test_HypoLat = HypoLat[valid_and_test_idx]
+        X_valid_test_HypoDep = HypoDep[valid_and_test_idx]
     if y.ndim==2:
         y_valid_test=y[:,valid_and_test_idx]
     else:
@@ -1522,6 +1576,12 @@ def train_multi(files,train_params,Nstan=121):
     X_valid_E=X_valid_test_E[valid_idx]
     X_valid_N=X_valid_test_N[valid_idx]
     X_valid_Z=X_valid_test_Z[valid_idx]
+    if 'Hypo' in files:
+        X_valid_HypoLon = X_valid_test_HypoLon[valid_idx]
+        X_valid_HypoLat = X_valid_test_HypoLat[valid_idx]
+        X_valid_HypoDep = X_valid_test_HypoDep[valid_idx]
+    else:
+        X_valid_HypoLon, X_valid_HypoLat, X_valid_HypoDep = HypoLon, HypoLat, HypoDep
     if y.ndim==2:
         y_valid=y_valid_test[:,valid_idx]
     else:
@@ -1531,6 +1591,12 @@ def train_multi(files,train_params,Nstan=121):
     X_test_E=X_valid_test_E[test_idx]
     X_test_N=X_valid_test_N[test_idx]
     X_test_Z=X_valid_test_Z[test_idx]
+    if 'Hypo' in files:
+        X_test_HypoLon = X_valid_test_HypoLon[test_idx]
+        X_test_HypoLat = X_valid_test_HypoLat[test_idx]
+        X_test_HypoDep = X_valid_test_HypoDep[test_idx]
+    else:
+        X_test_HypoLon, X_test_HypoLat, X_test_HypoDep = HypoLon, HypoLat, HypoDep
     if y.ndim==2:
         y_test=y_valid_test[:,test_idx]
     else:
@@ -1627,9 +1693,9 @@ def train_multi(files,train_params,Nstan=121):
     Dpath='Path_defined_in_file'
     #print('Training_X inp:',X_train_E)
     #print('Training_y inp:',y_train)
-    gtrain=feature_gen_multi(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=Mwfilter,save_ID=False,Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
-    gvalid=feature_gen_multi(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=Mwfilter,save_ID='Run%s_valid_EQID.npy'%(Testnum),Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
-    gtest=feature_gen_multi(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=Mwfilter,save_ID='Run%s_test_EQID.npy'%(Testnum),Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
+    gtrain=feature_gen_multi(Dpath,X_train_E,X_train_N,X_train_Z,y_train,EQinfo_train,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS,Mwfilter=Mwfilter,save_ID=False,Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Hypo=[X_train_HypoLon,X_train_HypoLat,X_train_HypoDep],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
+    gvalid=feature_gen_multi(Dpath,X_valid_E,X_valid_N,X_valid_Z,y_valid,EQinfo_valid,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_valid,Mwfilter=Mwfilter,save_ID='Run%s_valid_EQID.npy'%(Testnum),Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Hypo=[X_valid_HypoLon,X_valid_HypoLat,X_valid_HypoDep],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
+    gtest=feature_gen_multi(Dpath,X_test_E,X_test_N,X_test_Z,y_test,EQinfo_test,STAinfo,Nstan=121,add_code=True,add_noise=True,noise_p=NoiseP,rmN=(rm_stans[0],rm_stans[1]),Noise_level=Noise_level,Min_stan_dist=Min_stan_dist,scale=(scales[0],scales[1]),BatchSize=BS_test,Mwfilter=Mwfilter,save_ID='Run%s_test_EQID.npy'%(Testnum),Xin=train_params['Use_data'],Xout=train_params['Use_data_type'],Hypo=[X_test_HypoLon,X_test_HypoLat,X_test_HypoDep],Xscale=Xscale,yscale=yscale,shuffle=True) #Use the "flat y"
     #check file/dir exist,otherwise mkdir
     if not(os.path.exists('./Test'+Testnum)):
         os.makedirs('./Test'+Testnum)
