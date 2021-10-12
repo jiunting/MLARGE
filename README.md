@@ -3,7 +3,11 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4527253.svg)](https://doi.org/10.5281/zenodo.4527253)
 
 ### Machine-learning Assessed Rapid Geodetic Earthquake model   
-A deep-learning based mega-earthquake magnitude predictor  
+#### A deep-learning based mega-earthquake magnitude predictor. Details can be found in:  
+* Lin, J. T., Melgar, D., Thomas, A. M., & Searcy, J. (2021). Early warning for great earthquakes from characterization of crustal deformation patterns with deep learning. Journal of Geophysical Research: Solid Earth, e2021JB022703.  
+
+****
+
 * [1. Installation](#1-Installation)
   * [1.1 Download M-LARGE](#cd-to-the-place-where-you-want-to-put-the-source-code)
   * [1.2 Add environment variable](#Add-M-LARGE-to-PYTHONPATH)
