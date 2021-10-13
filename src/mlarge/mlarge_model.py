@@ -765,9 +765,9 @@ class feature_gen_multi(keras.utils.Sequence):
                     if 'Hypo' in Xin:
                         PGD= Xscale[0](PGD)
                         Data[:,:Nstan] = PGD.copy() # PGD(Nstan)+3+code(Nstan)
-                        Data[:,Nstan+1] = Xscale[1](Hypo_Lon)
-                        Data[:,Nstan+2] = Xscale[2](Hypo_Lat)
-                        Data[:,Nstan+3] = Xscale[3](Hypo_Dep)
+                        Data[:,Nstan] = Xscale[1](Hypo_Lon)
+                        Data[:,Nstan+1] = Xscale[2](Hypo_Lat)
+                        Data[:,Nstan+2] = Xscale[3](Hypo_Dep)
                     else:
                         PGD=Xscale(PGD)
                         Data[:,:Nstan] = PGD.copy()
@@ -788,9 +788,9 @@ class feature_gen_multi(keras.utils.Sequence):
                     if 'Hypo' in Xin:
                         sepa_Data=Xscale[0](sepa_Data)
                         Data[:,:Nstan*(len(Xin)-1)]=sepa_Data.copy() #len(Xin) will include Hypo, so -1 here
-                        Data[:,Nstan*(len(Xin)-1)+1] = Xscale[1](Hypo_Lon)
-                        Data[:,Nstan*(len(Xin)-1)+2] = Xscale[2](Hypo_Lat)
-                        Data[:,Nstan*(len(Xin)-1)+3] = Xscale[3](Hypo_Dep)
+                        Data[:,Nstan*(len(Xin)-1)] = Xscale[1](Hypo_Lon)
+                        Data[:,Nstan*(len(Xin)-1)+1] = Xscale[2](Hypo_Lat)
+                        Data[:,Nstan*(len(Xin)-1)+2] = Xscale[3](Hypo_Dep)
                     else:
                         sepa_Data=Xscale(sepa_Data)
                         Data[:,:Nstan*len(Xin)]=sepa_Data.copy()
