@@ -1663,9 +1663,15 @@ def train_multi(files,train_params,Nstan=121):
 
     #what channels are you using?
     if train_params['Use_data_type']=='merge':
-        Nchan = 2 #number of channel (i.e. PGD,code -> Nchan=2)
+        if 'Hypo' in train_params['Use_data']:
+            NNsize = int(Nstan*2+3)
+        else:
+            NNsize = int(Nstan*2) #number of channel (i.e. PGD,code -> Nchan=2)
     elif train_params['Use_data_type']=='sepa':
-        Nchan = len(train_params['Use_data']) + 1 #(i.e. E/N/Z, code)
+        if 'Hypo' in train_params['Use_data']:
+            NNsize = Nstan*(len(train_params['Use_data'])+3 # E/N/Z WO Hypo + code + Hypo(3)
+        else:
+            NNsize = Nstan*(len(train_params['Use_data'])+1) #(i.e. E/N/Z, code)
 
     #get output_params implying from number of y_files
     if y_file is 'flat':
@@ -1685,12 +1691,12 @@ def train_multi(files,train_params,Nstan=121):
     else:
         #New model, create MLARGE structure
         network = models.Sequential()
-        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(102,Nstan*Nchan,))) # 102 can be None 
+        network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[0]),input_shape=(None,NNsize,))) # 102 can be None
         network.add(layers.LeakyReLU(alpha=0.1))
         network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[1])))
         network.add(layers.LeakyReLU(alpha=0.1))
         network.add(layers.Dropout(Drops[0]))
-        network.add(layers.LSTM(HP[2],return_sequences=True,input_shape=(102,Nstan*Nchan,),dropout=0.2, recurrent_dropout=0.2))
+        network.add(layers.LSTM(HP[2],return_sequences=True,input_shape=(None,NNsize,),dropout=0.2, recurrent_dropout=0.2))
         network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[3])))
         network.add(layers.LeakyReLU(alpha=0.1))
         network.add(tf.keras.layers.TimeDistributed(layers.Dense(HP[4])))
