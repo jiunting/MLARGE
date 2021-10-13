@@ -569,8 +569,8 @@ class feature_gen_multi(keras.utils.Sequence):
         scale: scale the added noise (if any) to the same scale as Normalization (i.e. PGD_mean,PGD_var), if not scale, simply set scale=(0,1)
         index is useless here since I want every batches to be different
         '''
-        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,Xin,Xout,Xscale,yscale,shuffle= \
-        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.Xin,self.Xout,self.Xscale,self.yscale,self.shuffle)
+        Dpath,E,N,Z,y,EQinfo,STAinfo,Nstan,add_code,add_noise,noise_p,rmN,level,Min_stan_dist,scale,BatchSize,Mwfilter,save_ID,Xin,Xout,Hypo,Xscale,yscale,shuffle= \
+        (self.Dpath,self.E_path,self.N_path,self.Z_path,self.y_path,self.EQinfo,self.STAinfo,self.Nstan,self.add_code,self.add_noise,self.noise_p,self.rmN,self.Noise_level,self.Min_stan_dist,self.scale,self.BatchSize,self.Mwfilter,self.save_ID,self.Xin,self.Xout,self.Hypo,self.Xscale,self.yscale,self.shuffle)
         #Get station information and ordering in X
         sta_loc_file=STAinfo['sta_loc_file']
         station_order_file=STAinfo['station_order_file']
@@ -613,12 +613,12 @@ class feature_gen_multi(keras.utils.Sequence):
                 #Data=np.ones([E[0].shape[0],int(Nstan*2)]) #filling the data matrix, set the status code as zero when remove station
                 if Xout=='merge':
                     if 'Hypo' in Xin:
-                        Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(1+3+1))]) #PGD+Hypo+code
+                        Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(1+1))+3]) #PGD+Hypo+code
                     else:
                         Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(1+1))]) #filling the data matrix later, set the status code as zero when remove station
                 elif Xout=='sepa':
                     if 'Hypo' in Xin:
-                        Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(len(Xin)+2+1))]) #Hypo initially counted as 1 so add additional 2
+                        Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(len(Xin)-1+1))+3]) #Hypo initially counted as 1 so add additional 2
                     else:
                         Data = 0.5*np.ones([E[0].shape[0],int(Nstan*(len(Xin)+1))]) #filling the data matrix later, set the status code as zero when remove station
             else:
@@ -636,12 +636,12 @@ class feature_gen_multi(keras.utils.Sequence):
                 test_read = np.load(eval(Xin[0])[0])
                 if Xout=='merge':
                     if 'Hypo' in Xin:
-                        Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(1+3+1))])
+                        Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(1+1))+3]) # Nstan*(PGD,code) + Hypo(3)
                     else:
                         Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(1+1))]) #filling the data matrix, set the status code as zero when remove station
                 elif Xout=='sepa':
                     if 'Hypo' in Xin:
-                        Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(len(Xin)+2+1))])
+                        Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(len(Xin)-1+1))+3]) #Nstan*(E/N/Z W/O Hypo, code) + Hypo(3)
                     else:
                         Data = 0.5*np.ones([test_read.shape[1],int(Nstan*(len(Xin)+1))]) #Xin could be any combination of 'E','N','Z' in list e.g. ['E','N']
             if EQ_flag==0:
@@ -698,9 +698,11 @@ class feature_gen_multi(keras.utils.Sequence):
                     tmp_N[:,rmidx]=np.zeros(tmp_N.shape[0])
                     tmp_Z[:,rmidx]=np.zeros(tmp_Z.shape[0])
                     #Also set the "status code" to 0,Nstan means skip station columns and go to status code
+                    Data[:,-Nstan+rmidx]=np.zeros(tmp_E.shape[0]) # code is always the last
+                    '''
                     if Xout=='merge':
                         if 'Hypo' in Xin:
-                            Data[:,Nstan*4+rmidx]=np.zeros(tmp_E.shape[0])
+                            Data[:,-Nstan+rmidx]=np.zeros(tmp_E.shape[0])
                         else:
                             Data[:,Nstan+rmidx]=np.zeros(tmp_E.shape[0])
                     elif Xout=='sepa':
@@ -708,7 +710,7 @@ class feature_gen_multi(keras.utils.Sequence):
                             Data[:,Nstan*(len(Xin)+2)+rmidx]=np.zeros(tmp_E.shape[0])
                         else:
                             Data[:,Nstan*len(Xin)+rmidx]=np.zeros(tmp_E.shape[0])
-                            
+                    '''
                 #check if the removel is meaningful
                 #--------check if the removed Data is meaningful---------------
                 ##############get hypocenter of the eq###################
@@ -727,8 +729,14 @@ class feature_gen_multi(keras.utils.Sequence):
                     #print('Not enough near field stations......try again! at nb=%d'%(nb)) #but not just try again, make sure next one should be an earthquake, not noise.
                     EQ_flag=1 #remove too many near-field station, run again in "EQ" case (not noise) so the possibility of EQ/noise states the same
                     continue #skip this generation, try again......
-                
-                #add noise for every station?
+
+                # load Hypo if needed
+                if 'Hypo' in Xin:
+                    Hypo_Lon = np.load(Hypo[0][int(rndEQidx[0])])
+                    Hypo_Lat = np.load(Hypo[1][int(rndEQidx[0])])
+                    Hypo_Dep = np.load(Hypo[2][int(rndEQidx[0])])
+
+                # add noise for every station?
                 if len(level)!=0:
                     if add_noise:
                         #add noise in every stations
@@ -756,9 +764,13 @@ class feature_gen_multi(keras.utils.Sequence):
                     #scale the feature by Xcale function, when Hypo exist, Xscale is a list
                     if 'Hypo' in Xin:
                         PGD= Xscale[0](PGD)
+                        Data[:,:Nstan] = PGD.copy() # PGD(Nstan)+3+code(Nstan)
+                        Data[:,Nstan+1] = Xscale[1](Hypo_Lon)
+                        Data[:,Nstan+2] = Xscale[2](Hypo_Lat)
+                        Data[:,Nstan+3] = Xscale[3](Hypo_Dep)
                     else:
                         PGD=Xscale(PGD)
-                    Data[:,:Nstan]=PGD.copy()
+                        Data[:,:Nstan] = PGD.copy()
                 elif Xout=='sepa':
                     sepa_Data = []
                     #select components you want
@@ -776,6 +788,9 @@ class feature_gen_multi(keras.utils.Sequence):
                     if 'Hypo' in Xin:
                         sepa_Data=Xscale[0](sepa_Data)
                         Data[:,:Nstan*(len(Xin)-1)]=sepa_Data.copy() #len(Xin) will include Hypo, so -1 here
+                        Data[:,Nstan*(len(Xin)-1)+1] = Xscale[1](Hypo_Lon)
+                        Data[:,Nstan*(len(Xin)-1)+2] = Xscale[2](Hypo_Lat)
+                        Data[:,Nstan*(len(Xin)-1)+3] = Xscale[3](Hypo_Dep)
                     else:
                         sepa_Data=Xscale(sepa_Data)
                         Data[:,:Nstan*len(Xin)]=sepa_Data.copy()
@@ -904,7 +919,7 @@ class feature_gen_multi(keras.utils.Sequence):
                 if add_code:
                     X_batch.append(Data)
                 else:
-                    X_batch.append(Data[:,:Nstan])
+                    X_batch.append(Data[:,:-Nstan])
                 EQ_flag=0
         X_batch=np.array(X_batch)
         y_batch=np.array(y_batch)
