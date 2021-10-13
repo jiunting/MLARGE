@@ -1669,7 +1669,7 @@ def train_multi(files,train_params,Nstan=121):
             NNsize = int(Nstan*2) #number of channel (i.e. PGD,code -> Nchan=2)
     elif train_params['Use_data_type']=='sepa':
         if 'Hypo' in train_params['Use_data']:
-            NNsize = Nstan*(len(train_params['Use_data'])+3 # E/N/Z WO Hypo + code + Hypo(3)
+            NNsize = Nstan*len(train_params['Use_data'])+3 # E/N/Z WO Hypo + code + Hypo(3)
         else:
             NNsize = Nstan*(len(train_params['Use_data'])+1) #(i.e. E/N/Z, code)
 
