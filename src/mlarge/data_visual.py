@@ -488,13 +488,14 @@ def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat',save_fig=None):
 
 
 
-def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
+def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,save_fig=None):
     '''
     scatter plot of y v.s. p_pred at every epoch
     Input:
         Model_path:     path of the preferred model
         X:              feature input [N,epoch,features]
         y:              true labels [N,epoch,1 or multiple outputs]
+        use_final:      use final parameter instead of time-dependent parameter
         r_yscale:       a list of function(s) which reverts y to the original sense
         save_fig:       directory to save the plots
     Output:
@@ -542,10 +543,14 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
     for epo in range(102):
         plt.figure(figsize=(9.5,5.5))
         #epo = 30
+        if use_final:
+            epo_y = -1
+        else:
+            epo_y = epo
         #=============
         plt.subplot(2,3,1)
         #plt.plot(sav_mft[(0,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo,0],y_pred_rscale[idx,epo,0],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(0,epo)][idx]/R[0],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.ylabel('Prediction',fontsize=14,labelpad=0)
         #plt.xlim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
@@ -569,7 +574,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         plt.subplot(2,3,2)
         plt.title('%d s'%(epo*5+5))
         #plt.plot(sav_mft[(1,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo,1],y_pred_rscale[idx,epo,1],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,1],y_pred_rscale[idx,epo,1],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(1,epo)][idx]/R[1],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         plt.ylim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
@@ -580,7 +585,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         #=============
         plt.subplot(2,3,3)
         #plt.plot(sav_mft[(2,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo,2],y_pred_rscale[idx,epo,2],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,2],y_pred_rscale[idx,epo,2],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(2,epo)][idx]/R[2],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         plt.ylim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
@@ -591,7 +596,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         #=============
         plt.subplot(2,3,4)
         #plt.plot(sav_mft[(3,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo,3],y_pred_rscale[idx,epo,3],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,3],y_pred_rscale[idx,epo,3],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(3,epo)][idx]/R[3],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.ylabel('Avg. SNR',fontsize=14,labelpad=0)
         #plt.xlabel('|| y$_{pred}$ - y ||',fontsize=14,labelpad=0)
@@ -607,7 +612,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         #=============
         plt.subplot(2,3,5)
         #plt.plot(sav_mft[(4,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo,4],y_pred_rscale[idx,epo,4],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,4],y_pred_rscale[idx,epo,4],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(4,epo)][idx]/R[4],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.xlim([min(y_rscale[:,:,4].min(),-50),y_rscale[:,:,4].max()]) # this min(.min(),-100) makes better plotting
         plt.ylim([min(y_rscale[:,:,4].min(),-50),y_rscale[:,:,4].max()])
@@ -621,7 +626,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,save_fig=None):
         #=============
         plt.subplot(2,3,6)
         #plt.plot(sav_mft[(5,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo,5],y_pred_rscale[idx,epo,5],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,5],y_pred_rscale[idx,epo,5],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(5,epo)][idx]/R[5],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.xlim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
         plt.ylim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
