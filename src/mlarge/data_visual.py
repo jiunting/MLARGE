@@ -738,12 +738,12 @@ def plot_sum_rupt(rupt_dir,save_fig=None):
         dn = 5
         lats = map.drawparallels(np.arange(-90,90,dn),labels=[1,0,0,1],color='w',linewidth=0.5)
         lons = map.drawmeridians(np.arange(-180,180,5),labels=[1,0,0,1],color='w',linewidth=0.5)
-        plt.scatter(tmp[:,1],tmp[:,2],c=sum_rupt,cmap='magma')
+        plt.scatter(tmp[:,1],tmp[:,2],c=sum_rupt,cmap='jet',s=10)
         plt.colorbar()
         #plot stations on map
         #plt.plot(sav_D[0]['stlon'],sav_D[0]['stlat'],'r^',markeredgecolor='k')
     else:
-        plt.scatter(tmp[:,1],tmp[:,2],c=sum_rupt,cmap='magma')
+        plt.scatter(tmp[:,1],tmp[:,2],c=sum_rupt,cmap='jet',s=10)
         plt.colorbar()
     if save_fig:
         plt.savefig(save_fig)
