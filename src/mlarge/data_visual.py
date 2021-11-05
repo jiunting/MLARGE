@@ -699,16 +699,18 @@ def plot_rupt_retc(rupt,min_slip,max_time,rect_fault,fix_vmax=[0,10],save_fig=No
         plt.show()
 
 
-def plot_sum_rupt(rupt_dir,save_fig=None):
+def plot_sum_rupt(rupt_dirs,save_fig=None):
     '''
         Plot sum of all ruptures based on the subfault participation (rupture +1 or not +0)
         Input:
-            rupt_dir: directory of Mudpy ruptures output
+            rupt_dirs: directory of Mudpy ruptures output, can be multiple directories
         Output:
             A map
     '''
     import glob
-    rupts = glob.glob(rupt_dir+'/'+'*.rupt')
+    rupts = []
+    for rupt_dir in rupt_dirs:
+        rupts += glob.glob(rupt_dir+'/'+'*.rupt')
     #initial the rupt_part based on the first rupt file
     tmp = np.genfromtxt(rupts[0])
     sum_rupt = np.zeros(len(tmp))
@@ -737,7 +739,7 @@ def plot_sum_rupt(rupt_dir,save_fig=None):
         #Lon,Lat lines
         dn = 5
         lats = map.drawparallels(np.arange(-90,90,dn),labels=[1,0,0,1],color='w',linewidth=0.5)
-        lons = map.drawmeridians(np.arange(-180,180,5),labels=[1,0,0,1],color='w',linewidth=0.5)
+        lons = map.drawmeridians(np.arange(-180,180,2),labels=[1,0,0,1],color='w',linewidth=0.5)
         plt.scatter(tmp[:,1],tmp[:,2],c=sum_rupt,cmap='jet',s=10)
         plt.colorbar()
         #plot stations on map
