@@ -336,7 +336,7 @@ def train_valid_curve(train_valid,check_point_epo=None,save_fig=None):
 def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat',save_fig=None):
     '''
         Data: [time,features((ncomps+(1 existence code))*nsta)]
-        ncomp: how many component do you have (not included existence code)
+        ncomp: how many component do you have (existence code not included )
         STA: from mlarge.analysis.gen_STA_from_file()
         rupt: .rupt file or no file
         sort_type: choose from 'lat','dist'(rupt!=None)
@@ -697,6 +697,65 @@ def plot_rupt_retc(rupt,min_slip,max_time,rect_fault,fix_vmax=[0,10],save_fig=No
         plt.close()
     else:
         plt.show()
+
+
+def plot_sum_rupt(rupt_dir,save_fig=None):
+    '''
+        Plot sum of all ruptures based on the subfault participation (rupture +1 or not +0)
+        Input:
+            rupt_dir: directory of Mudpy ruptures output
+        Output:
+            A map
+    '''
+    import glob
+    rupts = glob.glob(rupt_dir+'/'+'*.rupt')
+    #initial the rupt_part based on the first rupt file
+    tmp = np.genfromtxt(rupts[0])
+    sum_rupt = np.zeros(len(tmp))
+    for rupt in rupts:
+        A = np.genfromtxt(rupt)
+        #SS = A[:,8]
+        #DS = A[:,9]
+        idx = np.where((A[:,8]!=0) | (A[:,9]!=0))[0]
+        sum_rupt[idx] += 1
+    # make figure
+    BMap_flag = False #basemap
+    try:
+        from mpl_toolkits.basemap import Basemap
+        BMap_flag = True
+    except:
+        print('cannot import Basemap!')
+    if BMap_flag:
+        map = Basemap(projection='cyl',resolution='f',llcrnrlon=LON[0],llcrnrlat=minY_tcs,urcrnrlon=LON[1],urcrnrlat=maxY_tcs,fix_aspect=False)
+        fig = map.arcgisimage(service='ESRI_Imagery_World_2D', xpixels = 2000, verbose= True)
+        fig.set_alpha(0.8)
+        map.drawstates()
+        map.drawcountries(linewidth=0.1)
+        map.drawcoastlines(linewidth=0.5)
+        #Lon,Lat lines
+        if maxY_tcs-minY_tcs<5:
+            dn = 1
+        elif 5<=maxY_tcs-minY_tcs<10:
+            dn = 2
+        else:
+            dn = 5
+        lats = map.drawparallels(np.arange(-90,90,dn),labels=[1,0,0,1],color='w',linewidth=0.5)
+        lons = map.drawmeridians(np.arange(-180,180,5),labels=[1,0,0,1],color='w',linewidth=0.5)
+        plt.scatter(tmp[:,1],tmp[:,2],c=sum_rupt,cmap='magma')
+        plt.colorbar()
+        #plot stations on map
+        #plt.plot(sav_D[0]['stlon'],sav_D[0]['stlat'],'r^',markeredgecolor='k')
+    else:
+        plt.scatter(tmp[:,1],tmp[:,2],c=sum_rupt,cmap='magma')
+        plt.colorbar()
+    if save_fig:
+        plt.savefig(save_fig)
+    else:
+        plt.show()
+    plt.close()
+
+
+
 
 
 
