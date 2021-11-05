@@ -712,7 +712,9 @@ def plot_sum_rupt(rupt_dir,save_fig=None):
     #initial the rupt_part based on the first rupt file
     tmp = np.genfromtxt(rupts[0])
     sum_rupt = np.zeros(len(tmp))
-    for rupt in rupts:
+    for i_rupt,rupt in enumerate(rupts):
+        if i_rupt%50==0:
+            print('%d out of %d'%(i_rupt,len(rupts)))
         A = np.genfromtxt(rupt)
         #SS = A[:,8]
         #DS = A[:,9]
@@ -726,19 +728,14 @@ def plot_sum_rupt(rupt_dir,save_fig=None):
     except:
         print('cannot import Basemap!')
     if BMap_flag:
-        map = Basemap(projection='cyl',resolution='f',llcrnrlon=LON[0],llcrnrlat=minY_tcs,urcrnrlon=LON[1],urcrnrlat=maxY_tcs,fix_aspect=False)
+        map = Basemap(projection='cyl',resolution='f',llcrnrlon=min(tmp[:,1])-1,llcrnrlat=min(tmp[:,2])-1,urcrnrlon=max(tmp[:,1])+1,urcrnrlat=max(tmp[:,2])+1,fix_aspect=False)
         fig = map.arcgisimage(service='ESRI_Imagery_World_2D', xpixels = 2000, verbose= True)
         fig.set_alpha(0.8)
         map.drawstates()
         map.drawcountries(linewidth=0.1)
         map.drawcoastlines(linewidth=0.5)
         #Lon,Lat lines
-        if maxY_tcs-minY_tcs<5:
-            dn = 1
-        elif 5<=maxY_tcs-minY_tcs<10:
-            dn = 2
-        else:
-            dn = 5
+        dn = 5
         lats = map.drawparallels(np.arange(-90,90,dn),labels=[1,0,0,1],color='w',linewidth=0.5)
         lons = map.drawmeridians(np.arange(-180,180,5),labels=[1,0,0,1],color='w',linewidth=0.5)
         plt.scatter(tmp[:,1],tmp[:,2],c=sum_rupt,cmap='magma')
