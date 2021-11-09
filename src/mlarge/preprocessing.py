@@ -191,6 +191,37 @@ def gen_multi_Xydata_list(X_dirs,y_dirs,Xy_type=['ENZ','STF','Lon','Lat','Dep','
 
 
 
+
+def merge_lists(name_merge,name_out):
+    '''
+        merge multiple lists based on the file name
+        for example:
+            name_merge = ['Chile_full_small_Xylist_','Chile_small2_Xylist_']
+            name_out = 'Chile_full_small2_Xylist_'
+            will merge the the filename start from Chile_full_Xylist_* and Chile_small2_Xylist_*
+            and the appending * is based on each file name
+    '''
+    import glob
+    suffixs = glob.glob(name_merge[0]+'*')
+    suffixs = [i.split('/')[-1].split('_')[-1] for i in suffixs]
+    for suffix in suffixs:
+        mg = []
+        for i in name_merge:
+            tmp = glob.glob(i+suffix)
+            if len(tmp)==0:
+                mg = []
+                break
+            mg += tmp
+        if len(mg)==0:
+            continue
+        print('merging:',mg)
+        OUT = open(name_out+suffix,'w')
+        for m in mg:
+            with open(m,'r') as IN:
+                OUT.write(IN.read())
+        OUT.close()
+
+
     
 def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
     import glob
