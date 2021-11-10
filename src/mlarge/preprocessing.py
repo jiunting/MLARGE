@@ -86,11 +86,25 @@ def rdata_ENZ(home,project_name,run_name,Sta_ordering,tcs_samples=np.arange(5,51
 
 
 
-def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y'):
+def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y',n_cores=1):
     import numpy as np
     from mudpy import viewFQ
     from scipy.integrate import cumtrapz
     import os,glob
+    
+    # create dir if not exist
+    if not(os.path.exists(outdir)):
+        os.makedirs(outdir)
+    
+    use_parallel = False
+    if n_cores>1:
+        try:
+            from joblib import Parallel, delayed
+            use_parallel = True
+        except:
+            print("Import joblib failed")
+            use_parallel = False
+    
     
     def M02Mw(M0):
         Mw=(2.0/3)*np.log10(M0*1e7)-10.7 #M0 input is dyne-cm, convert to N-M by 1e7
@@ -110,16 +124,27 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
         interp_Mw=np.interp(T,t,sumMw)
         return T,interp_Mw
     
-    # save to file
-    if not(os.path.exists(outdir)):
-        os.makedirs(outdir)
+    # all the save to file
     ruptures=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*rupt')
     ruptures.sort()
-    for rupt in ruptures:
-        T,sumMw=get_accM0(ruptfile=rupt,T=tcs_samples)
-        eqid=rupt.split('/')[-1].split('.')[1]
-        np.save(outdir+'/'+project_name+'.'+eqid+'.STF.npy',sumMw )# * 0.1) #do not scale the Mw = 0.1Mw.later during training generator
-        
+    
+    def _run(ruptures):
+        for rupt in ruptures:
+            T,sumMw=get_accM0(ruptfile=rupt,T=tcs_samples)
+            eqid=rupt.split('/')[-1].split('.')[1]
+            np.save(outdir+'/'+project_name+'.'+eqid+'.STF.npy',sumMw )# * 0.1) #do not scale the Mw = 0.1Mw.later during training generator
+
+    # start parallel or single run
+    if use_parallel:
+        sub_ruptures = {i:[] for i in range(n_cores)}
+        for i_rupt,rupt in enumerate(ruptures):
+            gp = i_rupt%n_cores
+            sub_ruptures[gp].append(rupt)
+            # parallel processing
+            results = Parallel(n_jobs=n_cores,verbose=0)(delayed(_run)(i) for i in sub_ruptures.values()  )
+    else:
+        _run(ruptures)
+
 
 def gen_Xydata_list(X_dirs,y_dirs,outname='Datalist'):
     #make data list for MLARGE training
