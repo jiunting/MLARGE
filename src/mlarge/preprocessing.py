@@ -140,8 +140,8 @@ def rSTF(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpou
         for i_rupt,rupt in enumerate(ruptures):
             gp = i_rupt%n_cores
             sub_ruptures[gp].append(rupt)
-            # parallel processing
-            results = Parallel(n_jobs=n_cores,verbose=0)(delayed(_run)(i) for i in sub_ruptures.values()  )
+        # parallel processing
+        results = Parallel(n_jobs=n_cores,verbose=0)(delayed(_run)(i) for i in sub_ruptures.values()  )
     else:
         _run(ruptures)
 
@@ -369,12 +369,14 @@ def get_EQinfo(home,project_name,run_name,outname='EQinfo',fmt='short'):
         
 
     
-def get_fault_LW_cent(rupt_file,dist_strike,dist_dip,center_fault,tcs_samples=np.arange(5,515,5),find_center=False):
+def get_fault_LW_cent(rupt_file,dist_strike,dist_dip,center_fault,tcs_samples=np.arange(5,515,5),find_center=False,n_cores=1):
     #get fault Length/Width and centroid location one-by-one
     #rupt_file : path of .rupt file
     #dist_strike : path of distance matrix for strike
     #center_fault :index for the center subfault
     #plot fault and check where is the center(only needs to be done once)
+    import numpy as np
+    
     if type(dist_dip)==str:
         dip=np.load(dist_dip)
     else:
@@ -441,11 +443,22 @@ def get_fault_LW_cent(rupt_file,dist_strike,dist_dip,center_fault,tcs_samples=np
     
 
 
-def get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y'):
+def get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y',n_cores=1):
     #get all fault Length/Width and centroid location
     #make sure there is only one distance matrix for strike/dip
+    import numpy as np
     import glob
     import os
+    
+    use_parallel = False
+    if n_cores>1:
+        try:
+            from joblib import Parallel, delayed
+            use_parallel = True
+        except:
+            print("Import joblib failed")
+            use_parallel = False
+    
     dist_dip=glob.glob(home+project_name+'/data/distances/'+'*'+run_name+'*.dip.npy')[0]
     dist_strike=glob.glob(home+project_name+'/data/distances/'+'*'+run_name+'*.strike.npy')[0]
     print('Loading dip distance matrix:',dist_dip)
@@ -459,38 +472,51 @@ def get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=
     
     ruptures=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*.rupt')
     ruptures.sort()
-    for rupt_file in ruptures:
-        rupt=np.genfromtxt(rupt_file)
-        eqid=rupt_file.split('/')[-1].split('.')[-2]
-        rupt_time=rupt[:,-2]
-        slip=(rupt[:,8]**2 + rupt[:,9]**2)**0.5
-        mu=rupt[:,-1]
-        Area=rupt[:,10]*rupt[:,11]
-        ##start calculate L/W/cent
-        rupt_L=[]
-        rupt_W=[]
-        cen_lon=[]
-        cen_lat=[]
-        cen_dep=[]
-        for t in tcs_samples:
-            ind=np.where( (slip!=0) & (rupt_time<=t) )[0]
-            rupt_W.append(new_x[ind].max() - new_x[ind].min())
-            rupt_L.append(new_y[ind].max() - new_y[ind].min())
-            curr_M0=mu[ind]*Area[ind] * slip[ind]
-            cen_lon.append( np.sum(rupt[ind,1] * curr_M0 / curr_M0.sum()) )
-            cen_lat.append( np.sum(rupt[ind,2] * curr_M0 / curr_M0.sum()) )
-            cen_dep.append( np.sum(rupt[ind,3] * curr_M0 / curr_M0.sum()) )
-        rupt_W=np.array(rupt_W)
-        rupt_L=np.array(rupt_L)
-        cen_lon=np.array(cen_lon)
-        cen_lat=np.array(cen_lat)
-        cen_dep=np.array(cen_dep)
-        #save the result individually, do not scale here
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Width.npy',rupt_W)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Length.npy',rupt_L)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Lon.npy',cen_lon)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Lat.npy',cen_lat)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.Dep.npy',cen_dep)
+
+    def _run():
+        for rupt_file in ruptures:
+            rupt=np.genfromtxt(rupt_file)
+            eqid=rupt_file.split('/')[-1].split('.')[-2]
+            rupt_time=rupt[:,-2]
+            slip=(rupt[:,8]**2 + rupt[:,9]**2)**0.5
+            mu=rupt[:,-1]
+            Area=rupt[:,10]*rupt[:,11]
+            ##start calculate L/W/cent
+            rupt_L=[]
+            rupt_W=[]
+            cen_lon=[]
+            cen_lat=[]
+            cen_dep=[]
+            for t in tcs_samples:
+                ind=np.where( (slip!=0) & (rupt_time<=t) )[0]
+                rupt_W.append(new_x[ind].max() - new_x[ind].min())
+                rupt_L.append(new_y[ind].max() - new_y[ind].min())
+                curr_M0=mu[ind]*Area[ind] * slip[ind]
+                cen_lon.append( np.sum(rupt[ind,1] * curr_M0 / curr_M0.sum()) )
+                cen_lat.append( np.sum(rupt[ind,2] * curr_M0 / curr_M0.sum()) )
+                cen_dep.append( np.sum(rupt[ind,3] * curr_M0 / curr_M0.sum()) )
+            rupt_W=np.array(rupt_W)
+            rupt_L=np.array(rupt_L)
+            cen_lon=np.array(cen_lon)
+            cen_lat=np.array(cen_lat)
+            cen_dep=np.array(cen_dep)
+            #save the result individually, do not scale here
+            np.save(outdir+'/'+project_name+'.'+eqid+'.Width.npy',rupt_W)
+            np.save(outdir+'/'+project_name+'.'+eqid+'.Length.npy',rupt_L)
+            np.save(outdir+'/'+project_name+'.'+eqid+'.Lon.npy',cen_lon)
+            np.save(outdir+'/'+project_name+'.'+eqid+'.Lat.npy',cen_lat)
+            np.save(outdir+'/'+project_name+'.'+eqid+'.Dep.npy',cen_dep)
+
+    if use_parallel:
+        sub_ruptures = {i:[] for i in range(n_cores)}
+        for i_rupt,rupt in enumerate(ruptures):
+            gp = i_rupt%n_cores
+            sub_ruptures[gp].append(rupt)
+        # parallel processing
+        results = Parallel(n_jobs=n_cores,verbose=0)(delayed(_gen_ENZ)(i) for i in sub_ruptures.values()  )
+    else:
+        _gen_ENZ(ruptures)
+
 
     
     
