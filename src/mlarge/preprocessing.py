@@ -513,9 +513,9 @@ def get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=
             gp = i_rupt%n_cores
             sub_ruptures[gp].append(rupt)
         # parallel processing
-        results = Parallel(n_jobs=n_cores,verbose=0)(delayed(_gen_ENZ)(i) for i in sub_ruptures.values()  )
+        results = Parallel(n_jobs=n_cores,verbose=0)(delayed(_run)(i) for i in sub_ruptures.values()  )
     else:
-        _gen_ENZ(ruptures)
+        _run(ruptures)
 
 
     
