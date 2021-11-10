@@ -473,7 +473,7 @@ def get_fault_LW_cent_batch(home,project_name,run_name,center_fault,tcs_samples=
     ruptures=glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*.rupt')
     ruptures.sort()
 
-    def _run():
+    def _run(ruptures):
         for rupt_file in ruptures:
             rupt=np.genfromtxt(rupt_file)
             eqid=rupt_file.split('/')[-1].split('.')[-2]
