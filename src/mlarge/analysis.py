@@ -110,4 +110,46 @@ def SR(slip,dist,k=2):
 
 
 
-    
+#-------GNSS noise--------
+def get_psd(level):
+    from mudpy.forward import gnss_psd
+    return  gnss_psd(level=level,return_as_frequencies=True,return_as_db=False)
+    #return f,Epsd,Npsd,Zpsd
+
+def make_noise(n_steps,f,Epsd,Npsd,Zpsd,PGD=False):
+    from mudpy.hfsims import windowed_gaussian,apply_spectrum
+    #define sample rate
+    dt=1.0 #make this 1 so that the length of PGD can be controlled by duration
+    #noise model
+    #level='median'  #this can be low, median, or high
+    #duration of time series
+    duration=n_steps
+    # get white noise
+    E_noise=windowed_gaussian(duration,dt,window_type=None)
+    N_noise=windowed_gaussian(duration,dt,window_type=None)
+    Z_noise=windowed_gaussian(duration,dt,window_type=None)
+    noise=windowed_gaussian(duration,dt,window_type=None)
+    #get PSDs
+    #f,Epsd,Npsd,Zpsd=gnss_psd(level=level,return_as_frequencies=True,return_as_db=False)
+    #control the noise level
+    #scale=np.abs(np.random.randn()) #normal distribution
+    #Covnert PSDs to amplitude spectrum
+    Epsd = Epsd**0.5
+    Npsd = Npsd**0.5
+    Zpsd = Zpsd**0.5
+    #apply the spectrum
+    E_noise=apply_spectrum(E_noise,Epsd,f,dt,is_gnss=True)[:n_steps]
+    N_noise=apply_spectrum(N_noise,Npsd,f,dt,is_gnss=True)[:n_steps]
+    Z_noise=apply_spectrum(Z_noise,Zpsd,f,dt,is_gnss=True)[:n_steps]
+    if PGD:
+        GD=(np.real(E_noise)**2.0+np.real(N_noise)**2.0+np.real(Z_noise)**2.0)**0.5
+        PGD=D2PGD(GD)
+        return PGD
+    else:
+        return np.real(E_noise),np.real(N_noise),np.real(Z_noise)         
+
+
+
+
+#-------GNSS noise--------
+
