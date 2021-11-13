@@ -533,31 +533,49 @@ def get_hypo(rupt_file):
 
 
 
-def get_hypo_batch(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y'):
+def get_hypo_batch(home,project_name,run_name,tcs_samples=np.arange(5,515,5),outdir='Tmpout_y',n_cores=1):
     '''
         #get all the hypo and save them into tcs
     '''
     import glob
     import os
     
+    use_parallel = False
+    if n_cores>1:
+        try:
+            from joblib import Parallel, delayed
+            use_parallel = True
+        except:
+            print("Import joblib failed")
+            use_parallel = False
+    
     if not(os.path.exists(outdir)):
         os.makedirs(outdir)
 
     ruptures = glob.glob(home+project_name+'/'+'output/ruptures/'+run_name+'*.rupt')
     ruptures.sort()
-    for rupt_file in ruptures:
-        eqid = rupt_file.split('/')[-1].split('.')[-2]
-        lon, lat, dep = get_hypo(rupt_file)
-        # expand the length of hypo
-        lon = np.ones_like(tcs_samples) * lon
-        lat = np.ones_like(tcs_samples) * lat
-        dep = np.ones_like(tcs_samples) * dep
-        #save the result individually, do not scale here
-        np.save(outdir+'/'+project_name+'.'+eqid+'.HypoLon.npy',lon)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.HypoLat.npy',lat)
-        np.save(outdir+'/'+project_name+'.'+eqid+'.HypoDep.npy',dep)
+    def _run(ruptures):
+        for rupt_file in ruptures:
+            eqid = rupt_file.split('/')[-1].split('.')[-2]
+            lon, lat, dep = get_hypo(rupt_file)
+            # expand the length of hypo
+            lon = np.ones_like(tcs_samples) * lon
+            lat = np.ones_like(tcs_samples) * lat
+            dep = np.ones_like(tcs_samples) * dep
+            #save the result individually, do not scale here
+            np.save(outdir+'/'+project_name+'.'+eqid+'.HypoLon.npy',lon)
+            np.save(outdir+'/'+project_name+'.'+eqid+'.HypoLat.npy',lat)
+            np.save(outdir+'/'+project_name+'.'+eqid+'.HypoDep.npy',dep)
 
-
+    if use_parallel:
+        sub_ruptures = {i:[] for i in range(n_cores)}
+        for i_rupt,rupt in enumerate(ruptures):
+            gp = i_rupt%n_cores
+            sub_ruptures[gp].append(rupt)
+        # parallel processing
+        results = Parallel(n_jobs=n_cores,verbose=0)(delayed(_run)(i) for i in sub_ruptures.values()  )
+    else:
+        _run(ruptures)
 
 
 
