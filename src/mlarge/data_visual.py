@@ -488,7 +488,7 @@ def plot_tcs(Data,ncomp,STA,nsta,rupt=None,sort_type='lat',save_fig=None):
 
 
 
-def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,save_fig=None):
+def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_fig=None):
     '''
     scatter plot of y v.s. p_pred at every epoch
     Input:
@@ -496,6 +496,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,save_fig=None):
         X:              feature input [N,epoch,features]
         y:              true labels [N,epoch,1 or multiple outputs]
         use_final:      use final parameter instead of time-dependent parameter
+        mark_range:     plot the +- error range in % of possible values from labels
         r_yscale:       a list of function(s) which reverts y to the original sense
         save_fig:       directory to save the plots
     Output:
@@ -551,6 +552,12 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,save_fig=None):
         plt.subplot(2,3,1)
         #plt.plot(sav_mft[(0,epo)],sav_c,'k.')
         plt.scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.plot([7.4,9.6],[7.4,9.6],'k')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,0])-np.min(y_rscale[:,:,0])
+            print('Add error range at figure 1. Range=%f'%(YRange*mark_range))
+            plt.plot([7.4,9.6-YRange*mark_range],[7.4,9.6-YRange*mark_range],'k--')
+            plt.plot([7.4,9.6+YRange*mark_range],[7.4,9.6+YRange*mark_range],'k--')
         #plt.scatter(sav_mft[(0,epo)][idx]/R[0],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.ylabel('Prediction',fontsize=14,labelpad=0)
         #plt.xlim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
@@ -576,6 +583,12 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,save_fig=None):
         #plt.plot(sav_mft[(1,epo)],sav_c,'k.')
         plt.scatter(y_rscale[idx,epo_y,1],y_pred_rscale[idx,epo,1],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(1,epo)][idx]/R[1],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],'k')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,1])-np.min(y_rscale[:,:,1])
+            print('Add error range at figure 2. Range=%f'%(YRange*mark_range))
+            plt.plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()-YRange*mark_range],[y_rscale[:,:,1].min(),y_rscale[:,:,1].max()-YRange*mark_range],'k--')
+            plt.plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()+YRange*mark_range],[y_rscale[:,:,1].min(),y_rscale[:,:,1].max()+YRange*mark_range],'k--')
         plt.xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         plt.ylim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         ax1=plt.gca()
@@ -587,6 +600,12 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,save_fig=None):
         #plt.plot(sav_mft[(2,epo)],sav_c,'k.')
         plt.scatter(y_rscale[idx,epo_y,2],y_pred_rscale[idx,epo,2],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(2,epo)][idx]/R[2],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],'k')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,2])-np.min(y_rscale[:,:,2])
+            print('Add error range at figure 3. Range=%f'%(YRange*mark_range))
+            plt.plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()-YRange*mark_range],[y_rscale[:,:,2].min(),y_rscale[:,:,2].max()-YRange*mark_range],'k--')
+            plt.plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()+YRange*mark_range],[y_rscale[:,:,2].min(),y_rscale[:,:,2].max()+YRange*mark_range],'k--')
         plt.xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         plt.ylim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         ax1=plt.gca()
@@ -598,6 +617,12 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,save_fig=None):
         #plt.plot(sav_mft[(3,epo)],sav_c,'k.')
         plt.scatter(y_rscale[idx,epo_y,3],y_pred_rscale[idx,epo,3],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(3,epo)][idx]/R[3],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],'k')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,3])-np.min(y_rscale[:,:,3])
+            print('Add error range at figure 4. Range=%f'%(YRange*mark_range))
+            plt.plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()-YRange*mark_range],[y_rscale[:,:,3].min(),y_rscale[:,:,3].max()-YRange*mark_range],'k--')
+            plt.plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()+YRange*mark_range],[y_rscale[:,:,3].min(),y_rscale[:,:,3].max()+YRange*mark_range],'k--')
         #plt.ylabel('Avg. SNR',fontsize=14,labelpad=0)
         #plt.xlabel('|| y$_{pred}$ - y ||',fontsize=14,labelpad=0)
         plt.xlim([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()])
@@ -614,6 +639,12 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,save_fig=None):
         #plt.plot(sav_mft[(4,epo)],sav_c,'k.')
         plt.scatter(y_rscale[idx,epo_y,4],y_pred_rscale[idx,epo,4],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(4,epo)][idx]/R[4],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],'k')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,4])-np.min(y_rscale[:,:,4])
+            print('Add error range at figure 5. Range=%f'%(YRange*mark_range))
+            plt.plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()-YRange*mark_range],[y_rscale[:,:,4].min(),y_rscale[:,:,4].max()-YRange*mark_range],'k--')
+            plt.plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()+YRange*mark_range],[y_rscale[:,:,4].min(),y_rscale[:,:,4].max()+YRange*mark_range],'k--')
         plt.xlim([min(y_rscale[:,:,4].min(),-50),y_rscale[:,:,4].max()]) # this min(.min(),-100) makes better plotting
         plt.ylim([min(y_rscale[:,:,4].min(),-50),y_rscale[:,:,4].max()])
         plt.xlabel('True',fontsize=14,labelpad=0)
@@ -628,6 +659,12 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,save_fig=None):
         #plt.plot(sav_mft[(5,epo)],sav_c,'k.')
         plt.scatter(y_rscale[idx,epo_y,5],y_pred_rscale[idx,epo,5],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         #plt.scatter(sav_mft[(5,epo)][idx]/R[5],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        plt.plot([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],[y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],'k')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,5])-np.min(y_rscale[:,:,5])
+            print('Add error range at figure 6. Range=%f'%(YRange*mark_range))
+            plt.plot([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()-YRange*mark_range],[y_rscale[:,:,5].min(),y_rscale[:,:,5].max()-YRange*mark_range],'k--')
+            plt.plot([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()+YRange*mark_range],[y_rscale[:,:,5].min(),y_rscale[:,:,5].max()+YRange*mark_range],'k--')
         plt.xlim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
         plt.ylim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
         plt.xlabel('True',fontsize=14,labelpad=0)
