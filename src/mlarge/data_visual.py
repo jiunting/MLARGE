@@ -557,6 +557,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         if mark_range:
             YRange = np.max(y_rscale[:,:,0])-np.min(y_rscale[:,:,0])
             thresh = YRange*mark_range
+            thresh = 0.3 # manually fix the Mw error to be 0.3!!!
             print('Add error range at figure 1. Range=%f'%(thresh))
             plt.plot([vmin,vmax],[vmin-thresh,vmax-thresh],'m--')
             plt.plot([vmin,vmax],[vmin+thresh,vmax+thresh],'m--')
