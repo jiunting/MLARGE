@@ -578,8 +578,8 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         # add colorbar
         #These two lines mean put the bar inside the plot
         fig = plt.gcf()
-        cbaxes = fig.add_axes([0.25, 0.62, 0.068, 0.012 ])
-        clb = plt.colorbar(cmap,cax=cbaxes,ticks=[7.5, 8.5, 9.5], orientation='horizontal',label='Mw')
+        cbaxes = fig.add_axes([0.25, 0.62, 0.074, 0.012 ])
+        clb = plt.colorbar(cmap,cax=cbaxes,ticks=[7.0, 8.0, 9.0], orientation='horizontal',label='Mw')
         clb.set_label('Mw', rotation=0,labelpad=-2,size=12)
         ax1=plt.gca()
         ax1.tick_params(pad=0,length=0.5)
