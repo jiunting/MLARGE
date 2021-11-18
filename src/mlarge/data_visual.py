@@ -550,7 +550,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
             epo_y = epo
         #=============
         plt.subplot(2,3,1)
-        vmin, vmax = 7.4,9.6 #set the Mw from this range, don't want it starts from 0 at 0 s for example.
+        vmin, vmax = 6.9,9.6 #set the Mw from this range, don't want it starts from 0 at 0 s for example.
         #plt.plot(sav_mft[(0,epo)],sav_c,'k.')
         plt.scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],c=cm[idx],cmap='magma',s=20,vmin=vmin,vmax=vmax,alpha=0.9)
         plt.plot([vmin,vmax],[vmin,vmax],'m')
