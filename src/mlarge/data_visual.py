@@ -550,23 +550,29 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
             epo_y = epo
         #=============
         plt.subplot(2,3,1)
+        vmin, vmax = 7.4,9.6 #set the Mw from this range, don't want it starts from 0 at 0 s for example.
         #plt.plot(sav_mft[(0,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
-        plt.plot([7.4,9.6],[7.4,9.6],'m')
+        plt.scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],c=cm[idx],cmap='magma',s=20,vmin=vmin,vmax=vmax,alpha=0.9)
+        plt.plot([vmin,vmax],[vmin,vmax],'m')
         if mark_range:
             YRange = np.max(y_rscale[:,:,0])-np.min(y_rscale[:,:,0])
-            print('Add error range at figure 1. Range=%f'%(YRange*mark_range))
-            plt.plot([7.4,9.6],[7.4-YRange*mark_range,9.6-YRange*mark_range],'m--')
-            plt.plot([7.4,9.6],[7.4+YRange*mark_range,9.6+YRange*mark_range],'m--')
+            thresh = YRange*mark_range
+            print('Add error range at figure 1. Range=%f'%(thresh))
+            plt.plot([vmin,vmax],[vmin-thresh,vmax-thresh],'m--')
+            plt.plot([vmin,vmax],[vmin+thresh,vmax+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,0]-y_pred_rscale[idx,epo,0])<=thresh )[0])/len(y_rscale[idx,epo_y,0])
+            acc *= 100 #percentage
         #plt.scatter(sav_mft[(0,epo)][idx]/R[0],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.ylabel('Prediction',fontsize=14,labelpad=0)
         #plt.xlim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
         #plt.ylim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
-        plt.xlim([7.4,9.6])
-        plt.ylim([7.4,9.6])
+        plt.xlim([vmin,vmax])
+        plt.ylim([vmin,vmax])
         ax1=plt.gca()
         ax1.tick_params(direction='out', pad=0,labelsize=12,length=0)
         ax1.annotate('Mw',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            ax1.annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #ax1.set_yscale('log')
         # add colorbar
         #These two lines mean put the bar inside the plot
@@ -586,15 +592,20 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         plt.plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],'m')
         if mark_range:
             YRange = np.max(y_rscale[:,:,1])-np.min(y_rscale[:,:,1])
-            print('Add error range at figure 2. Range=%f'%(YRange*mark_range))
-            plt.plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()-YRange*mark_range,y_rscale[:,:,1].max()-YRange*mark_range],'m--')
-            plt.plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()+YRange*mark_range,y_rscale[:,:,1].max()+YRange*mark_range],'m--')
+            thresh = YRange*mark_range
+            print('Add error range at figure 2. Range=%f'%(thresh))
+            plt.plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()-thresh,y_rscale[:,:,1].max()-thresh],'m--')
+            plt.plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()+thresh,y_rscale[:,:,1].max()+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,1]-y_pred_rscale[idx,epo,1])<=thresh )[0])/len(y_rscale[idx,epo_y,1])
+            acc *= 100 #percentage
         plt.xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         plt.ylim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         ax1=plt.gca()
         ax1.tick_params(pad=0,labelsize=12,length=0)
         #ax1.set_yscale('log')
         ax1.annotate('Lon${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            ax1.annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
         plt.subplot(2,3,3)
         #plt.plot(sav_mft[(2,epo)],sav_c,'k.')
@@ -603,15 +614,20 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         plt.plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],'m')
         if mark_range:
             YRange = np.max(y_rscale[:,:,2])-np.min(y_rscale[:,:,2])
-            print('Add error range at figure 3. Range=%f'%(YRange*mark_range))
-            plt.plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()-YRange*mark_range,y_rscale[:,:,2].max()-YRange*mark_range],'m--')
-            plt.plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()+YRange*mark_range,y_rscale[:,:,2].max()+YRange*mark_range],'m--')
+            thresh = YRange*mark_range
+            print('Add error range at figure 3. Range=%f'%(thresh))
+            plt.plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()-thresh,y_rscale[:,:,2].max()-thresh],'m--')
+            plt.plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()+thresh,y_rscale[:,:,2].max()+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,2]-y_pred_rscale[idx,epo,2])<=thresh )[0])/len(y_rscale[idx,epo_y,2])
+            acc *= 100 #percentage
         plt.xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         plt.ylim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         ax1=plt.gca()
         ax1.tick_params(pad=0,labelsize=12,length=0)
         #ax1.set_yscale('log')
         ax1.annotate('Lat${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            ax1.annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
         plt.subplot(2,3,4)
         #plt.plot(sav_mft[(3,epo)],sav_c,'k.')
@@ -620,9 +636,12 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         plt.plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],'m')
         if mark_range:
             YRange = np.max(y_rscale[:,:,3])-np.min(y_rscale[:,:,3])
-            print('Add error range at figure 4. Range=%f'%(YRange*mark_range))
-            plt.plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()-YRange*mark_range,y_rscale[:,:,3].max()-YRange*mark_range],'m--')
-            plt.plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()+YRange*mark_range,y_rscale[:,:,3].max()+YRange*mark_range],'m--')
+            thresh = YRange*mark_range
+            print('Add error range at figure 4. Range=%f'%(thresh))
+            plt.plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()-thresh,y_rscale[:,:,3].max()-thresh],'m--')
+            plt.plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()+thresh,y_rscale[:,:,3].max()+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,3]-y_pred_rscale[idx,epo,3])<=thresh )[0])/len(y_rscale[idx,epo_y,3])
+            acc *= 100 #percentage
         #plt.ylabel('Avg. SNR',fontsize=14,labelpad=0)
         #plt.xlabel('|| y$_{pred}$ - y ||',fontsize=14,labelpad=0)
         plt.xlim([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()])
@@ -634,6 +653,8 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         ax1.tick_params(pad=0,labelsize=12,length=0)
         #ax1.set_yscale('log')
         ax1.annotate('Depth (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            ax1.annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
         plt.subplot(2,3,5)
         #plt.plot(sav_mft[(4,epo)],sav_c,'k.')
@@ -642,9 +663,12 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         plt.plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],'m')
         if mark_range:
             YRange = np.max(y_rscale[:,:,4])-np.min(y_rscale[:,:,4])
-            print('Add error range at figure 5. Range=%f'%(YRange*mark_range))
-            plt.plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()-YRange*mark_range,y_rscale[:,:,4].max()-YRange*mark_range],'m--')
-            plt.plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()+YRange*mark_range,y_rscale[:,:,4].max()+YRange*mark_range],'m--')
+            thresh = YRange*mark_range
+            print('Add error range at figure 5. Range=%f'%(thresh))
+            plt.plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()-thresh,y_rscale[:,:,4].max()-thresh],'m--')
+            plt.plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()+thresh,y_rscale[:,:,4].max()+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,4]-y_pred_rscale[idx,epo,4])<=thresh )[0])/len(y_rscale[idx,epo_y,4])
+            acc *= 100 #percentage
         plt.xlim([min(y_rscale[:,:,4].min(),-50),y_rscale[:,:,4].max()]) # this min(.min(),-100) makes better plotting
         plt.ylim([min(y_rscale[:,:,4].min(),-50),y_rscale[:,:,4].max()])
         plt.xlabel('True',fontsize=14,labelpad=0)
@@ -654,6 +678,8 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         ax1.ticklabel_format(style='sci', axis='y',scilimits=(0,0))
         #ax1.set_yscale('log')
         ax1.annotate('Length (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            ax1.annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
         plt.subplot(2,3,6)
         #plt.plot(sav_mft[(5,epo)],sav_c,'k.')
@@ -662,9 +688,12 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         plt.plot([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],[y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],'m')
         if mark_range:
             YRange = np.max(y_rscale[:,:,5])-np.min(y_rscale[:,:,5])
-            print('Add error range at figure 6. Range=%f'%(YRange*mark_range))
-            plt.plot([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],[y_rscale[:,:,5].min()-YRange*mark_range,y_rscale[:,:,5].max()-YRange*mark_range],'m--')
-            plt.plot([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],[y_rscale[:,:,5].min()+YRange*mark_range,y_rscale[:,:,5].max()+YRange*mark_range],'m--')
+            thresh = YRange*mark_range
+            print('Add error range at figure 6. Range=%f'%(thresh))
+            plt.plot([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],[y_rscale[:,:,5].min()-thresh,y_rscale[:,:,5].max()-thresh],'m--')
+            plt.plot([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],[y_rscale[:,:,5].min()+thresh,y_rscale[:,:,5].max()+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,5]-y_pred_rscale[idx,epo,5])<=thresh )[0])/len(y_rscale[idx,epo_y,5])
+            acc *= 100 #percentage
         plt.xlim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
         plt.ylim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
         plt.xlabel('True',fontsize=14,labelpad=0)
@@ -674,6 +703,8 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         ax1.ticklabel_format(style='sci', axis='y',scilimits=(0,0))
         #ax1.set_yscale('log')
         ax1.annotate('Width (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            ax1.annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #adjust subplots width/length
         plt.subplots_adjust(left=0.05,top=0.92,right=0.97,bottom=0.1,wspace=0.07,hspace=0.14)
         #plt.show()
