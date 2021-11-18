@@ -534,8 +534,9 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
 
     #====== start plotting ======
     # color-coded by Mw
-    cm = plt.cm.magma(  plt.Normalize(7.4,9.6)(y_rscale[:,-1,0]) )
-    norm = matplotlib.colors.Normalize(vmin=7.4, vmax=9.6)
+    vmin, vmax = 6.9,9.6 #set the Mw from this range, don't want it starts from 0 at 0 s for example.
+    cm = plt.cm.magma(  plt.Normalize(vmin,vmax)(y_rscale[:,-1,0]) )
+    norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
     cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='magma')
     cmap.set_array([])
 
@@ -550,9 +551,8 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
             epo_y = epo
         #=============
         plt.subplot(2,3,1)
-        vmin, vmax = 6.9,9.6 #set the Mw from this range, don't want it starts from 0 at 0 s for example.
         #plt.plot(sav_mft[(0,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],c=cm[idx],cmap='magma',s=15,vmin=vmin,vmax=vmax,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
         plt.plot([vmin,vmax],[vmin,vmax],'m')
         if mark_range:
             YRange = np.max(y_rscale[:,:,0])-np.min(y_rscale[:,:,0])
@@ -587,7 +587,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         plt.subplot(2,3,2)
         plt.title('%d s'%(epo*5+5))
         #plt.plot(sav_mft[(1,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo_y,1],y_pred_rscale[idx,epo,1],c=cm[idx],cmap='magma',s=15,vmin=vmin,vmax=vmax,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,1],y_pred_rscale[idx,epo,1],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
         #plt.scatter(sav_mft[(1,epo)][idx]/R[1],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],'m')
         if mark_range:
@@ -609,7 +609,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         #=============
         plt.subplot(2,3,3)
         #plt.plot(sav_mft[(2,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo_y,2],y_pred_rscale[idx,epo,2],c=cm[idx],cmap='magma',s=15,vmin=vmin,vmax=vmax,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,2],y_pred_rscale[idx,epo,2],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
         #plt.scatter(sav_mft[(2,epo)][idx]/R[2],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],'m')
         if mark_range:
@@ -631,7 +631,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         #=============
         plt.subplot(2,3,4)
         #plt.plot(sav_mft[(3,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo_y,3],y_pred_rscale[idx,epo,3],c=cm[idx],cmap='magma',s=15,vmin=vmin,vmax=vmax,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,3],y_pred_rscale[idx,epo,3],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
         #plt.scatter(sav_mft[(3,epo)][idx]/R[3],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],'m')
         if mark_range:
@@ -658,7 +658,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         #=============
         plt.subplot(2,3,5)
         #plt.plot(sav_mft[(4,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo_y,4],y_pred_rscale[idx,epo,4],c=cm[idx],cmap='magma',s=15,vmin=vmin,vmax=vmax,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,4],y_pred_rscale[idx,epo,4],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
         #plt.scatter(sav_mft[(4,epo)][idx]/R[4],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],'m')
         if mark_range:
@@ -683,7 +683,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         #=============
         plt.subplot(2,3,6)
         #plt.plot(sav_mft[(5,epo)],sav_c,'k.')
-        plt.scatter(y_rscale[idx,epo_y,5],y_pred_rscale[idx,epo,5],c=cm[idx],cmap='magma',s=15,vmin=vmin,vmax=vmax,alpha=0.9)
+        plt.scatter(y_rscale[idx,epo_y,5],y_pred_rscale[idx,epo,5],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
         #plt.scatter(sav_mft[(5,epo)][idx]/R[5],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         plt.plot([y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],[y_rscale[:,:,5].min(),y_rscale[:,:,5].max()],'m')
         if mark_range:
