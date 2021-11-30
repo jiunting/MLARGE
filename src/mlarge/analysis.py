@@ -73,7 +73,7 @@ def dist_sta_fault(Data,STA,nsta,rupt_file):
     SS = rupt[:,8]
     DS = rupt[:,9]
     rupt_time = rupt[:,12]
-    slip = (SS * 2 + DS * 2)**0.5
+    slip = (SS ** 2 + DS ** 2)**0.5
 
 
     idx_rupt =  np.where(slip!=0)[0] #index of subfault that has value
