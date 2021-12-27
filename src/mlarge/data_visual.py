@@ -720,6 +720,246 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
         #plt.close()
 
 
+
+
+def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_fig=None):
+    '''
+    scatter plot of y v.s. p_pred at every epoch
+    Input:
+        Model_path:     path of the preferred model
+        X:              feature input [N,epoch,features]
+        y:              true labels [N,epoch,multiple outputs(Mw, Lon, Lat, Length, Width)]
+        use_final:      use final parameter instead of time-dependent parameter
+        mark_range:     plot the +- error range in mark_range of possible values from labels
+        r_yscale:       a list of function(s) which reverts y to the original sense
+        save_fig:       directory to save the plots
+    Output:
+        Save figures or show on screen if save_fig==None
+    '''
+    import tensorflow as tf
+    import matplotlib
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set()
+
+    # create dir if not exist and save_fig is not None
+    if save_fig!=None:
+        import os
+        if not(os.path.exists(save_fig)):
+            os.makedirs(save_fig)
+
+    # load the model
+    model_loaded = tf.keras.models.load_model(Model_path,compile=False)
+
+    # make predictions
+    y_pred = model_loaded.predict(X)
+
+    # how many output params
+    N_p = y.shape[2]
+    assert N_p == len(r_yscale), "size of y and r_yscale does not match!"
+
+    # convert y, y_pred to original unit
+    import copy
+    y_pred_rscale = copy.deepcopy(y_pred)
+    y_rscale = copy.deepcopy(y)
+    for ip in range(N_p):
+        y_pred_rscale[:,:,ip] = r_yscale[ip](y_pred[:,:,ip])
+        y_rscale[:,:,ip] = r_yscale[ip](y[:,:,ip])
+
+    #====== start plotting ======
+    # color-coded by Mw
+    vmin, vmax = 6.9,9.6 #set the Mw from this range, don't want it starts from 0 at 0 s for example.
+    cm = plt.cm.magma(  plt.Normalize(vmin,vmax)(y_rscale[:,-1,0]) )
+    norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
+    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='magma')
+    cmap.set_array([])
+
+
+    idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
+    for epo in range(102):
+        plt.figure(figsize=(9.5,5.5))
+        fig, axes = plt.subplots(2,3, figsize=(9.5,5.5))
+        #plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.14,hspace=0.14)
+        axes[1][2].set_visible(False)
+        #tmp0 = axes[0][0].get_position()
+        #tmp = axes[1][0].get_position()
+        #axes[1][0].set_position([0.24,tmp.y0,tmp0.x1,tmp0.y1])
+        #axes[1][1].set_position([0.55,tmp.y0,tmp0.x1,tmp0.y1])
+        #epo = 30
+        if use_final:
+            epo_y = -1
+        else:
+            epo_y = epo
+        #=============
+        ##plt.subplot(2,3,1)
+        #plt.plot(sav_mft[(0,epo)],sav_c,'k.')
+        axes[0][0].scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
+        axes[0][0].plot([vmin,vmax],[vmin,vmax],'m')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,0])-np.min(y_rscale[:,:,0])
+            thresh = YRange*mark_range
+            thresh = 0.3 # manually fix the Mw error to be 0.3!!!
+            print('Add error range at figure 1. Range=%f'%(thresh))
+            axes[0][0].plot([vmin,vmax],[vmin-thresh,vmax-thresh],'m--')
+            axes[0][0].plot([vmin,vmax],[vmin+thresh,vmax+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,0]-y_pred_rscale[idx,epo,0])<=thresh )[0])/len(y_rscale[idx,epo_y,0])
+            acc *= 100 #percentage
+        #plt.scatter(sav_mft[(0,epo)][idx]/R[0],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        axes[0][0].set_ylabel('Prediction',fontsize=14,labelpad=0)
+        #plt.xlim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
+        #plt.ylim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
+        axes[0][0].set_xlim([vmin,vmax])
+        axes[0][0].set_ylim([vmin,vmax])
+        #ax1=plt.gca()
+        axes[0][0].tick_params(direction='out', pad=0,labelsize=12,length=0)
+        axes[0][0].annotate('Mw',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            axes[0][0].annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #ax1.set_yscale('log')
+        # add colorbar
+        #These two lines mean put the bar inside the plot
+        fig = plt.gcf()
+        cbaxes = fig.add_axes([0.25, 0.62, 0.074, 0.012 ])
+        clb = plt.colorbar(cmap,cax=cbaxes,ticks=[7.0, 8.0, 9.0], orientation='horizontal',label='Mw')
+        clb.set_label('Mw', rotation=0,labelpad=-2,size=12)
+        ax1=plt.gca()
+        ax1.tick_params(pad=0.1,length=0.5)
+        #plt.legend(['Mw'],frameon=True)
+        #=============
+        ##plt.subplot(2,3,2)
+        axes[0][1].set_title('%d s'%(epo*5+5))
+        #plt.plot(sav_mft[(1,epo)],sav_c,'k.')
+        axes[0][1].scatter(y_rscale[idx,epo_y,1],y_pred_rscale[idx,epo,1],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
+        #plt.scatter(sav_mft[(1,epo)][idx]/R[1],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],'m')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,1])-np.min(y_rscale[:,:,1])
+            thresh = YRange*mark_range
+            print('Add error range at figure 2. Range=%f'%(thresh))
+            axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()-thresh,y_rscale[:,:,1].max()-thresh],'m--')
+            axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()+thresh,y_rscale[:,:,1].max()+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,1]-y_pred_rscale[idx,epo,1])<=thresh )[0])/len(y_rscale[idx,epo_y,1])
+            acc *= 100 #percentage
+        axes[0][1].set_xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
+        axes[0][1].set_ylim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
+        #ax1=plt.gca()
+        axes[0][1].tick_params(pad=0.1,labelsize=12,length=0)
+        #ax1.set_yscale('log')
+        axes[0][1].annotate('Lon${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            axes[0][1].annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #=============
+        ##plt.subplot(2,3,3)
+        #plt.plot(sav_mft[(2,epo)],sav_c,'k.')
+        axes[0][2].scatter(y_rscale[idx,epo_y,2],y_pred_rscale[idx,epo,2],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
+        #plt.scatter(sav_mft[(2,epo)][idx]/R[2],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],'m')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,2])-np.min(y_rscale[:,:,2])
+            thresh = YRange*mark_range
+            print('Add error range at figure 3. Range=%f'%(thresh))
+            axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()-thresh,y_rscale[:,:,2].max()-thresh],'m--')
+            axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()+thresh,y_rscale[:,:,2].max()+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,2]-y_pred_rscale[idx,epo,2])<=thresh )[0])/len(y_rscale[idx,epo_y,2])
+            acc *= 100 #percentage
+        axes[0][2].set_xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
+        axes[0][2].set_ylim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
+        #ax1=plt.gca()
+        axes[0][2].tick_params(pad=0.1,labelsize=12,length=0)
+        #ax1.set_yscale('log')
+        axes[0][2].annotate('Lat${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            axes[0][2].annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #=============
+        #plt.subplot(2,3,4)
+        #plt.plot(sav_mft[(3,epo)],sav_c,'k.')
+        axes[1][0].scatter(y_rscale[idx,epo_y,3],y_pred_rscale[idx,epo,3],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
+        #plt.scatter(sav_mft[(3,epo)][idx]/R[3],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],'m')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,3])-np.min(y_rscale[:,:,3])
+            thresh = YRange*mark_range
+            print('Add error range at figure 4. Range=%f'%(thresh))
+            axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()-thresh,y_rscale[:,:,3].max()-thresh],'m--')
+            axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()+thresh,y_rscale[:,:,3].max()+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,3]-y_pred_rscale[idx,epo,3])<=thresh )[0])/len(y_rscale[idx,epo_y,3])
+            acc *= 100 #percentage
+        #plt.ylabel('Avg. SNR',fontsize=14,labelpad=0)
+        #plt.xlabel('|| y$_{pred}$ - y ||',fontsize=14,labelpad=0)
+        axes[1][0].set_xlim([min(y_rscale[:,:,3].min(),-50),y_rscale[:,:,3].max()])
+        axes[1][0].set_ylim([min(y_rscale[:,:,3].min(),-50),y_rscale[:,:,3].max()])
+        axes[1][0].set_ylabel('Prediction',fontsize=14,labelpad=0)
+        axes[1][0].set_xlabel('True',fontsize=14,labelpad=0)
+        #plt.xlabel('%',fontsize=14,labelpad=0)
+        #ax1=plt.gca()
+        axes[1][0].tick_params(pad=0.1,labelsize=12,length=0)
+        axes[1][0].ticklabel_format(style='sci', axis='y',scilimits=(0,0))
+        #ax1.set_yscale('log')
+        axes[1][0].annotate('Length (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            axes[1][0].annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #=============
+        ##plt.subplot(2,3,5)
+        #plt.plot(sav_mft[(4,epo)],sav_c,'k.')
+        axes[1][1].scatter(y_rscale[idx,epo_y,4],y_pred_rscale[idx,epo,4],c=cm[idx],cmap='magma',s=10,vmin=vmin,vmax=vmax,alpha=0.9)
+        #plt.scatter(sav_mft[(4,epo)][idx]/R[4],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
+        axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],'m')
+        if mark_range:
+            YRange = np.max(y_rscale[:,:,4])-np.min(y_rscale[:,:,4])
+            thresh = YRange*mark_range
+            print('Add error range at figure 5. Range=%f'%(thresh))
+            axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()-thresh,y_rscale[:,:,4].max()-thresh],'m--')
+            axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()+thresh,y_rscale[:,:,4].max()+thresh],'m--')
+            acc = len(np.where( np.abs(y_rscale[idx,epo_y,4]-y_pred_rscale[idx,epo,4])<=thresh )[0])/len(y_rscale[idx,epo_y,4])
+            acc *= 100 #percentage
+        axes[1][1].set_xlim([min(y_rscale[:,:,4].min(),-5),y_rscale[:,:,4].max()]) # this min(.min(),-100) makes better plotting
+        axes[1][1].set_ylim([min(y_rscale[:,:,4].min(),-5),y_rscale[:,:,4].max()])
+        axes[1][1].set_xlabel('True',fontsize=14,labelpad=0)
+        #plt.xlabel('%',fontsize=14,labelpad=0)
+        #ax1=plt.gca()
+        axes[1][1].tick_params(pad=0.1,labelsize=12,length=0)
+        axes[1][1].ticklabel_format(style='sci', axis='y',scilimits=(0,0))
+        #ax1.set_yscale('log')
+        axes[1][1].annotate('Width (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            axes[1][1].annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        #=============
+        '''
+        plt.xlim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
+        plt.ylim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
+        plt.xlabel('True',fontsize=14,labelpad=0)
+        #plt.xlabel('%',fontsize=14,labelpad=0)
+        ax1=plt.gca()
+        ax1.tick_params(pad=0,labelsize=12,length=0)
+        ax1.ticklabel_format(style='sci', axis='y',scilimits=(0,0))
+        #ax1.set_yscale('log')
+        ax1.annotate('Width (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        if mark_range:
+            ax1.annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
+        '''
+        #adjust subplots width/length
+        #plt.subplots_adjust(left=0.05,top=0.92,right=0.97,bottom=0.1,wspace=0.07,hspace=0.14)
+        #plt.show()
+        #break
+        plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.14,hspace=0.14)
+        tmp0 = axes[0][0].get_position()
+        tmp = axes[1][0].get_position()
+        #print('  tmp0 tmp=',tmp0,tmp)
+        axes[1][0].set_position([0.21,tmp.y0,tmp0.x1-tmp0.x0,tmp0.y1-tmp0.y0])
+        axes[1][1].set_position([0.555,tmp.y0,tmp0.x1-tmp0.x0,tmp0.y1-tmp0.y0])
+        if save_fig:
+            #plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.14,hspace=0.14)
+            plt.savefig(save_fig+'/fig_%03d.png'%(epo))
+            plt.close()
+        else:
+            plt.show()
+        #plt.savefig('./misfit_meanSNR_figs/fig_%03d.png'%(epo))
+        #plt.close()
+
+
+
+
+
 def plot_rupt_retc(rupt,min_slip,max_time,rect_fault,fix_vmax=[0,10],save_fig=None):
     '''
     plot rupt file v.s. rectangular fault file
