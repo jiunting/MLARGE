@@ -799,14 +799,14 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         ##plt.subplot(2,3,1)
         #plt.plot(sav_mft[(0,epo)],sav_c,'k.')
         axes[0][0].scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
-        axes[0][0].plot([vmin,vmax],[vmin,vmax],'m')
+        axes[0][0].plot([vmin,vmax],[vmin,vmax],color=[1,0,1])
         if mark_range:
             YRange = np.max(y_rscale[:,:,0])-np.min(y_rscale[:,:,0])
             thresh = YRange*mark_range
             thresh = 0.3 # manually fix the Mw error to be 0.3!!!
             print('Add error range at figure 1. Range=%f'%(thresh))
-            axes[0][0].plot([vmin,vmax],[vmin-thresh,vmax-thresh],'m--')
-            axes[0][0].plot([vmin,vmax],[vmin+thresh,vmax+thresh],'m--')
+            axes[0][0].plot([vmin,vmax],[vmin-thresh,vmax-thresh],'--',color=[1,0,1])
+            axes[0][0].plot([vmin,vmax],[vmin+thresh,vmax+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,0]-y_pred_rscale[idx,epo,0])<=thresh )[0])/len(y_rscale[idx,epo_y,0])
             acc *= 100 #percentage
         #plt.scatter(sav_mft[(0,epo)][idx]/R[0],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
@@ -836,13 +836,13 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         #plt.plot(sav_mft[(1,epo)],sav_c,'k.')
         axes[0][1].scatter(y_rscale[idx,epo_y,1],y_pred_rscale[idx,epo,1],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
         #plt.scatter(sav_mft[(1,epo)][idx]/R[1],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
-        axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],'m')
+        axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],color=[1,0,1])
         if mark_range:
             YRange = np.max(y_rscale[:,:,1])-np.min(y_rscale[:,:,1])
             thresh = YRange*mark_range
             print('Add error range at figure 2. Range=%f'%(thresh))
-            axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()-thresh,y_rscale[:,:,1].max()-thresh],'m--')
-            axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()+thresh,y_rscale[:,:,1].max()+thresh],'m--')
+            axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()-thresh,y_rscale[:,:,1].max()-thresh],'--',color=[1,0,1])
+            axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()+thresh,y_rscale[:,:,1].max()+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,1]-y_pred_rscale[idx,epo,1])<=thresh )[0])/len(y_rscale[idx,epo_y,1])
             acc *= 100 #percentage
         axes[0][1].set_xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
@@ -858,13 +858,13 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         #plt.plot(sav_mft[(2,epo)],sav_c,'k.')
         axes[0][2].scatter(y_rscale[idx,epo_y,2],y_pred_rscale[idx,epo,2],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
         #plt.scatter(sav_mft[(2,epo)][idx]/R[2],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
-        axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],'m')
+        axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],color=[1,0,1])
         if mark_range:
             YRange = np.max(y_rscale[:,:,2])-np.min(y_rscale[:,:,2])
             thresh = YRange*mark_range
             print('Add error range at figure 3. Range=%f'%(thresh))
-            axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()-thresh,y_rscale[:,:,2].max()-thresh],'m--')
-            axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()+thresh,y_rscale[:,:,2].max()+thresh],'m--')
+            axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()-thresh,y_rscale[:,:,2].max()-thresh],'--',color=[1,0,1])
+            axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()+thresh,y_rscale[:,:,2].max()+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,2]-y_pred_rscale[idx,epo,2])<=thresh )[0])/len(y_rscale[idx,epo_y,2])
             acc *= 100 #percentage
         axes[0][2].set_xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
@@ -880,13 +880,13 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         #plt.plot(sav_mft[(3,epo)],sav_c,'k.')
         axes[1][0].scatter(y_rscale[idx,epo_y,3],y_pred_rscale[idx,epo,3],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
         #plt.scatter(sav_mft[(3,epo)][idx]/R[3],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
-        axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],'m')
+        axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],color=[1,0,1])
         if mark_range:
             YRange = np.max(y_rscale[:,:,3])-np.min(y_rscale[:,:,3])
             thresh = YRange*mark_range
             print('Add error range at figure 4. Range=%f'%(thresh))
-            axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()-thresh,y_rscale[:,:,3].max()-thresh],'m--')
-            axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()+thresh,y_rscale[:,:,3].max()+thresh],'m--')
+            axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()-thresh,y_rscale[:,:,3].max()-thresh],'--',color=[1,0,1])
+            axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()+thresh,y_rscale[:,:,3].max()+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,3]-y_pred_rscale[idx,epo,3])<=thresh )[0])/len(y_rscale[idx,epo_y,3])
             acc *= 100 #percentage
         #plt.ylabel('Avg. SNR',fontsize=14,labelpad=0)
@@ -908,13 +908,13 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         #plt.plot(sav_mft[(4,epo)],sav_c,'k.')
         axes[1][1].scatter(y_rscale[idx,epo_y,4],y_pred_rscale[idx,epo,4],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
         #plt.scatter(sav_mft[(4,epo)][idx]/R[4],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
-        axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],'m')
+        axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],color=[1,0,1])
         if mark_range:
             YRange = np.max(y_rscale[:,:,4])-np.min(y_rscale[:,:,4])
             thresh = YRange*mark_range
             print('Add error range at figure 5. Range=%f'%(thresh))
-            axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()-thresh,y_rscale[:,:,4].max()-thresh],'m--')
-            axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()+thresh,y_rscale[:,:,4].max()+thresh],'m--')
+            axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()-thresh,y_rscale[:,:,4].max()-thresh],'--',color=[1,0,1])
+            axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()+thresh,y_rscale[:,:,4].max()+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,4]-y_pred_rscale[idx,epo,4])<=thresh )[0])/len(y_rscale[idx,epo_y,4])
             acc *= 100 #percentage
         axes[1][1].set_xlim([min(y_rscale[:,:,4].min(),-5),y_rscale[:,:,4].max()]) # this min(.min(),-100) makes better plotting
@@ -954,7 +954,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         axes[1][1].set_position([0.555,tmp.y0,tmp0.x1-tmp0.x0,tmp0.y1-tmp0.y0])
         if save_fig:
             #plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.14,hspace=0.14)
-            plt.savefig(save_fig+'/fig_%03d.png'%(epo))
+            plt.savefig(save_fig+'/fig_%03d.png'%(epo),dpi=300)
             plt.close()
         else:
             plt.show()
