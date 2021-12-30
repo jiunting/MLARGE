@@ -775,10 +775,11 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
     cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='magma')
     cmap.set_array([])
 
+    idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
+
     # marker size
     ms = make_linear_scale(min(y_rscale[idx,-1,0]),max(y_rscale[idx,-1,0]),target_min=3,target_max=60)
 
-    idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
     for epo in range(102):
         plt.figure(figsize=(9.5,5.5))
         fig, axes = plt.subplots(2,3, figsize=(9.5,5.5))
