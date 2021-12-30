@@ -770,9 +770,9 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
     #====== start plotting ======
     # color-coded by Mw
     vmin, vmax = 6.9,9.6 #set the Mw from this range, don't want it starts from 0 at 0 s for example.
-    cm = plt.cm.hot_r(  plt.Normalize(vmin,vmax)(y_rscale[:,-1,0]) )
+    cm = plt.cm.magma_r(  plt.Normalize(vmin,vmax)(y_rscale[:,-1,0]) )
     norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
-    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='hot_r')
+    cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='magma_r')
     cmap.set_array([])
 
     idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
