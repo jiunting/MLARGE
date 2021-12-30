@@ -779,6 +779,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
 
     # marker size
     ms = make_linear_scale(min(y_rscale[idx,-1,0]),max(y_rscale[idx,-1,0]),target_min=3,target_max=60)
+    ms = ms(y_rscale[idx,-1,0])
 
     for epo in range(102):
         plt.figure(figsize=(9.5,5.5))
