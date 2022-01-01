@@ -722,16 +722,17 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
 
 
 
-def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_fig=None):
+def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=None,save_fig=None):
     '''
     scatter plot of y v.s. p_pred at every epoch
     Input:
         Model_path:     path of the preferred model
         X:              feature input [N,epoch,features]
         y:              true labels [N,epoch,multiple outputs(Mw, Lon, Lat, Length, Width)]
-        use_final:      use final parameter instead of time-dependent parameter
-        mark_range:     plot the +- error range in mark_range of possible values from labels
         r_yscale:       a list of function(s) which reverts y to the original sense
+        use_final:      use final parameter instead of time-dependent parameter
+        idx:            idx to be plotted [np array]
+        mark_range:     plot the +- error range in mark_range of possible values from labels
         save_fig:       directory to save the plots
     Output:
         Save figures or show on screen if save_fig==None
@@ -770,12 +771,14 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
     #====== start plotting ======
     # color-coded by Mw
     vmin, vmax = 6.9,9.6 #set the Mw from this range, don't want it starts from 0 at 0 s for example.
+    alpha = 0.6
     cm = plt.cm.magma_r(  plt.Normalize(vmin,vmax)(y_rscale[:,-1,0]) )
     norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
     cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='magma_r')
     cmap.set_array([])
 
-    idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
+    if not idx:
+        idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
 
     # marker size
     ms = make_linear_scale(min(y_rscale[idx,-1,0]),max(y_rscale[idx,-1,0]),target_min=2,target_max=50)
@@ -798,7 +801,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         #=============
         ##plt.subplot(2,3,1)
         #plt.plot(sav_mft[(0,epo)],sav_c,'k.')
-        axes[0][0].scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
+        axes[0][0].scatter(y_rscale[idx,epo_y,0],y_pred_rscale[idx,epo,0],s=ms,c=cm[idx],edgecolor='k',linewidth=0.5,vmin=vmin,vmax=vmax,alpha=alpha)
         axes[0][0].plot([vmin,vmax],[vmin,vmax],color=[1,0,1])
         if mark_range:
             YRange = np.max(y_rscale[:,:,0])-np.min(y_rscale[:,:,0])
@@ -816,7 +819,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         axes[0][0].set_xlim([vmin,vmax])
         axes[0][0].set_ylim([vmin,vmax])
         #ax1=plt.gca()
-        axes[0][0].tick_params(direction='out', pad=0,labelsize=12,length=0)
+        axes[0][0].tick_params(direction='out', pad=0.2,labelsize=12,length=0.1)
         axes[0][0].annotate('Mw',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         if mark_range:
             axes[0][0].annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
@@ -827,6 +830,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         cbaxes = fig.add_axes([0.25, 0.62, 0.074, 0.012 ])
         clb = plt.colorbar(cmap,cax=cbaxes,ticks=[7.0, 8.0, 9.0], orientation='horizontal',label='Mw')
         clb.set_label('Mw', rotation=0,labelpad=-2,size=12)
+        clb.solids.set(alpha=alpha)
         ax1=plt.gca()
         ax1.tick_params(pad=0.1,length=0.5)
         #plt.legend(['Mw'],frameon=True)
@@ -834,7 +838,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         ##plt.subplot(2,3,2)
         axes[0][1].set_title('%d s'%(epo*5+5))
         #plt.plot(sav_mft[(1,epo)],sav_c,'k.')
-        axes[0][1].scatter(y_rscale[idx,epo_y,1],y_pred_rscale[idx,epo,1],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
+        axes[0][1].scatter(y_rscale[idx,epo_y,1],y_pred_rscale[idx,epo,1],s=ms,c=cm[idx],edgecolor='k',linewidth=0.5,vmin=vmin,vmax=vmax,alpha=alpha)
         #plt.scatter(sav_mft[(1,epo)][idx]/R[1],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],color=[1,0,1])
         if mark_range:
@@ -848,7 +852,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         axes[0][1].set_xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         axes[0][1].set_ylim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         #ax1=plt.gca()
-        axes[0][1].tick_params(pad=0.1,labelsize=12,length=0)
+        axes[0][1].tick_params(pad=0.2,labelsize=12,length=0.1)
         #ax1.set_yscale('log')
         axes[0][1].annotate('Lon${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         if mark_range:
@@ -856,7 +860,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         #=============
         ##plt.subplot(2,3,3)
         #plt.plot(sav_mft[(2,epo)],sav_c,'k.')
-        axes[0][2].scatter(y_rscale[idx,epo_y,2],y_pred_rscale[idx,epo,2],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
+        axes[0][2].scatter(y_rscale[idx,epo_y,2],y_pred_rscale[idx,epo,2],s=ms,c=cm[idx],edgecolor='k',linewidth=0.5,vmin=vmin,vmax=vmax,alpha=alpha)
         #plt.scatter(sav_mft[(2,epo)][idx]/R[2],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],color=[1,0,1])
         if mark_range:
@@ -870,7 +874,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         axes[0][2].set_xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         axes[0][2].set_ylim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         #ax1=plt.gca()
-        axes[0][2].tick_params(pad=0.1,labelsize=12,length=0)
+        axes[0][2].tick_params(pad=0.2,labelsize=12,length=0.1)
         #ax1.set_yscale('log')
         axes[0][2].annotate('Lat${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         if mark_range:
@@ -878,7 +882,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         #=============
         #plt.subplot(2,3,4)
         #plt.plot(sav_mft[(3,epo)],sav_c,'k.')
-        axes[1][0].scatter(y_rscale[idx,epo_y,3],y_pred_rscale[idx,epo,3],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
+        axes[1][0].scatter(y_rscale[idx,epo_y,3],y_pred_rscale[idx,epo,3],s=ms,c=cm[idx],edgecolor='k',linewidth=0.5,vmin=vmin,vmax=vmax,alpha=alpha)
         #plt.scatter(sav_mft[(3,epo)][idx]/R[3],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],color=[1,0,1])
         if mark_range:
@@ -897,7 +901,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         axes[1][0].set_xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         #ax1=plt.gca()
-        axes[1][0].tick_params(pad=0.1,labelsize=12,length=0)
+        axes[1][0].tick_params(pad=0.2,labelsize=12,length=0.1)
         axes[1][0].ticklabel_format(style='sci', axis='y',scilimits=(0,0))
         #ax1.set_yscale('log')
         axes[1][0].annotate('Length (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
@@ -906,7 +910,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         #=============
         ##plt.subplot(2,3,5)
         #plt.plot(sav_mft[(4,epo)],sav_c,'k.')
-        axes[1][1].scatter(y_rscale[idx,epo_y,4],y_pred_rscale[idx,epo,4],s=ms,c=cm[idx],edgecolor='k',linewidth=1,vmin=vmin,vmax=vmax,alpha=0.7)
+        axes[1][1].scatter(y_rscale[idx,epo_y,4],y_pred_rscale[idx,epo,4],s=ms,c=cm[idx],edgecolor='k',linewidth=0.5,vmin=vmin,vmax=vmax,alpha=alpha)
         #plt.scatter(sav_mft[(4,epo)][idx]/R[4],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],color=[1,0,1])
         if mark_range:
@@ -922,7 +926,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
         axes[1][1].set_xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         #ax1=plt.gca()
-        axes[1][1].tick_params(pad=0.1,labelsize=12,length=0)
+        axes[1][1].tick_params(pad=0.2,labelsize=12,length=0.1)
         axes[1][1].ticklabel_format(style='sci', axis='y',scilimits=(0,0))
         #ax1.set_yscale('log')
         axes[1][1].annotate('Width (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
