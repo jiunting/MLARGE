@@ -722,16 +722,17 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
 
 
 
-def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_fig=None):
+def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=None,save_fig=None):
     '''
     scatter plot of y v.s. p_pred at every epoch
     Input:
         Model_path:     path of the preferred model
         X:              feature input [N,epoch,features]
         y:              true labels [N,epoch,multiple outputs(Mw, Lon, Lat, Length, Width)]
-        use_final:      use final parameter instead of time-dependent parameter
-        mark_range:     plot the +- error range in mark_range of possible values from labels
         r_yscale:       a list of function(s) which reverts y to the original sense
+        use_final:      use final parameter instead of time-dependent parameter
+        idx:            idx to be plotted [np array]
+        mark_range:     plot the +- error range in mark_range of possible values from labels
         save_fig:       directory to save the plots
     Output:
         Save figures or show on screen if save_fig==None
@@ -776,7 +777,8 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save
     cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='magma_r')
     cmap.set_array([])
 
-    idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
+    if not idx:
+        idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
 
     # marker size
     ms = make_linear_scale(min(y_rscale[idx,-1,0]),max(y_rscale[idx,-1,0]),target_min=2,target_max=50)
