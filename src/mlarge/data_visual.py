@@ -777,7 +777,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
     cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap='magma_r')
     cmap.set_array([])
 
-    if not idx:
+    if idx is None:
         idx = np.arange(len(y)) # what indexes are you plotting? add any filtering here
 
     # marker size
