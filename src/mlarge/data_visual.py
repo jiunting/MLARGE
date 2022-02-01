@@ -287,7 +287,7 @@ def make_hist(train,valid,test,save_fig=None):
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     ax = plt.gca()
-    ax.tick_params(pad=2)
+    ax.tick_params(pad=1.0,length=0,size=0)
 
     plt.text(8.0,800,'70%',fontsize=15)
     plt.text(8.0,270,'20%',fontsize=15)
