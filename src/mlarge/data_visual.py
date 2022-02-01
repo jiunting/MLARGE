@@ -253,6 +253,12 @@ def view_sources(EQinfo,save_fig=None):
 
     
 def make_hist(train,valid,test,save_fig=None):
+    '''
+    Input:
+        Give the path of train.valid,test .npy file generated automatically during model training
+    Output:
+        A magnitude figure
+    '''
     import numpy as np
     import matplotlib.pyplot as plt
     import seaborn as sns
@@ -263,6 +269,10 @@ def make_hist(train,valid,test,save_fig=None):
     train = np.load(train)
     valid = np.load(valid)
     test = np.load(test)
+
+    train = np.array([list(i)[:-1] for i in train])
+    valid = np.array([list(i)[:-1] for i in valid])
+    test = np.array([list(i)[:-1] for i in test])
 
     sns.set()
     sns.set_context("poster")
