@@ -242,8 +242,6 @@ class fault_tool:
                 fout_base = '.'.join(fout_base[:-1])
             
             for i_eq in range(len(strike)):
-                print("==================================")
-                print(i_eq)
                 num_strike = int(np.max([length[i_eq]//dx_strike,1]))   #minimum 1
                 num_updip = num_downdip = int((width[i_eq]//dx_dip)//2) #minimum can be zero
                 #if fout != None:
