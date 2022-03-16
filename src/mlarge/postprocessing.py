@@ -195,7 +195,8 @@ class fault_tool:
         rise=ones(loout.shape)*rise_time
         L=ones(loout.shape)*dx_strike*1000
         W=ones(loout.shape)*dx_dip*1000
-        if fout != None:
+        #if fout != None:
+        if fout:
             f=open(fout,'w')
             for k in range(len(x)):
                 out='%i\t%.6f\t%.6f\t%.3f\t%.2f\t%.2f\t%.1f\t%.1f\t%.2f\t%.2f\n' % (k+1,loout[k],laout[k],zout[k],strike[k],dip[k],tw[k],rise[k],L[k],W[k])
@@ -221,7 +222,8 @@ class fault_tool:
         #dx_dip = 8 #km
         rise_time = 1 # rise time doesnt matter in this case
 
-        if fout == None:
+        #if fout == None:
+        if not fout:
             if not hasattr(self,'F'):
                 self.F = [] # initial list to save F
 
@@ -233,15 +235,19 @@ class fault_tool:
             self.makefault(fout,strike,dip,num_strike,dx_dip,dx_strike,center,num_updip,num_downdip,rise_time)
         else:
             # multiple faults to be generated
-            if fout != None:
+            #if fout != None:
+            if fout:
                 fout_base = fout.split('.')
                 fout_append = fout_base[-1]
                 fout_base = '.'.join(fout_base[:-1])
             
             for i_eq in range(len(strike)):
+                print("==================================")
+                print(i_eq)
                 num_strike = int(np.max([length[i_eq]//dx_strike,1]))   #minimum 1
                 num_updip = num_downdip = int((width[i_eq]//dx_dip)//2) #minimum can be zero
-                if fout != None:
+                #if fout != None:
+                if fout:
                     #print('input:')
                     #print(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
                     self.makefault(fout_base+'.%03d.'%(i_eq)+fout_append,strike[i_eq],dip[i_eq],num_strike,dx_dip,dx_strike,center[i_eq],num_updip,num_downdip,rise_time)
