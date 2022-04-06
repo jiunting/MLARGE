@@ -1011,8 +1011,12 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         acc_time = np.arange(102)*5+5
         for isrc in range(5):
             #for the i-th source get the results from sav_acc_current & sav_acc_final
-            axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
-            axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
+            # plot two accuracy is way toooo busy, just one accuracy instead
+            if use_final:
+                axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
+            else:
+                axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
+        plt.legend(['Mw','Lon','Lat','Length','Width'])
         axes[1][2].set_xlim([0,515])
         axes[1][2].set_ylim([50,105])
         axes[1][2].set_xlabel('Time (s)',fontsize=14,labelpad=0)
