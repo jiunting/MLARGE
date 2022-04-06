@@ -802,7 +802,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         plt.figure(figsize=(9.5,5.5))
         fig, axes = plt.subplots(2,3, figsize=(9.5,5.5))
         #plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.14,hspace=0.14)
-        axes[1][2].set_visible(False)
+        #axes[1][2].set_visible(False)
         #tmp0 = axes[0][0].get_position()
         #tmp = axes[1][0].get_position()
         #axes[1][0].set_position([0.24,tmp.y0,tmp0.x1,tmp0.y1])
@@ -1011,8 +1011,8 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         acc_time = np.arange(102)*5+5
         for isrc in range(5):
             #for the i-th source get the results from sav_acc_current & sav_acc_final
-            axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],linewidth=0.5)
-            axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],linewidth=0.5)
+            axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
+            axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
         axes[1][2].set_xlim([0,515])
         axes[1][2].set_ylim([50,105])
         axes[1][2].set_xlabel('Time (s)',fontsize=14,labelpad=0)
@@ -1035,7 +1035,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         #plt.subplots_adjust(left=0.05,top=0.92,right=0.97,bottom=0.1,wspace=0.07,hspace=0.14)
         #plt.show()
         #break
-        plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.14,hspace=0.14)
+        plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.24,hspace=0.24)
         #-----add these two lines to center the bottom two subplots-----
         #tmp0 = axes[0][0].get_position()
         #tmp = axes[1][0].get_position()
