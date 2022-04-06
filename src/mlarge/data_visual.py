@@ -253,6 +253,12 @@ def view_sources(EQinfo,save_fig=None):
 
     
 def make_hist(train,valid,test,save_fig=None):
+    '''
+    Input:
+        Give the path of train.valid,test .npy file generated automatically during model training
+    Output:
+        A magnitude figure
+    '''
     import numpy as np
     import matplotlib.pyplot as plt
     import seaborn as sns
@@ -263,6 +269,10 @@ def make_hist(train,valid,test,save_fig=None):
     train = np.load(train)
     valid = np.load(valid)
     test = np.load(test)
+
+    train = np.array([list(i)[:-1] for i in train])
+    valid = np.array([list(i)[:-1] for i in valid])
+    test = np.array([list(i)[:-1] for i in test])
 
     sns.set()
     sns.set_context("poster")
@@ -277,7 +287,7 @@ def make_hist(train,valid,test,save_fig=None):
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     ax = plt.gca()
-    ax.tick_params(pad=2)
+    ax.tick_params(pad=1.0,length=0,size=0)
 
     plt.text(8.0,800,'70%',fontsize=15)
     plt.text(8.0,270,'20%',fontsize=15)
@@ -724,7 +734,7 @@ def plot_y_scatter(Model_path,X,y,r_yscale,use_final=False,mark_range=None,save_
 
 def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=None,save_fig=None):
     '''
-    scatter plot of y v.s. p_pred at every epoch
+    scatter plot of y v.s. y_pred at every epoch
     Input:
         Model_path:     path of the preferred model
         X:              feature input [N,epoch,features]
@@ -736,6 +746,8 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         save_fig:       directory to save the plots
     Output:
         Save figures or show on screen if save_fig==None
+    #=====Modified on 4/6=====
+    still making y v.s. y_pred for 5 params at every epoch, but add accuracy plot (so 6 subplots)
     '''
     import tensorflow as tf
     import matplotlib
@@ -784,6 +796,8 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
     ms = make_linear_scale(min(y_rscale[idx,-1,0]),max(y_rscale[idx,-1,0]),target_min=2,target_max=50)
     ms = ms(y_rscale[idx,-1,0])
 
+    sav_acc_current = {}
+    sav_acc_final = {}
     for epo in range(102):
         plt.figure(figsize=(9.5,5.5))
         fig, axes = plt.subplots(2,3, figsize=(9.5,5.5))
@@ -812,8 +826,19 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
             axes[0][0].plot([vmin,vmax],[vmin+thresh,vmax+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,0]-y_pred_rscale[idx,epo,0])<=thresh )[0])/len(y_rscale[idx,epo_y,0])
             acc *= 100 #percentage
+        #---calculate acc for both final y and current y---
+        acc_current = len(np.where( np.abs(y_rscale[idx,epo,0]-y_pred_rscale[idx,epo,0])<=thresh )[0])/len(y_rscale[idx,epo,0])*100
+        acc_final = len(np.where( np.abs(y_rscale[idx,-1,0]-y_pred_rscale[idx,epo,0])<=thresh )[0])/len(y_rscale[idx,-1,0])*100
+        if 0 not in sav_acc_current:
+            sav_acc_current[0] = [acc_current]
+            sav_acc_final[0] = [acc_final]
+        else:
+            sav_acc_current[0].append(acc_current) # the 0-st parameter
+            sav_acc_final[0].append(acc_final)
+        #---calculateion done and will be used later---------
         #plt.scatter(sav_mft[(0,epo)][idx]/R[0],sav_SNR_mean[idx],c=cm[idx],cmap='magma',s=20,vmin=7.4,vmax=9.6,alpha=0.9)
         axes[0][0].set_ylabel('Prediction',fontsize=14,labelpad=0)
+        axes[0][0].set_xlabel('True',fontsize=14,labelpad=0)
         #plt.xlim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
         #plt.ylim([y_rscale[:,:,0].min(),y_rscale[:,:,0].max()])
         axes[0][0].set_xlim([vmin,vmax])
@@ -849,6 +874,18 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
             axes[0][1].plot([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()],[y_rscale[:,:,1].min()+thresh,y_rscale[:,:,1].max()+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,1]-y_pred_rscale[idx,epo,1])<=thresh )[0])/len(y_rscale[idx,epo_y,1])
             acc *= 100 #percentage
+        #---calculate acc for both final y and current y---
+        acc_current = len(np.where( np.abs(y_rscale[idx,epo,1]-y_pred_rscale[idx,epo,1])<=thresh )[0])/len(y_rscale[idx,epo,1])*100
+        acc_final = len(np.where( np.abs(y_rscale[idx,-1,1]-y_pred_rscale[idx,epo,1])<=thresh )[0])/len(y_rscale[idx,-1,1])*100
+        if 1 not in sav_acc_current:
+            sav_acc_current[1] = [acc_current]
+            sav_acc_final[1] = [acc_final]
+        else:
+            sav_acc_current[1].append(acc_current) # the 0-st parameter
+            sav_acc_final[1].append(acc_final)
+        #---calculateion done and will be used later---------
+        axes[0][1].set_ylabel('Prediction',fontsize=14,labelpad=0)
+        axes[0][1].set_xlabel('True',fontsize=14,labelpad=0)
         axes[0][1].set_xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         axes[0][1].set_ylim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         #ax1=plt.gca()
@@ -871,6 +908,18 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
             axes[0][2].plot([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()],[y_rscale[:,:,2].min()+thresh,y_rscale[:,:,2].max()+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,2]-y_pred_rscale[idx,epo,2])<=thresh )[0])/len(y_rscale[idx,epo_y,2])
             acc *= 100 #percentage
+        #---calculate acc for both final y and current y---
+        acc_current = len(np.where( np.abs(y_rscale[idx,epo,2]-y_pred_rscale[idx,epo,2])<=thresh )[0])/len(y_rscale[idx,epo,2])*100
+        acc_final = len(np.where( np.abs(y_rscale[idx,-1,2]-y_pred_rscale[idx,epo,2])<=thresh )[0])/len(y_rscale[idx,-1,2])*100
+        if 2 not in sav_acc_current:
+            sav_acc_current[2] = [acc_current]
+            sav_acc_final[2] = [acc_final]
+        else:
+            sav_acc_current[2].append(acc_current) # the 0-st parameter
+            sav_acc_final[2].append(acc_final)
+        #---calculateion done and will be used later---------
+        axes[0][2].set_ylabel('Prediction',fontsize=14,labelpad=0)
+        axes[0][2].set_xlabel('True',fontsize=14,labelpad=0)
         axes[0][2].set_xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         axes[0][2].set_ylim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         #ax1=plt.gca()
@@ -893,12 +942,22 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
             axes[1][0].plot([y_rscale[:,:,3].min(),y_rscale[:,:,3].max()],[y_rscale[:,:,3].min()+thresh,y_rscale[:,:,3].max()+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,3]-y_pred_rscale[idx,epo,3])<=thresh )[0])/len(y_rscale[idx,epo_y,3])
             acc *= 100 #percentage
+        #---calculate acc for both final y and current y---
+        acc_current = len(np.where( np.abs(y_rscale[idx,epo,3]-y_pred_rscale[idx,epo,3])<=thresh )[0])/len(y_rscale[idx,epo,3])*100
+        acc_final = len(np.where( np.abs(y_rscale[idx,-1,3]-y_pred_rscale[idx,epo,3])<=thresh )[0])/len(y_rscale[idx,-1,3])*100
+        if 3 not in sav_acc_current:
+            sav_acc_current[3] = [acc_current]
+            sav_acc_final[3] = [acc_final]
+        else:
+            sav_acc_current[3].append(acc_current) # the 0-st parameter
+            sav_acc_final[3].append(acc_final)
+        #---calculateion done and will be used later---------
         #plt.ylabel('Avg. SNR',fontsize=14,labelpad=0)
         #plt.xlabel('|| y$_{pred}$ - y ||',fontsize=14,labelpad=0)
-        axes[1][0].set_xlim([min(y_rscale[:,:,3].min(),-50),y_rscale[:,:,3].max()])
-        axes[1][0].set_ylim([min(y_rscale[:,:,3].min(),-50),y_rscale[:,:,3].max()])
         axes[1][0].set_ylabel('Prediction',fontsize=14,labelpad=0)
         axes[1][0].set_xlabel('True',fontsize=14,labelpad=0)
+        axes[1][0].set_xlim([min(y_rscale[:,:,3].min(),-50),y_rscale[:,:,3].max()])
+        axes[1][0].set_ylim([min(y_rscale[:,:,3].min(),-50),y_rscale[:,:,3].max()])
         #plt.xlabel('%',fontsize=14,labelpad=0)
         #ax1=plt.gca()
         axes[1][0].tick_params(pad=0.2,labelsize=12,length=0.1)
@@ -921,8 +980,19 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
             axes[1][1].plot([y_rscale[:,:,4].min(),y_rscale[:,:,4].max()],[y_rscale[:,:,4].min()+thresh,y_rscale[:,:,4].max()+thresh],'--',color=[1,0,1])
             acc = len(np.where( np.abs(y_rscale[idx,epo_y,4]-y_pred_rscale[idx,epo,4])<=thresh )[0])/len(y_rscale[idx,epo_y,4])
             acc *= 100 #percentage
+        #---calculate acc for both final y and current y---
+        acc_current = len(np.where( np.abs(y_rscale[idx,epo,4]-y_pred_rscale[idx,epo,4])<=thresh )[0])/len(y_rscale[idx,epo,4])*100
+        acc_final = len(np.where( np.abs(y_rscale[idx,-1,4]-y_pred_rscale[idx,epo,4])<=thresh )[0])/len(y_rscale[idx,-1,4])*100
+        if 4 not in sav_acc_current:
+            sav_acc_current[4] = [acc_current]
+            sav_acc_final[4] = [acc_final]
+        else:
+            sav_acc_current[4].append(acc_current) # the 0-st parameter
+            sav_acc_final[4].append(acc_final)
+        #---calculateion done and will be used later---------
         axes[1][1].set_xlim([min(y_rscale[:,:,4].min(),-5),y_rscale[:,:,4].max()]) # this min(.min(),-100) makes better plotting
         axes[1][1].set_ylim([min(y_rscale[:,:,4].min(),-5),y_rscale[:,:,4].max()])
+        axes[1][1].set_ylabel('Prediction',fontsize=14,labelpad=0)
         axes[1][1].set_xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         #ax1=plt.gca()
@@ -933,6 +1003,21 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         if mark_range:
             axes[1][1].annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         #=============
+        #---make accuracy plot---
+        #plt.subplot(2,3,6)
+        line_colors = [[0,0,0],[1,0,0],[0,1,0],[0,0,1],[1,0,1]]
+        line_styles_current = ['.--','o--','^--','x--','s--']
+        line_styles_final = ['.-','o-','^-','x-','s-']
+        acc_time = np.arange(102)*5+5
+        for isrc in range(5):
+            #for the i-th source get the results from sav_acc_current & sav_acc_final
+            axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],linewidth=0.5)
+            axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],linewidth=0.5)
+        axes[1][2].set_xlim([0,515])
+        axes[1][2].set_ylim([50,105])
+        axes[1][2].set_xlabel('Time (s)',fontsize=14,labelpad=0)
+        axes[1][2].set_ylabel('Accuracy (%)',fontsize=14,labelpad=0)
+        axes[1][2].tick_params(pad=0.2,labelsize=12,length=0.1)
         '''
         plt.xlim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
         plt.ylim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
@@ -951,11 +1036,11 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         #plt.show()
         #break
         plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.14,hspace=0.14)
-        tmp0 = axes[0][0].get_position()
-        tmp = axes[1][0].get_position()
-        #print('  tmp0 tmp=',tmp0,tmp)
-        axes[1][0].set_position([0.21,tmp.y0,tmp0.x1-tmp0.x0,tmp0.y1-tmp0.y0])
-        axes[1][1].set_position([0.555,tmp.y0,tmp0.x1-tmp0.x0,tmp0.y1-tmp0.y0])
+        #-----add these two lines to center the bottom two subplots-----
+        #tmp0 = axes[0][0].get_position()
+        #tmp = axes[1][0].get_position()
+        #axes[1][0].set_position([0.21,tmp.y0,tmp0.x1-tmp0.x0,tmp0.y1-tmp0.y0])
+        #axes[1][1].set_position([0.555,tmp.y0,tmp0.x1-tmp0.x0,tmp0.y1-tmp0.y0])
         if save_fig:
             #plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.14,hspace=0.14)
             plt.savefig(save_fig+'/fig_%03d.png'%(epo),dpi=300)
