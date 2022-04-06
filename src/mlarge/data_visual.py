@@ -1016,7 +1016,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
                 axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
             else:
                 axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
-        plt.legend(['Mw','Lon','Lat','Length','Width'])
+        axes[1][2].legend(['Mw','Lon','Lat','Length','Width'],fontsize=12,loc=4,frameon=True,shadow=True)
         axes[1][2].set_xlim([0,515])
         axes[1][2].set_ylim([50,105])
         axes[1][2].set_xlabel('Time (s)',fontsize=14,labelpad=0)
