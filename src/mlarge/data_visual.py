@@ -1005,9 +1005,9 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         #=============
         #---make accuracy plot---
         #plt.subplot(2,3,6)
-        line_colors = [[0,0,0],[1,0,0],[0,1,0],[0,0,1],[1,0,1]]
-        line_styles_current = ['.--','o--','^--','*--','s--']
-        line_styles_final = ['.-','o-','^-','*-','s-']
+        line_colors = [[1,0,0],[0,0,0],[0,1,0],[0,0,1],[1,0,1]]
+        line_styles_current = ['o--','v--','^--','*--','s--']
+        line_styles_final = ['o-','v-','^-','*-','s-']
         acc_time = np.arange(102)*5+5
         for isrc in range(5):
             #for the i-th source get the results from sav_acc_current & sav_acc_final
