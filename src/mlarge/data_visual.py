@@ -852,7 +852,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         # add colorbar
         #These two lines mean put the bar inside the plot
         fig = plt.gcf()
-        cbaxes = fig.add_axes([0.25, 0.62, 0.074, 0.012 ])
+        cbaxes = fig.add_axes([0.22, 0.62, 0.074, 0.012 ])
         clb = plt.colorbar(cmap,cax=cbaxes,ticks=[7.0, 8.0, 9.0], orientation='horizontal',label='Mw')
         clb.set_label('Mw', rotation=0,labelpad=-2,size=12)
         clb.solids.set(alpha=alpha)
@@ -1006,16 +1006,16 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         #---make accuracy plot---
         #plt.subplot(2,3,6)
         line_colors = [[0,0,0],[1,0,0],[0,1,0],[0,0,1],[1,0,1]]
-        line_styles_current = ['.--','o--','^--','x--','s--']
-        line_styles_final = ['.-','o-','^-','x-','s-']
+        line_styles_current = ['.--','o--','^--','*--','s--']
+        line_styles_final = ['.-','o-','^-','*-','s-']
         acc_time = np.arange(102)*5+5
         for isrc in range(5):
             #for the i-th source get the results from sav_acc_current & sav_acc_final
             # plot two accuracy is way toooo busy, just one accuracy instead
             if use_final:
-                axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],markeredgecolor=line_colors[isrc],linewidth=0.1,markersize=5)
+                axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],markeredgecolor='k',markeredgewidth=0.1,linewidth=0.1,markersize=5)
             else:
-                axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],markeredgecolor=line_colors[isrc],linewidth=0.1,markersize=5)
+                axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],markeredgecolor='k',markeredgewidth=0.1,linewidth=0.1,markersize=5)
         axes[1][2].legend(['Mw','Lon','Lat','Length','Width'],fontsize=12,loc=4,frameon=True,shadow=True)
         axes[1][2].set_xlim([0,515])
         axes[1][2].set_ylim([50,101])
