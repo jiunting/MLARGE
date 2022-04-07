@@ -844,7 +844,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         axes[0][0].set_xlim([vmin,vmax])
         axes[0][0].set_ylim([vmin,vmax])
         #ax1=plt.gca()
-        axes[0][0].tick_params(direction='out', pad=0.2,labelsize=12,length=0.1)
+        axes[0][0].tick_params(direction='out', pad=0.2,labelsize=12,length=0.2)
         axes[0][0].annotate('Mw',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         if mark_range:
             axes[0][0].annotate('%.1f %%'%(acc),xy=(0.06,0.95),xycoords='axes fraction',size=14, ha='left', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
@@ -889,7 +889,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         axes[0][1].set_xlim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         axes[0][1].set_ylim([y_rscale[:,:,1].min(),y_rscale[:,:,1].max()])
         #ax1=plt.gca()
-        axes[0][1].tick_params(pad=0.2,labelsize=12,length=0.1)
+        axes[0][1].tick_params(pad=0.2,labelsize=12,length=0.2)
         #ax1.set_yscale('log')
         axes[0][1].annotate('Lon${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         if mark_range:
@@ -923,7 +923,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         axes[0][2].set_xlim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         axes[0][2].set_ylim([y_rscale[:,:,2].min(),y_rscale[:,:,2].max()])
         #ax1=plt.gca()
-        axes[0][2].tick_params(pad=0.2,labelsize=12,length=0.1)
+        axes[0][2].tick_params(pad=0.2,labelsize=12,length=0.2)
         #ax1.set_yscale('log')
         axes[0][2].annotate('Lat${\degree}$',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
         if mark_range:
@@ -960,7 +960,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         axes[1][0].set_ylim([min(y_rscale[:,:,3].min(),-50),y_rscale[:,:,3].max()])
         #plt.xlabel('%',fontsize=14,labelpad=0)
         #ax1=plt.gca()
-        axes[1][0].tick_params(pad=0.2,labelsize=12,length=0.1)
+        axes[1][0].tick_params(pad=0.2,labelsize=12,length=0.2)
         axes[1][0].ticklabel_format(style='sci', axis='y',scilimits=(0,0))
         #ax1.set_yscale('log')
         axes[1][0].annotate('Length (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
@@ -996,7 +996,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         axes[1][1].set_xlabel('True',fontsize=14,labelpad=0)
         #plt.xlabel('%',fontsize=14,labelpad=0)
         #ax1=plt.gca()
-        axes[1][1].tick_params(pad=0.2,labelsize=12,length=0.1)
+        axes[1][1].tick_params(pad=0.2,labelsize=12,length=0.2)
         axes[1][1].ticklabel_format(style='sci', axis='y',scilimits=(0,0))
         #ax1.set_yscale('log')
         axes[1][1].annotate('Width (km)',xy=(0.94,0.95),xycoords='axes fraction',size=14, ha='right', va='top',bbox=dict(boxstyle='round', fc='w',alpha=0.7))
@@ -1013,15 +1013,15 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
             #for the i-th source get the results from sav_acc_current & sav_acc_final
             # plot two accuracy is way toooo busy, just one accuracy instead
             if use_final:
-                axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
+                axes[1][2].plot(acc_time[:epo+1],sav_acc_final[isrc],line_styles_final[isrc],color=line_colors[isrc],markeredgecolor=line_colors[isrc],linewidth=0.1,markersize=5)
             else:
-                axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],markeredgecolor='k',linewidth=0.1,markersize=3)
+                axes[1][2].plot(acc_time[:epo+1],sav_acc_current[isrc],line_styles_current[isrc],color=line_colors[isrc],markeredgecolor=line_colors[isrc],linewidth=0.1,markersize=5)
         axes[1][2].legend(['Mw','Lon','Lat','Length','Width'],fontsize=12,loc=4,frameon=True,shadow=True)
         axes[1][2].set_xlim([0,515])
-        axes[1][2].set_ylim([50,105])
+        axes[1][2].set_ylim([50,101])
         axes[1][2].set_xlabel('Time (s)',fontsize=14,labelpad=0)
         axes[1][2].set_ylabel('Accuracy (%)',fontsize=14,labelpad=0)
-        axes[1][2].tick_params(pad=0.2,labelsize=12,length=0.1)
+        axes[1][2].tick_params(pad=0.2,labelsize=12,length=0.2)
         '''
         plt.xlim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
         plt.ylim([min(y_rscale[:,:,5].min(),-5),max(y_rscale[:,:,5].max(),y_pred_rscale[:,:,5].max())])
