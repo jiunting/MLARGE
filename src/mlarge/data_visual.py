@@ -851,11 +851,13 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         #ax1.set_yscale('log')
         # add colorbar
         #These two lines mean put the bar inside the plot
-        fig = plt.gcf()
-        cbaxes = fig.add_axes([0.22, 0.62, 0.074, 0.012 ])
-        clb = plt.colorbar(cmap,cax=cbaxes,ticks=[7.0, 8.0, 9.0], orientation='horizontal',label='Mw')
-        clb.set_label('Mw', rotation=0,labelpad=-2,size=12)
-        clb.solids.set(alpha=alpha)
+        #fig = plt.gcf()
+#        cbaxes = fig.add_axes([0.22, 0.62, 0.074, 0.012 ])
+#        clb = plt.colorbar(cmap,cax=cbaxes,ticks=[7.0, 8.0, 9.0], orientation='horizontal',label='Mw')
+#        clb.set_label('Mw', rotation=0,labelpad=-2,size=12)
+#        clb.solids.set(alpha=alpha)
+    
+        
         ax1=plt.gca()
         ax1.tick_params(pad=0.1,length=0.5)
         #plt.legend(['Mw'],frameon=True)
@@ -1039,7 +1041,15 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         #plt.subplots_adjust(left=0.05,top=0.92,right=0.97,bottom=0.1,wspace=0.07,hspace=0.14)
         #plt.show()
         #break
-        plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.24,hspace=0.24)
+        #plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.24,hspace=0.24)
+        plt.subplots_adjust(left=0.05,top=0.95,right=0.82,bottom=0.07,wspace=0.24,hspace=0.24)
+        
+        # add colorbar for all subplots
+        fig.add_axes([0.85, 0.15, 0.12, 0.88])
+        clb = fig.colorbar(cmap,cax=cbaxes,ticks=[7.0, 8.0, 9.0], orientation='vertical',label='Mw')
+        clb.set_label('Mw', rotation=90,labelpad=-2,size=12)
+        clb.solids.set(alpha=alpha)
+        
         #-----add these two lines to center the bottom two subplots-----
         #tmp0 = axes[0][0].get_position()
         #tmp = axes[1][0].get_position()
