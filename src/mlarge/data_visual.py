@@ -1042,10 +1042,10 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         #plt.show()
         #break
         #plt.subplots_adjust(left=0.05,top=0.95,right=0.99,bottom=0.07,wspace=0.24,hspace=0.24)
-        plt.subplots_adjust(left=0.05,top=0.95,right=0.9,bottom=0.07,wspace=0.24,hspace=0.24)
+        plt.subplots_adjust(left=0.05,top=0.95,right=0.92,bottom=0.07,wspace=0.24,hspace=0.24)
         
         # add colorbar for all subplots
-        cbaxes = fig.add_axes([0.92, 0.07, 0.03, 0.88])
+        cbaxes = fig.add_axes([0.94, 0.07, 0.025, 0.88])
         clb = fig.colorbar(cmap,cax=cbaxes,ticks=[7.0, 8.0, 9.0], orientation='vertical',label='Mw')
         clb.set_label('Mw', rotation=90,labelpad=-2,size=12)
         clb.solids.set(alpha=alpha)
