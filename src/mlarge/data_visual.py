@@ -1045,7 +1045,7 @@ def plot_y_scatter5(Model_path,X,y,r_yscale,use_final=False,idx=None,mark_range=
         plt.subplots_adjust(left=0.05,top=0.95,right=0.82,bottom=0.07,wspace=0.24,hspace=0.24)
         
         # add colorbar for all subplots
-        fig.add_axes([0.85, 0.15, 0.12, 0.88])
+        cbaxes = fig.add_axes([0.85, 0.15, 0.12, 0.88])
         clb = fig.colorbar(cmap,cax=cbaxes,ticks=[7.0, 8.0, 9.0], orientation='vertical',label='Mw')
         clb.set_label('Mw', rotation=90,labelpad=-2,size=12)
         clb.solids.set(alpha=alpha)
